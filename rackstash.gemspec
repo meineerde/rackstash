@@ -1,4 +1,9 @@
 # coding: utf-8
+# Copyright 2017 Holger Just
+#
+# This software may be modified and distributed under the terms
+# of the MIT license. See the LICENSE.txt file for details.
+
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'rackstash/version'
