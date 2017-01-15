@@ -9,9 +9,9 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'rackstash/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "rackstash"
+  spec.name          = 'rackstash'
   spec.version       = Rackstash::VERSION
-  spec.authors       = ["Holger Just"]
+  spec.authors       = ['Holger Just']
 
   spec.summary       = 'Easy structured logging for Ruby applications'
   spec.description   = <<-TXT.gsub(/\s+|\n/, ' ').strip
@@ -20,15 +20,15 @@ Gem::Specification.new do |spec|
     frameworks. It works best with a log receiver like Logstash or Graylog.
   TXT
   spec.homepage      = 'https://github.com/meineerde/rackstash'
-  spec.license       = "MIT"
+  spec.license       = 'MIT'
 
-
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
-  spec.bindir        = "exe"
+  files = `git ls-files -z`.split("\x0")
+  spec.files         = files.reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
+  spec.require_paths = ['lib']
 
-  spec.add_development_dependency "bundler", "~> 1.12"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rspec", "~> 3.0"
+  spec.add_development_dependency 'bundler', '~> 1.12'
+  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'rspec', '~> 3.0'
 end

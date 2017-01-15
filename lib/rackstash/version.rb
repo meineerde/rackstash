@@ -4,5 +4,5 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  VERSION = "0.1.0"
+  VERSION = '0.1.0'
 end
