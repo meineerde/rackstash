@@ -10,13 +10,13 @@ module Rackstash
     MAJOR = 0
     # MINOR version. It is incremented after adding functionality in a
     # backwards-compatible manner
-    MINOR = 1
+    MINOR = 2
     # PATCH version. It is incremented when making backwards-compatible
     # bug-fixes.
     PATCH = 0
     # PRERELEASE suffix. Set to a alphanumeric string on any pre-release
     # versions like beta or RC releases.
-    PRERELEASE = nil
+    PRERELEASE = 'dev'.freeze
 
     # A standard string representation of the version parts
     STRING = [MAJOR, MINOR, PATCH, PRERELEASE].compact.join('.').freeze
