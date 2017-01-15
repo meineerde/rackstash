@@ -3,8 +3,35 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
-sudo: false
 language: ruby
+sudo: false
+
+cache: bundler
+
 rvm:
-  - 2.2.5
-before_install: gem install bundler -v 1.12.5
+  # Latest Rubies on top
+  - 2.4.0
+  - jruby-9.1.6.0
+
+  # Older versions
+  - 2.3.3
+  - 2.2.6
+  - 2.1.10
+
+  # HEAD-Rubies (might break)
+  - ruby-head
+  - jruby-head
+
+jdk:
+  - oraclejdk8
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+    - rvm: jruby-head
+
+before_install:
+  - "gem update bundler"
+
+script:
+  - bundle exec rspec
