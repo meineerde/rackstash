@@ -22,6 +22,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/meineerde/rackstash'
   spec.license       = 'MIT'
 
+  spec.required_ruby_version = '>= 2.1.0'
+
   files = `git ls-files -z`.split("\x0")
   spec.files         = files.reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = 'exe'
