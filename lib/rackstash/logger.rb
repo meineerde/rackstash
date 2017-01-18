@@ -82,6 +82,114 @@ module Rackstash
       end
     end
 
+    # Log a `message` at the DEBUG log level.
+    #
+    # @param message (see #add)
+    # @yield (see #add)
+    # @return (see #add)
+    def debug(message = nil)
+      if block_given?
+        add(DEBUG, message) { yield }
+      else
+        add(DEBUG, message)
+      end
+    end
+
+    # @return [Boolean] `true` if messages on the DEBUG level will be logged
+    def debug?
+      @level <= DEBUG
+    end
+
+    # Log a `message` at the INFO log level.
+    #
+    # @param message (see #add)
+    # @yield (see #add)
+    # @return (see #add)
+    def info(message = nil)
+      if block_given?
+        add(INFO, message) { yield }
+      else
+        add(INFO, message)
+      end
+    end
+
+    # @return [Boolean] `true` if messages on the INFO level will be logged
+    def info?
+      @level <= INFO
+    end
+
+    # Log a `message` at the WARN log level.
+    #
+    # @param message (see #add)
+    # @yield (see #add)
+    # @return (see #add)
+    def warn(message = nil)
+      if block_given?
+        add(WARN, message) { yield }
+      else
+        add(WARN, message)
+      end
+    end
+
+    # @return [Boolean] `true` if messages on the WARN level will be logged
+    def warn?
+      @level <= WARN
+    end
+
+    # Log a `message` at the ERROR log level.
+    #
+    # @param message (see #add)
+    # @yield (see #add)
+    # @return (see #add)
+    def error(message = nil)
+      if block_given?
+        add(ERROR, message) { yield }
+      else
+        add(ERROR, message)
+      end
+    end
+
+    # @return [Boolean] `true` if messages on the ERROR level will be logged
+    def error?
+      @level <= ERROR
+    end
+
+    # Log a `message` at the FATAL log level.
+    #
+    # @param message (see #add)
+    # @yield (see #add)
+    # @return (see #add)
+    def fatal(message = nil)
+      if block_given?
+        add(FATAL, message) { yield }
+      else
+        add(FATAL, message)
+      end
+    end
+
+    # @return [Boolean] `true` if messages on the FATAL level will be logged
+    def fatal?
+      @level <= FATAL
+    end
+
+    # Log a `message` at the UNKNOWN log level.
+    #
+    # @param message (see #add)
+    # @yield (see #add)
+    # @return (see #add)
+    def unknown(message = nil)
+      if block_given?
+        add(UNKNOWN, message) { yield }
+      else
+        add(UNKNOWN, message)
+      end
+    end
+
+    # @return [Boolean] `true` if messages on the UNKNOWN level will be logged
+    def unknown?
+      @level <= UNKNOWN
+    end
+
     # Log a message if the given severity is high enough. This is the generic
     # logging method. Users will be more inclined to use {#debug}, {#info},
     # {#warn}, {#error}, or {#fatal}.

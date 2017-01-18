@@ -37,7 +37,6 @@ describe Rackstash::Logger do
 
       logger.level = -25
       expect(logger.level).to eql -25
-
     end
 
     it 'can be set as a symbol' do
@@ -70,6 +69,20 @@ describe Rackstash::Logger do
       expect { logger.level = nil }.to raise_error(ArgumentError)
       expect { logger.level = false }.to raise_error(ArgumentError)
       expect { logger.level = true }.to raise_error(ArgumentError)
+    end
+
+    it 'can set all the levels' do
+      levels = %i[debug info warn error fatal unknown]
+
+      levels.each_with_index do |level, number|
+        logger.level = level
+        expect(logger.level).to eql number
+
+        # only severities larger then the selected one are logged
+        levels.each_with_index do |check_level, check_number|
+          expect(logger.public_send(:"#{check_level}?")).to eql number <= check_number
+        end
+      end
     end
   end
 
@@ -214,6 +227,78 @@ describe Rackstash::Logger do
       # Same with nil which is later inspect'ed by the formatter
       logger.add(0, nil, 'prog') { nil }
       expect(messages.last).to include message: nil, severity: 0, progname: 'prog'
+    end
+
+    it 'can use debug shortcut' do
+      expect(logger).to receive(:add).with(0, 'Debug').and_call_original
+      logger.debug('Debug')
+      expect(messages.last).to include message: 'Debug', severity: 0
+    end
+
+    it 'can use debug shortcut with a block' do
+      expect(logger).to receive(:add).with(0, nil).and_call_original
+      logger.debug { 'Debug' }
+      expect(messages.last).to include message: 'Debug', severity: 0
+    end
+
+    it 'can use info shortcut' do
+      expect(logger).to receive(:add).with(1, 'Info').and_call_original
+      logger.info('Info')
+      expect(messages.last).to include message: 'Info', severity: 1
+    end
+
+    it 'can use info shortcut with a block' do
+      expect(logger).to receive(:add).with(1, nil).and_call_original
+      logger.info { 'Info' }
+      expect(messages.last).to include message: 'Info', severity: 1
+    end
+
+    it 'can use warn shortcut' do
+      expect(logger).to receive(:add).with(2, 'Warn').and_call_original
+      logger.warn('Warn')
+      expect(messages.last).to include message: 'Warn', severity: 2
+    end
+
+    it 'can use warn shortcut with a block' do
+      expect(logger).to receive(:add).with(2, nil).and_call_original
+      logger.warn { 'Warn' }
+      expect(messages.last).to include message: 'Warn', severity: 2
+    end
+
+    it 'can use error shortcut' do
+      expect(logger).to receive(:add).with(3, 'Error').and_call_original
+      logger.error('Error')
+      expect(messages.last).to include message: 'Error', severity: 3
+    end
+
+    it 'can use error shortcut with a block' do
+      expect(logger).to receive(:add).with(3, nil).and_call_original
+      logger.error { 'Error' }
+      expect(messages.last).to include message: 'Error', severity: 3
+    end
+
+    it 'can use fatal shortcut' do
+      expect(logger).to receive(:add).with(4, 'Fatal').and_call_original
+      logger.fatal('Fatal')
+      expect(messages.last).to include message: 'Fatal', severity: 4
+    end
+
+    it 'can use fatal shortcut with a block' do
+      expect(logger).to receive(:add).with(4, nil).and_call_original
+      logger.fatal { 'Fatal' }
+      expect(messages.last).to include message: 'Fatal', severity: 4
+    end
+
+    it 'can use unknown shortcut' do
+      expect(logger).to receive(:add).with(5, 'Unknown').and_call_original
+      logger.unknown('Unknown')
+      expect(messages.last).to include message: 'Unknown', severity: 5
+    end
+
+    it 'can use unknown shortcut with a block' do
+      expect(logger).to receive(:add).with(5, nil).and_call_original
+      logger.unknown { 'Unknown' }
+      expect(messages.last).to include message: 'Unknown', severity: 5
     end
   end
 end
