@@ -6,5 +6,18 @@
 require 'rackstash/version'
 
 module Rackstash
-  # Your code goes here...
+  SEVERITIES = [
+    DEBUG = 0,
+    INFO = 1,
+    WARN = 2,
+    ERROR = 3,
+    FATAL = 4,
+    UNKNOWN = 5
+  ].freeze
+
+  PROGNAME = "rackstash/v#{Rackstash::VERSION}".freeze
+
+  EMPTY_STRING = ''.freeze
 end
+
+require 'rackstash/logger'
