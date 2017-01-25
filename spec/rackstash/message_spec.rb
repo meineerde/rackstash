@@ -139,7 +139,7 @@ describe Rackstash::Message do
       message = 'Hello World'
 
       formatter = double('formatter')
-      expect(formatter).to receive(:call).once
+      expect(formatter).to receive(:call)
         .with('DEBUG', time, progname, message)
         .and_return('Formatted Message')
 
@@ -152,8 +152,12 @@ describe Rackstash::Message do
       )
 
       expect(message.to_s).to eql 'Formatted Message'
-      # Same result, but no additional call to the formatter
-      expect(message.to_s).to eql 'Formatted Message'
+    end
+  end
+
+  describe '#frozen?' do
+    it 'is always true' do
+      expect(Rackstash::Message.new('Beep boop')).to be_frozen
     end
   end
 end

@@ -42,18 +42,19 @@ module Rackstash
       @time = dup_freeze(time)
       @progname = dup_freeze(progname)
       @formatter = formatter
+
+      # Freeze the newly created message to ensure it can't be changed.
+      # All passed values are also effectively frozen, making the Message an
+      # immutable object.
+      freeze
     end
 
     def severity_label
       SEVERITY_LABEL[@severity] || SEVERITY_LABEL.last
     end
 
-    def frozen?
-      true
-    end
-
     def to_s
-      @to_s ||= @formatter.call(severity_label, @time, @progname, @message)
+      @formatter.call(severity_label, @time, @progname, @message)
     end
     alias_method :to_str, :to_s
     alias_method :as_json, :to_s
