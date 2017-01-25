@@ -46,3 +46,12 @@ describe Rackstash::Formatter do
     expect(formatter.call('ERROR', Time.now, 'progname', object)).to eql "#{inspected}\n"
   end
 end
+
+describe Rackstash::RawFormatter do
+  let(:formatter) { Rackstash::RawFormatter.new }
+
+  it 'returns the message' do
+    msg = 'my message'
+    expect(formatter.call('ERROR', Time.now, 'progname', msg)).to equal msg
+  end
+end

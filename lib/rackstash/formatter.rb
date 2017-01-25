@@ -25,4 +25,10 @@ module Rackstash
       "#{msg2str(msg)}\n"
     end
   end
+
+  class RawFormatter
+    def call(_severity, _timestamp, _progname, msg)
+      msg
+    end
+  end
 end

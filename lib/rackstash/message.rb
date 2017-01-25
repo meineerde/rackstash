@@ -6,7 +6,7 @@
 module Rackstash
   # This class and all its data are immutable after initialization
   class Message
-    RAW_FORMATTER = ->(_severity, _timestamp, _progname, msg) { msg }
+    RAW_FORMATTER = RawFormatter.new
 
     SEVERITY_LABEL = [
       'DEBUG'.freeze,
