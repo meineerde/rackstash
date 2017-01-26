@@ -54,4 +54,12 @@ describe Rackstash::RawFormatter do
     msg = 'my message'
     expect(formatter.call('ERROR', Time.now, 'progname', msg)).to equal msg
   end
+
+  it 'inspects non-string messages' do
+    obj = Object.new
+
+    expect(obj).to receive(:inspect).and_return('object')
+    expect(formatter.call('ERROR', Time.now, 'progname', obj)).to eql 'object'
+  end
+
 end

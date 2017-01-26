@@ -28,7 +28,7 @@ module Rackstash
 
   class RawFormatter
     def call(_severity, _timestamp, _progname, msg)
-      msg
+      msg.is_a?(String) ? msg : msg.inspect
     end
   end
 end

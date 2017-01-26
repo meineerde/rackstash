@@ -11,44 +11,20 @@ require 'rackstash/message'
 describe Rackstash::Message do
   describe '#message' do
     it 'dups the message string' do
-      str = 'a message'
+      str = 'a message'.encode(Encoding::ASCII_8BIT)
       message = Rackstash::Message.new(str)
 
       expect(message.message).to eql str
       expect(message.message).not_to equal str
+      expect(message.message.encoding).to eql Encoding::ASCII_8BIT
       expect(message.message).to be_frozen
     end
 
-    it 'cleans the message' do
-      messages = [
-        ["First\r\nSecond",         "First\nSecond"],
-        ["First\r\nSecond\n\r",     "First\nSecond\n\n"],
-        ["Foo\r\n\rBar",            "Foo\n\nBar"],
-        ["\r \tWord\n\nPhrase\n",   "\n \tWord\n\nPhrase\n"],
-        ["\e[31mRED TEXT\e[0m",     'RED TEXT']
-      ]
+    it 'accepts non-string objects' do
+      exception = StandardError.new('An error')
+      message = Rackstash::Message.new(exception)
 
-      messages.each do |msg, clean|
-        message = Rackstash::Message.new(msg)
-        expect(message.message).to eql clean
-      end
-    end
-
-    it 'encodes the message as UTF-8' do
-      utf8_str = 'Dönerstraße'
-      latin_str = utf8_str.encode(Encoding::ISO8859_9)
-      expect(latin_str.encoding).to eql Encoding::ISO8859_9
-
-      message = Rackstash::Message.new(latin_str)
-      expect(message.message).to eql utf8_str
-      expect(message.message.encoding).to eql Encoding::UTF_8
-    end
-
-    it 'does not raise an error on incompatible encodings' do
-      binary = Digest::SHA256.digest('string')
-      message = Rackstash::Message.new(binary)
-
-      expect(message.message).to include '�'
+      expect(message.message).to eq exception
     end
   end
 
@@ -127,7 +103,7 @@ describe Rackstash::Message do
       expect(Rackstash::Message.new('').formatter).to equal Rackstash::Message::RAW_FORMATTER
 
       message = Rackstash::Message.new('Beep boop')
-      expect(message.to_s).to equal message.message
+      expect(message.to_s).to eql 'Beep boop'
     end
   end
 
@@ -153,6 +129,47 @@ describe Rackstash::Message do
 
       expect(message.to_s).to eql 'Formatted Message'
     end
+
+    it 'cleans the message' do
+      messages = [
+        ["First\r\nSecond",         "First\nSecond"],
+        ["First\r\nSecond\n\r",     "First\nSecond\n\n"],
+        ["Foo\r\n\rBar",            "Foo\n\nBar"],
+        ["\r \tWord\n\nPhrase\n",   "\n \tWord\n\nPhrase\n"],
+        ["\e[31mRED TEXT\e[0m",     'RED TEXT']
+      ]
+
+      messages.each do |msg, clean|
+        message = Rackstash::Message.new(msg)
+        expect(message.to_s).to eql clean
+      end
+    end
+
+    it 'encodes the message as UTF-8' do
+      utf8_str = 'Dönerstraße'
+      latin_str = utf8_str.encode(Encoding::ISO8859_9)
+      expect(latin_str.encoding).to eql Encoding::ISO8859_9
+
+      message = Rackstash::Message.new(latin_str)
+      expect(message.to_s).to eql utf8_str
+      expect(message.to_s.encoding).to eql Encoding::UTF_8
+    end
+
+    it 'does not raise an error on incompatible encodings' do
+      binary = Digest::SHA256.digest('string')
+      message = Rackstash::Message.new(binary)
+
+      expect(message.to_s).to include '�'
+      expect(message.to_s.encoding).to eql Encoding::UTF_8
+    end
+
+    it 'accepts non-string objects' do
+      exception = StandardError.new('An error')
+      message = Rackstash::Message.new(exception)
+
+      expect(message.to_s).to eql '#<StandardError: An error>'
+    end
+
   end
 
   describe '#frozen?' do

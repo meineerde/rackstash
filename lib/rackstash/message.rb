@@ -34,7 +34,7 @@ module Rackstash
       progname: PROGNAME,
       formatter: RAW_FORMATTER
     )
-      @message = cleanup_message(msg)
+      @message = dup_freeze(msg)
 
       @severity = Integer(severity)
       @severity = 0 if @severity < 0
@@ -54,7 +54,7 @@ module Rackstash
     end
 
     def to_s
-      @formatter.call(severity_label, @time, @progname, @message)
+      cleanup @formatter.call(severity_label, @time, @progname, @message)
     end
     alias_method :to_str, :to_s
     alias_method :as_json, :to_s
@@ -66,8 +66,7 @@ module Rackstash
     #
     # @param msg [#to_s] a message to be added to the buffer
     # @return [String] the sanitized frozen message
-    def cleanup_message(msg)
-      msg = msg.inspect unless msg.is_a?(String)
+    def cleanup(msg)
       msg = utf8_encode(msg)
       # remove useless ANSI color codes
       msg.gsub!(/\e\[[0-9;]*m/, EMPTY_STRING)
