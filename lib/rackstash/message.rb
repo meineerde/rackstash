@@ -83,7 +83,11 @@ module Rackstash
     end
 
     def dup_freeze(obj)
-      obj.frozen? ? obj : obj.dup.freeze
+      if obj.frozen?
+        obj
+      else
+        obj.dup.freeze rescue obj
+      end
     end
   end
 end

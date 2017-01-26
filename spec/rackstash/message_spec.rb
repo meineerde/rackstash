@@ -26,6 +26,16 @@ describe Rackstash::Message do
 
       expect(message.message).to eq exception
     end
+
+    it 'attempts to dup non-frozen objects' do
+      rational = Rational(2, 3)
+      expect(rational).to_not be_frozen
+
+      message = Rackstash::Message.new(rational)
+
+      expect(message.message).to_not be_frozen
+      expect(message.message).to equal rational
+    end
   end
 
   describe '#severity' do
