@@ -36,7 +36,7 @@ describe Rackstash::Logger do
       expect(logger.level).to eql 42
 
       logger.level = -25
-      expect(logger.level).to eql -25
+      expect(logger.level).to eql(-25)
     end
 
     it 'can be set as a symbol' do
