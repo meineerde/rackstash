@@ -123,7 +123,7 @@ describe Rackstash::Logger do
 
     before(:each) do
       class_double('Rackstash::Message').as_stubbed_const.tap do |klass|
-        expect(klass).to receive(:new) { |msg, **kwargs| {message: msg, **kwargs} }
+        expect(klass).to receive(:new) { |msg, **kwargs| { message: msg, **kwargs } }
           .at_least(:once)
       end
       expect(logger).to receive(:buffer_stack)
@@ -140,10 +140,10 @@ describe Rackstash::Logger do
       logger.log(Rackstash::DEBUG, 'Debug message')
       expect(messages.last).to include message: 'Debug message', severity: 0
 
-      logger.log(Rackstash::INFO,  'Info message')
+      logger.log(Rackstash::INFO, 'Info message')
       expect(messages.last).to include message: 'Info message', severity: 1
 
-      logger.log(Rackstash::WARN,  'Warn message')
+      logger.log(Rackstash::WARN, 'Warn message')
       expect(messages.last).to include message: 'Warn message', severity: 2
 
       logger.log(Rackstash::ERROR, 'Error message')
@@ -196,37 +196,57 @@ describe Rackstash::Logger do
     it 'follows Ruby\'s logger logic to find the message' do
       # If there is a message, it will be logged
       logger.add(0, 'Hello', nil)
-      expect(messages.last).to include message: 'Hello', severity: 0, progname: Rackstash::PROGNAME
+      expect(messages.last).to include(
+        message: 'Hello', severity: 0, progname: Rackstash::PROGNAME
+      )
 
       logger.add(4, 'Hello', 'prog')
-      expect(messages.last).to include message: 'Hello', severity: 4, progname: 'prog'
+      expect(messages.last).to include(
+        message: 'Hello', severity: 4, progname: 'prog'
+      )
 
       logger.add(5, 'Hello', 'prog') { 'block' }
-      expect(messages.last).to include message: 'Hello', severity: 5, progname: 'prog'
+      expect(messages.last).to include(
+        message: 'Hello', severity: 5, progname: 'prog'
+      )
 
       logger.add(nil, 'Hello', nil)
-      expect(messages.last).to include message: 'Hello', severity: 5, progname: Rackstash::PROGNAME
+      expect(messages.last).to include(
+        message: 'Hello', severity: 5, progname: Rackstash::PROGNAME
+      )
 
       # If there is no message, we use the block
       logger.add(1, nil, 'prog') { 'Hello' }
-      expect(messages.last).to include message: 'Hello', severity: 1, progname: 'prog'
+      expect(messages.last).to include(
+        message: 'Hello', severity: 1, progname: 'prog'
+      )
       logger.add(1, nil, nil) { 'Hello' }
-      expect(messages.last).to include message: 'Hello', severity: 1, progname: Rackstash::PROGNAME
+      expect(messages.last).to include(
+        message: 'Hello', severity: 1, progname: Rackstash::PROGNAME
+      )
 
       # If there is no block either, we use the progname and pass the default
       # progname to the message
       logger.add(2, nil, 'prog')
-      expect(messages.last).to include message: 'prog', severity: 2, progname: Rackstash::PROGNAME
+      expect(messages.last).to include(
+        message: 'prog', severity: 2, progname: Rackstash::PROGNAME
+      )
       # ... which defaults to `Rackstash::BufferedLogger::PROGNAME`
       logger.add(3, nil, nil)
-      expect(messages.last).to include message: Rackstash::PROGNAME, severity: 3, progname: Rackstash::PROGNAME
+      expect(messages.last).to include(
+        message: Rackstash::PROGNAME, severity: 3, progname: Rackstash::PROGNAME
+      )
 
       # If we resolve the message to a blank string, we still add it
       logger.add(1, '', nil) { 'Hello' }
-      expect(messages.last).to include message: '', severity: 1, progname: Rackstash::PROGNAME
+      expect(messages.last).to include(
+        message: '', severity: 1, progname: Rackstash::PROGNAME
+      )
       # Same with nil which is later inspect'ed by the formatter
       logger.add(0, nil, 'prog') { nil }
-      expect(messages.last).to include message: nil, severity: 0, progname: 'prog'
+      expect(messages.last).to include(
+        message: nil, severity: 0, progname: 'prog'
+      )
     end
 
     it 'can use debug shortcut' do
