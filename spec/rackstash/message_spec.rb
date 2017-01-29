@@ -180,11 +180,24 @@ describe Rackstash::Message do
       expect(message.to_s).to eql '#<StandardError: An error>'
     end
 
+    it 'is aliased to to_str' do
+      message = Rackstash::Message.new('hello world')
+      expect(message.to_str).to eql 'hello world'
+    end
+
+    it 'is aliased to as_json' do
+      message = Rackstash::Message.new('hello world')
+      expect(message.as_json).to eql 'hello world'
+    end
   end
 
-  describe '#frozen?' do
-    it 'is always true' do
-      expect(Rackstash::Message.new('Beep boop')).to be_frozen
-    end
+  it 'formats the message as JSON' do
+    message = Rackstash::Message.new('hello world')
+    as_json = 'hello world'
+
+    expect(message).to receive(:as_json).and_return(as_json)
+    expect(as_json).to receive(:to_json).and_return('"json string"')
+
+    expect(message.to_json).to eql '"json string"'
   end
 end
