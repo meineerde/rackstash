@@ -237,7 +237,7 @@ module Rackstash
 
       msg
     end
-    alias_method :log, :add
+    alias :log :add
 
     private
 
