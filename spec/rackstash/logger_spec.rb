@@ -121,7 +121,7 @@ describe Rackstash::Logger do
       end
     }
 
-    before(:each) do
+    before do
       class_double('Rackstash::Message').as_stubbed_const.tap do |klass|
         expect(klass).to receive(:new) { |msg, **kwargs| { message: msg, **kwargs } }
           .at_least(:once)
