@@ -12,15 +12,18 @@ describe Rackstash::Fields::Tags do
 
   describe '#<<' do
     it 'calls merge!' do
-      expect(tags).to receive(:merge!).with('tag').and_call_original
       tags << 'tag'
       expect(tags.tagged?('tag')).to be true
+    end
+
+    it 'returns tags' do
+      expect(tags << 'tag').to equal tags
     end
   end
 
   describe '#as_json' do
     before do
-      tags.merge!(123, 'tag', true)
+      tags.merge! [123, 'tag', true]
     end
 
     it 'returns a simple array' do
@@ -67,7 +70,7 @@ describe Rackstash::Fields::Tags do
 
   describe '#merge' do
     it 'returns a new object' do
-      new_tags = tags.merge('hello')
+      new_tags = tags.merge ['hello']
 
       expect(new_tags).to be_a Rackstash::Fields::Tags
       expect(new_tags.tagged?('hello')).to be true
@@ -80,19 +83,45 @@ describe Rackstash::Fields::Tags do
 
   describe '#merge!' do
     it 'merges multiple tags as strings' do
-      tags.merge! 'foo', 'bar'
+      tags.merge! ['foo', 'bar']
       expect(tags.to_a).to eql ['foo', 'bar']
 
-      tags.merge! 123, 'foo', nil
+      tags.merge! [123, 'foo', nil]
       expect(tags.to_a).to eql ['foo', 'bar', '123', '']
 
       expect(tags.to_a).to all be_frozen
+    end
+
+    it 'resolves procs' do
+      tags.merge! [-> { 123 }]
+      expect(tags.tagged?('123')).to be true
+    end
+
+    it 'flattens arguments' do
+      tags.merge! [123, [-> { ['foo', -> { 'bar' }] }]]
+      expect(tags.to_a).to eql ['123', 'foo', 'bar']
+    end
+
+    it 'accepts tags' do
+      new_tags = Rackstash::Fields::Tags.new
+      new_tags << 'foo'
+
+      tags.merge! [new_tags]
+
+      expect(tags.to_a).to eql ['foo']
+    end
+
+    it 'accepts a set' do
+      new_tags = Set['foo', 'bar']
+      tags.merge! [new_tags]
+
+      expect(tags.to_a).to eql ['foo', 'bar']
     end
   end
 
   describe '#tagged?' do
     it 'checks is the argument is tagged' do
-      tags.merge! 'foo', '123'
+      tags.merge! ['foo', '123']
 
       expect(tags.tagged?('foo')).to be true
       expect(tags.tagged?(:foo)).to be true
@@ -108,11 +137,21 @@ describe Rackstash::Fields::Tags do
     it 'returns a copy of the internal set' do
       expect(tags.to_set).to be_a Set
 
-      tags.merge! 'foo', nil
+      tags.merge! ['foo', nil]
 
       expect(tags.to_set.include?('foo')).to be true
       expect(tags.to_set.include?(nil)).to be false
       expect(tags.to_set.include?('')).to be true
+    end
+  end
+
+  describe 'Converter' do
+    it 'creates a new tags list' do
+      raw = [Time.now, 'foo']
+      tags = Rackstash::Fields::Tags(raw)
+
+      expect(tags).to be_a Rackstash::Fields::Tags
+      expect(tags.to_a).to match [String, 'foo']
     end
   end
 end

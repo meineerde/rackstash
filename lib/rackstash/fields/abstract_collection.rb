@@ -41,9 +41,15 @@ module Rackstash
 
       private
 
-      def initialize_copy(source)
+      def initialize_dup(source)
         super
         self.raw = source.raw == nil ? nil : source.raw.dup
+        self
+      end
+
+      def initialize_clone(source)
+        super
+        self.raw = source.raw == nil ? nil : source.raw.clone
         self
       end
 

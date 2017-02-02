@@ -15,7 +15,10 @@ module Rackstash
       end
 
       def <<(tag)
-        merge!(tag)
+        tag = resolve_value(tag)
+        tag = utf8_encode(tag).freeze
+        @raw << tag
+        self
       end
 
       def as_json(*)
@@ -33,12 +36,12 @@ module Rackstash
         @raw.empty?
       end
 
-      def merge(*tags, scope: nil)
-        dup.merge!(*tags, scope: scope)
+      def merge(tags, scope: nil)
+        dup.merge!(tags, scope: scope)
       end
 
-      def merge!(*tags, scope: nil)
-        @raw.merge normalize_tags(tags.to_ary)
+      def merge!(tags, scope: nil)
+        @raw.merge normalize_tags(tags)
         self
       end
 
@@ -55,7 +58,13 @@ module Rackstash
       def normalize_tags(value, scope: nil)
         value = resolve_value(value, scope: scope)
 
-        if value.respond_to?(:to_ary)
+        if value.is_a?(self.class)
+          value.to_a
+        elsif value.is_a?(Set)
+          value = value.map { |tag| normalize_tags(tag) }
+          value.flatten!
+          value
+        elsif value.respond_to?(:to_ary)
           value = value.to_ary.map { |tag| normalize_tags(tag) }
           value.flatten!
           value
@@ -63,6 +72,11 @@ module Rackstash
           utf8_encode(value).freeze
         end
       end
+    end
+
+    # param tags [Set, Array]
+    def self.Tags(tags)
+      Rackstash::Fields::Tags.new.merge!(tags)
     end
   end
 end
