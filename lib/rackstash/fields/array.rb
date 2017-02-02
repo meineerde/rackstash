@@ -56,7 +56,7 @@ module Rackstash
     end
 
     def self.Array(array)
-      Array.new.concat(array)
+      Rackstash::Fields::Array.new.concat(array)
     end
   end
 end

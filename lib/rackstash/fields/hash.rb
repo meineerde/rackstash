@@ -114,7 +114,7 @@ module Rackstash
     end
 
     def self.Hash(raw, forbidden_keys: EMPTY_SET)
-      Hash.new(forbidden_keys: forbidden_keys).merge!(raw)
+      Rackstash::Fields::Hash.new(forbidden_keys: forbidden_keys).merge!(raw)
     end
   end
 end
