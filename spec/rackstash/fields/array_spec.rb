@@ -123,6 +123,16 @@ describe Rackstash::Fields::Array do
     end
   end
 
+  describe '#empty?' do
+    it 'returns true of there are any tags' do
+      expect(array.empty?).to be true
+      array[0] = 'foo'
+      expect(array.empty?).to be false
+      array.clear
+      expect(array.empty?).to be true
+    end
+  end
+
   describe '#length' do
     it 'returns the length of the array' do
       expect(array.length).to eql 0

@@ -45,6 +45,10 @@ module Rackstash
         self
       end
 
+      def empty?
+        @raw.empty?
+      end
+
       def keys
         @raw.keys
       end

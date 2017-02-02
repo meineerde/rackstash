@@ -39,6 +39,10 @@ module Rackstash
         self
       end
 
+      def empty?
+        @raw.empty?
+      end
+
       def length
         @raw.length
       end

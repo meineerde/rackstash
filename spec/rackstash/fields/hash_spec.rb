@@ -160,6 +160,16 @@ describe Rackstash::Fields::Hash do
     end
   end
 
+  describe '#empty?' do
+    it 'returns true of there are any fields' do
+      expect(hash.empty?).to be true
+      hash['key'] = 'foo'
+      expect(hash.empty?).to be false
+      hash.clear
+      expect(hash.empty?).to be true
+    end
+  end
+
   describe '#forbidden_key?' do
     let(:forbidden_keys) { ['forbidden', :foo] }
 
