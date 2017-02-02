@@ -11,7 +11,7 @@ describe Rackstash::Fields::Tags do
   let(:tags) { Rackstash::Fields::Tags.new }
 
   describe '#<<' do
-    it 'calls merge!' do
+    it 'adds a single tag' do
       tags << 'tag'
       expect(tags.tagged?('tag')).to be true
     end
@@ -94,7 +94,10 @@ describe Rackstash::Fields::Tags do
 
     it 'resolves procs' do
       tags.merge! [-> { 123 }]
-      expect(tags.tagged?('123')).to be true
+      expect(tags.to_a).to eql ['123']
+
+      tags.merge! [-> { self }], scope: :foo
+      expect(tags.to_a).to eql ['123', 'foo']
     end
 
     it 'flattens arguments' do

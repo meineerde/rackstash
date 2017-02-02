@@ -41,7 +41,7 @@ module Rackstash
       end
 
       def merge!(tags, scope: nil)
-        @raw.merge normalize_tags(tags)
+        @raw.merge normalize_tags(tags, scope: scope)
         self
       end
 
@@ -61,11 +61,11 @@ module Rackstash
         if value.is_a?(self.class)
           value.to_a
         elsif value.is_a?(Set)
-          value = value.map { |tag| normalize_tags(tag) }
+          value = value.map { |tag| normalize_tags(tag, scope: scope) }
           value.flatten!
           value
         elsif value.respond_to?(:to_ary)
-          value = value.to_ary.map { |tag| normalize_tags(tag) }
+          value = value.to_ary.map { |tag| normalize_tags(tag, scope: scope) }
           value.flatten!
           value
         else
