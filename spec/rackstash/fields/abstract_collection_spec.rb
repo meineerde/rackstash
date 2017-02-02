@@ -322,14 +322,7 @@ describe Rackstash::Fields::AbstractCollection do
     end
 
     it 'formats Time as an ISO 8601 UTC timestamp' do
-      time = Time.parse('2016-10-17 15:37:42 CEST') # UTC +02:00
-
-      expect(normalize(time)).to eql '2016-10-17T13:37:42.000Z'
-      expect(normalize(time)).to be_frozen
-    end
-
-    it 'formats Time as an ISO 8601 UTC timestamp' do
-      time = Time.parse('2016-10-17 15:37:42 CEST') # UTC +02:00
+      time = Time.parse('2016-10-17 16:37:42 +03:00')
 
       expect(normalize(time)).to eql '2016-10-17T13:37:42.000Z'
       expect(normalize(time).encoding).to eql Encoding::UTF_8
