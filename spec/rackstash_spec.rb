@@ -8,6 +8,7 @@ require 'spec_helper'
 describe Rackstash do
   it 'defines PROGRAME with the correct version' do
     expect(Rackstash::PROGNAME).to match %r{\Arackstash/v\d+(\..+)*\z}
+    expect(Rackstash::PROGNAME).to be_frozen
   end
 
   it 'defines SEVERITIES constants' do
@@ -19,5 +20,15 @@ describe Rackstash do
     expect(Rackstash::ERROR).to eql 3
     expect(Rackstash::FATAL).to eql 4
     expect(Rackstash::UNKNOWN).to eql 5
+  end
+
+  it 'defines EMPTY_* constants' do
+    expect(Rackstash::EMPTY_STRING).to eql ''
+    expect(Rackstash::EMPTY_STRING).to be_frozen
+
+    expect(Rackstash::EMPTY_SET).to eql Set.new
+    expect(Rackstash::EMPTY_SET).to be_frozen
+
+    expect(Rackstash::ISO8601_PRECISION).to be_a Integer
   end
 end

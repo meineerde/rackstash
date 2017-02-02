@@ -3,6 +3,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'set'
+
 require 'rackstash/version'
 
 module Rackstash
@@ -18,6 +20,10 @@ module Rackstash
   PROGNAME = "rackstash/v#{Rackstash::VERSION}".freeze
 
   EMPTY_STRING = ''.freeze
+  EMPTY_SET = Set.new.freeze
+
+  # How many decimal places to render on ISO 8601 timestamps
+  ISO8601_PRECISION = 3
 end
 
 require 'rackstash/logger'
