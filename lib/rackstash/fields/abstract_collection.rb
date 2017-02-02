@@ -89,7 +89,7 @@ module Rackstash
             hash_field.raw = hash
           end if wrap
           return hash
-        when ::Array, ::Enumerator
+        when ::Array, ::Set, ::Enumerator
           array = value.map { |e| normalize(e, scope: scope, resolve: resolve) }
           array = Rackstash::Fields::Array.new.tap do |array_field|
             array_field.raw = array

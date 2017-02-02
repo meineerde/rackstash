@@ -6,3 +6,4 @@
 require 'rackstash/fields/abstract_collection'
 require 'rackstash/fields/hash'
 require 'rackstash/fields/array'
+require 'rackstash/fields/tags'
