@@ -87,7 +87,7 @@ describe Rackstash::Fields::Tags do
       expect(tags.to_a).to eql ['foo', 'bar']
 
       tags.merge! [123, 'foo', nil]
-      expect(tags.to_a).to eql ['foo', 'bar', '123', '']
+      expect(tags.to_a).to eql ['foo', 'bar', '123']
 
       expect(tags.to_a).to all be_frozen
     end
@@ -123,7 +123,7 @@ describe Rackstash::Fields::Tags do
   end
 
   describe '#tagged?' do
-    it 'checks is the argument is tagged' do
+    it 'checks if the argument is tagged' do
       tags.merge! ['foo', '123']
 
       expect(tags.tagged?('foo')).to be true
@@ -144,7 +144,7 @@ describe Rackstash::Fields::Tags do
 
       expect(tags.to_set.include?('foo')).to be true
       expect(tags.to_set.include?(nil)).to be false
-      expect(tags.to_set.include?('')).to be true
+      expect(tags.to_set.include?('')).to be false
     end
   end
 

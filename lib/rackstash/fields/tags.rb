@@ -17,7 +17,7 @@ module Rackstash
       def <<(tag)
         tag = resolve_value(tag)
         tag = utf8_encode(tag).freeze
-        @raw << tag
+        @raw << tag unless tag.empty?
         self
       end
 
@@ -41,7 +41,10 @@ module Rackstash
       end
 
       def merge!(tags, scope: nil)
-        @raw.merge normalize_tags(tags, scope: scope)
+        tags = normalize_tags(tags, scope: scope)
+        tags.reject!(&:empty?)
+
+        @raw.merge tags
         self
       end
 
@@ -69,7 +72,7 @@ module Rackstash
           value.flatten!
           value
         else
-          utf8_encode(value).freeze
+          utf8_encode(value).strip.freeze
         end
       end
     end
