@@ -19,10 +19,26 @@ module Rackstash
         end
       end
 
+      # @param field_name [#to_s] the key name. We will always use it as a
+      #   String.
+      # @return [Object, nil] the current value of the field or `nil` if the
+      #   field wasn't set (yet)
       def [](key)
         @raw[utf8_encode(key)]
       end
 
+      # Set the value of a key to the supplied value
+      #
+      # You can set nested hashes and arrays here. The hash keys will be
+      # normalized as strings.
+      #
+      # @param key [#to_s] the field name. When setting the field, this name
+      #   will be normalized as a string.
+      # @param value [#call, Object] any value which can be serialized to JSON.
+      #   The value will be normalized on insert
+      #
+      # @raise [ArgumentError] if you attempt to set one of the forbidden keys.
+      # @return void
       def []=(key, value)
         key = utf8_encode(key)
         raise ArgumentError, "Forbidden field #{key}" if forbidden_key?(key)
