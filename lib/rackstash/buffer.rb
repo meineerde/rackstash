@@ -40,6 +40,7 @@ module Rackstash
       @messages = []
       @fields = Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
       @tags = Rackstash::Fields::Tags.new
+      @timestamp = nil
     end
 
     # Add a new message to the buffer. This will mark the current buffer as
@@ -50,6 +51,9 @@ module Rackstash
     # @return [Message] the passed `message`
     def add_message(message)
       @messages << message
+      timestamp(message.time)
+
+      message
     end
 
     def allow_empty?
@@ -102,6 +106,23 @@ module Rackstash
     #   All strings are frozen.
     def tag(*tags, scope: nil)
       @tags.merge!(tags, scope: scope)
+    end
+
+    # Returns the time of the current buffer as an ISO 8601 formatted string.
+    # If the timestamp was not yet set on the buffer, it is is set to the
+    # the passed `time` or the current time.
+    #
+    # @example
+    #   buffer.timestamp
+    #   # => "2016-10-17T13:37:00.234Z"
+    # @param time [Time] an optional time object. If no timestamp was set yet,
+    #   this time is used
+    # @return [String] an ISO 8601 formatted UTC timestamp.
+    def timestamp(time = nil)
+      @timestamp ||= begin
+        time ||= Time.now
+        time.utc.iso8601(ISO8601_PRECISION).freeze
+      end
     end
   end
 end

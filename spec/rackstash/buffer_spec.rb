@@ -19,16 +19,24 @@ describe Rackstash::Buffer do
 
   describe '#add_message' do
     it 'adds a message to the buffer' do
-      msg = double(message: 'Hello World')
-      buffer.add_message msg
+      msg = double(message: 'Hello World', time: Time.now)
+      expect(buffer.add_message msg).to equal msg
 
       expect(buffer.messages).to eql [msg]
+    end
+
+    it 'sets the timestamp' do
+      time = Time.parse('2016-10-17 13:37:00 +03:00')
+      msg = double(message: 'Hello World', time: time)
+
+      buffer.add_message msg
+      expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000Z'
     end
   end
 
   describe '#messages' do
     it 'returns an array of messages' do
-      msg = double('Rackstash::Message')
+      msg = double(message: 'Hello World', time: Time.now)
       buffer.add_message(msg)
 
       expect(buffer.messages).to eql [msg]
@@ -45,7 +53,7 @@ describe Rackstash::Buffer do
 
   describe '#pending?' do
     it 'sets pending when adding a message' do
-      buffer.add_message double(message: 'some message')
+      buffer.add_message double(message: 'some message', time: Time.now)
       expect(buffer.pending?).to be true
     end
 
@@ -138,6 +146,40 @@ describe Rackstash::Buffer do
         buffer.tag(-> { [[self, 'foobar'], 123] }, scope: object)
         expect(buffer.tags).to contain_exactly('Hello', 'foobar', '123')
       end
+    end
+  end
+
+  describe '#timestamp' do
+    it 'initializes @timestamp to Time.now.utc' do
+      now = Time.parse('2016-10-17 13:37:00 +03:00')
+
+      expect(Time).to receive(:now).once.and_return(now)
+      expect(now).to receive(:utc).once.and_return(now.utc)
+
+      expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000Z'
+      expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000Z'
+    end
+
+    it 'initializes @timestamp with the passed time' do
+      now = Time.parse('2016-10-17 13:37:00 +03:00')
+
+      expect(Time).not_to receive(:now)
+      expect(buffer.timestamp(now)).to eql '2016-10-17T10:37:00.000Z'
+      expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000Z'
+    end
+
+    it 'does not overwrites an already set timestamp' do
+      first = Time.parse('2016-10-17 10:10:10 +03:00')
+      second = Time.parse('2016-10-17 20:20:20 +03:00')
+
+      buffer.timestamp(first)
+      expect(buffer.timestamp).to eql '2016-10-17T07:10:10.000Z'
+
+      buffer.timestamp
+      expect(buffer.timestamp).to eql '2016-10-17T07:10:10.000Z'
+
+      buffer.timestamp(second)
+      expect(buffer.timestamp).to eql '2016-10-17T07:10:10.000Z'
     end
   end
 end
