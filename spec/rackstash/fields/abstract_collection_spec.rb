@@ -254,9 +254,9 @@ describe Rackstash::Fields::AbstractCollection do
       end
 
       it 'normalizes values to frozen UTF-8 strings' do
-        array = [1, :two, 'three', nil]
+        array = [1, :two, 'three']
 
-        expect(normalize(array, wrap: false)).to eql [1, 'two', 'three', nil]
+        expect(normalize(array, wrap: false)).to eql [1, 'two', 'three']
         expect(normalize(array, wrap: false)).to all be_frozen
       end
 
