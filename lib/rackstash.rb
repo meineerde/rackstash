@@ -24,6 +24,11 @@ module Rackstash
 
   # How many decimal places to render on ISO 8601 timestamps
   ISO8601_PRECISION = 3
+
+  FIELD_MESSAGE = 'message'.freeze
+  FIELD_TAGS = 'tags'.freeze
+  FIELD_TIMESTAMP = '@timestamp'.freeze
+  FIELD_VERSION = '@version'.freeze
 end
 
 require 'rackstash/logger'
