@@ -9,7 +9,8 @@ require 'rackstash/buffer'
 
 describe Rackstash::Buffer do
   let(:buffer_options) { {} }
-  let(:buffer) { Rackstash::Buffer.new(**buffer_options) }
+  let(:sink) { instance_double(Rackstash::Sink) }
+  let(:buffer) { Rackstash::Buffer.new(sink, **buffer_options) }
 
   describe '#allow_empty?' do
     it 'defaults to false' do

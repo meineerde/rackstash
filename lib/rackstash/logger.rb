@@ -242,7 +242,7 @@ module Rackstash
     private
 
     def buffer_stack
-      @buffer_stack ||= Rackstash::BufferStack.new
+      @buffer_stack ||= Rackstash::BufferStack.new(@sink)
     end
   end
 end

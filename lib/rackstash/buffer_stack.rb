@@ -11,9 +11,16 @@ module Rackstash
   # is used by exactly one BufferedLogger. The responsible {BufferedLogger}
   # ensures that each BufferStack is only accessed from a single `Thread`.
   class BufferStack
+    # @return [Sink] the log sink where the buffers are eventually flushed to
+    attr_reader :sink
+
+    def initialize(sink)
+      @sink = sink
+    end
+
     # TODO: this is only a spike for now
     def with_buffer
-      yield Buffer.new
+      yield Buffer.new(@sink)
     end
   end
 end

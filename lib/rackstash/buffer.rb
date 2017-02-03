@@ -28,6 +28,9 @@ module Rackstash
     #   current buffer. It contains frozen strings only.
     attr_reader :tags
 
+    # @return [Sink] the log sink where the buffer is eventually flushed to
+    attr_reader :sink
+
     # @param buffering [Boolean] When set to `true`, this buffer is considered
     #   to be buffering data. When buffering, logged messages will not be
     #   flushed immediately but only with an explicit call to {#flush}.
@@ -37,7 +40,8 @@ module Rackstash
     #   explicit changes to the buffer (e.g. a logged message, added tags or
     #   fields), the buffer will not be flushed to the sink but will be silently
     #   dropped.
-    def initialize(buffering: true, allow_empty: false)
+    def initialize(sink, buffering: true, allow_empty: false)
+      @sink = sink
       @buffering = !!buffering
       @allow_empty = !!allow_empty
 
@@ -60,6 +64,13 @@ module Rackstash
       message
     end
 
+    # When set to `true` in {#initialize}, the data in this buffer will be
+    # flushed to the sink, even if no messages were logged but there were just
+    # added fields or tags. If this is `false` and there were no explicit
+    # changes to the buffer (e.g. a logged message, added tags or fields), the
+    # buffer will not be flushed to the sink but will be silently dropped.
+    #
+    # @return [Boolean]
     def allow_empty?
       @allow_empty
     end
