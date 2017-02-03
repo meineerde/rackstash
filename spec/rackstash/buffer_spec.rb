@@ -34,6 +34,42 @@ describe Rackstash::Buffer do
     end
   end
 
+  describe '#clear' do
+    it 'removes all fields and tags' do
+      buffer.fields['foo'] = 'bar'
+      buffer.tag 'super_important'
+
+      buffer.clear
+      expect(buffer.tags).to be_empty
+      expect(buffer.fields).to be_empty
+    end
+
+    it 'clears the message buffer' do
+      buffer.add_message double(message: 'Hello World!', time: Time.now)
+      buffer.clear
+
+      expect(buffer.messages).to eql []
+    end
+
+    it 'removes the pending flag' do
+      buffer.add_message double(message: 'raw', time: Time.now)
+
+      expect(buffer.pending?).to be true
+      buffer.clear
+      expect(buffer.pending?).to be false
+    end
+
+    it 'resets the timestamp' do
+      buffer.timestamp(Time.parse('2016-10-17 15:37:00 +02:00'))
+      expect(buffer.timestamp).to eql '2016-10-17T13:37:00.000Z'
+
+      buffer.clear
+
+      expect(Time).to receive(:now).and_call_original
+      expect(buffer.timestamp).not_to eql '2016-10-17T13:37:00.000Z'
+    end
+  end
+
   describe '#fields' do
     it 'returns a Rackstash::Fields::Hash' do
       expect(buffer.fields).to be_a Rackstash::Fields::Hash

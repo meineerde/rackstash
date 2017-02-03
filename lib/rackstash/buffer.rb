@@ -60,6 +60,19 @@ module Rackstash
       @allow_empty
     end
 
+    # Clear the current buffer from all stored data, just as it was right after
+    # inititialization.
+    #
+    # @return [self]
+    def clear
+      @messages.clear
+      @fields.clear
+      @tags.clear
+      @timestamp = nil
+
+      self
+    end
+
     # Return all logged messages on the current buffer.
     #
     # @return [Array<Message>] the list of messages of the curent buffer
