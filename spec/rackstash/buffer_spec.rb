@@ -98,6 +98,48 @@ describe Rackstash::Buffer do
     end
   end
 
+  describe '#flush' do
+    context 'when pending?' do
+      before do
+        buffer.add_message double(message: 'Hello World!', time: Time.now)
+
+        # We might call Buffer#flush during the following tests
+        allow(sink).to receive(:flush).with(buffer).once
+      end
+
+      it 'flushes the buffer to the sink' do
+        expect(sink).to receive(:flush).with(buffer).once
+        buffer.flush
+      end
+
+      it 'does not clear the buffer' do
+        expect(buffer).not_to receive(:clear)
+        buffer.flush
+        expect(buffer.messages.count).to eql 1
+      end
+
+      it 'returns the buffer' do
+        expect(buffer.flush).to equal buffer
+      end
+    end
+
+    context 'when not pending?' do
+      it 'does not flushes the buffer to the sink' do
+        expect(sink).not_to receive(:flush)
+        buffer.flush
+      end
+
+      it 'does not clear the buffer' do
+        expect(buffer).not_to receive(:clear)
+        buffer.flush
+      end
+
+      it 'returns nil' do
+        expect(buffer.flush).to be nil
+      end
+    end
+  end
+
   describe '#messages' do
     it 'returns an array of messages' do
       msg = double(message: 'Hello World', time: Time.now)

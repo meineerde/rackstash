@@ -98,6 +98,18 @@ module Rackstash
       self
     end
 
+    # Flush the current buffer to the log sink. Does nothing if the buffer is
+    # not pending.
+    #
+    # @return [self,nil] returns `self` if the buffer was flushed, `nil`
+    #   otherwise
+    def flush
+      if pending?
+        @sink.flush(self)
+        self
+      end
+    end
+
     # Return all logged messages on the current buffer.
     #
     # @return [Array<Message>] the list of messages of the curent buffer
