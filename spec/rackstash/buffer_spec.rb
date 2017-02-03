@@ -34,6 +34,22 @@ describe Rackstash::Buffer do
     end
   end
 
+  describe '#fields' do
+    it 'returns a Rackstash::Fields::Hash' do
+      expect(buffer.fields).to be_a Rackstash::Fields::Hash
+
+      # Always returns the same fields object
+      expect(buffer.fields).to equal buffer.fields
+    end
+
+    it 'forbids setting reserved fields' do
+      expect { buffer.fields['message'] = 'test' } .to raise_error ArgumentError
+      expect { buffer.fields['tags'] = 'test' } .to raise_error ArgumentError
+      expect { buffer.fields['@version'] = 'test' } .to raise_error ArgumentError
+      expect { buffer.fields['@timestamp'] = 'test' } .to raise_error ArgumentError
+    end
+  end
+
   describe '#messages' do
     it 'returns an array of messages' do
       msg = double(message: 'Hello World', time: Time.now)
