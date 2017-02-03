@@ -34,6 +34,17 @@ describe Rackstash::Buffer do
     end
   end
 
+  describe '#buffering?' do
+    it 'defaults to false' do
+      expect(buffer.buffering?).to be true
+    end
+
+    it 'can be overwritten in initialize' do
+      buffer_options[:buffering] = false
+      expect(buffer.buffering?).to be false
+    end
+  end
+
   describe '#clear' do
     it 'removes all fields and tags' do
       buffer.fields['foo'] = 'bar'
