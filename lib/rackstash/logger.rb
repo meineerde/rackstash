@@ -224,16 +224,13 @@ module Rackstash
         end
       end
 
-      now = Time.now.utc.freeze
-      buffer_stack.with_buffer do |buffer|
-        buffer.add_message Message.new(
-          msg,
-          time: now,
-          progname: progname,
-          severity: severity,
-          formatter: formatter
-        )
-      end
+      buffer.add_message Message.new(
+        msg,
+        time: Time.now.utc.freeze,
+        progname: progname,
+        severity: severity,
+        formatter: formatter
+      )
 
       msg
     end
@@ -243,6 +240,10 @@ module Rackstash
 
     def buffer_stack
       @buffer_stack ||= Rackstash::BufferStack.new(@sink)
+    end
+
+    def buffer
+      buffer_stack.current
     end
   end
 end

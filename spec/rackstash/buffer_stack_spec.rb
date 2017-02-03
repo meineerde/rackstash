@@ -11,12 +11,14 @@ describe Rackstash::BufferStack do
   let(:sink) { instance_double(Rackstash::Sink) }
   let(:stack) { Rackstash::BufferStack.new(sink) }
 
-  describe '#with_buffer' do
+  describe '#current' do
     it 'initializes a buffer' do
-      stack.with_buffer do |buffer|
-        expect(buffer).to be_a Rackstash::Buffer
-        expect(buffer.sink).to equal sink
-      end
+      expect(stack.current).to be_a Rackstash::Buffer
+      expect(stack.current.sink).to equal sink
+    end
+
+    it 'repeatedly returns the same buffer' do
+      expect(stack.current).to equal stack.current
     end
   end
 end

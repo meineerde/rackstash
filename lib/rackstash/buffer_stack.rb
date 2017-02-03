@@ -16,11 +16,18 @@ module Rackstash
 
     def initialize(sink)
       @sink = sink
+      @stack = []
     end
 
-    # TODO: this is only a spike for now
-    def with_buffer
-      yield Buffer.new(@sink)
+    # Get the current, i.e., latest, top-most, {Buffer} on the internal stack.
+    # If no Buffer was pushed yet with {#push}, this will be an implicit
+    # non-buffering Buffer and add it to the stack.
+    #
+    # @return [Buffer]
+    def current
+      @stack.last || Buffer.new(@sink, buffering: false).tap do |buffer|
+        @stack.push buffer
+      end
     end
   end
 end

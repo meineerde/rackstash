@@ -115,9 +115,9 @@ describe Rackstash::Logger do
 
     let(:buffer_stack) {
       double('Rackstash::BufferStack').tap do |buffer_stack|
-        expect(buffer_stack).to receive(:with_buffer)
+        expect(buffer_stack).to receive(:current)
           .at_least(:once)
-          .and_yield(buffer)
+          .and_return(buffer)
       end
     }
 
