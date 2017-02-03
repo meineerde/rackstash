@@ -52,7 +52,11 @@ module Rackstash
     end
 
     # Add a new message to the buffer. This will mark the current buffer as
-    #   {pending?} and will result in the eventual flush of the logged data.
+    # {pending?} and will result in the eventual flush of the logged data.
+    #
+    # If the buffer is not {#buffering?}, it will be {#flush}ed and {#clear}ed
+    # after each added message. All fields and tags added before the log message
+    # will be flushed along with the single message.
     #
     # @param message [Message] A {Message} to add to the current message
     #   buffer.
@@ -60,6 +64,11 @@ module Rackstash
     def add_message(message)
       @messages << message
       timestamp(message.time)
+
+      unless buffering?
+        flush
+        clear
+      end
 
       message
     end

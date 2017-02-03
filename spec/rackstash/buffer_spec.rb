@@ -33,6 +33,42 @@ describe Rackstash::Buffer do
       buffer.add_message msg
       expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000Z'
     end
+
+    context 'when buffering?' do
+      before do
+        buffer_options[:buffering] = true
+      end
+
+      it 'does not call #flush' do
+        expect(buffer).not_to receive(:flush)
+        buffer.add_message double(message: 'Hello World!', time: Time.now)
+      end
+
+      it 'does not call #clear' do
+        expect(buffer).not_to receive(:clear)
+        buffer.add_message double(message: 'Hello World!', time: Time.now)
+        expect(buffer.messages.count).to eql 1
+      end
+    end
+
+    context 'when not buffering?' do
+      before do
+        buffer_options[:buffering] = false
+      end
+
+      it 'calls #flush' do
+        expect(buffer).to receive(:flush)
+        buffer.add_message double(message: 'Hello World!', time: Time.now)
+      end
+
+      it 'calls #clear' do
+        allow(buffer).to receive(:flush)
+        expect(buffer).to receive(:clear).and_call_original
+        buffer.add_message double(message: 'Hello World!', time: Time.now)
+        expect(buffer.messages.count).to eql 0
+        expect(buffer.pending?).to be false
+      end
+    end
   end
 
   describe '#buffering?' do
@@ -99,6 +135,12 @@ describe Rackstash::Buffer do
   end
 
   describe '#flush' do
+    before do
+      # Create a buffering Buffer to prevent #add_message from flushing the
+      # Buffer on its own.
+      buffer_options[:buffering] = true
+    end
+
     context 'when pending?' do
       before do
         buffer.add_message double(message: 'Hello World!', time: Time.now)
