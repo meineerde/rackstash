@@ -321,4 +321,18 @@ describe Rackstash::Logger do
       expect(messages.last).to include message: 'Unknown', severity: 5
     end
   end
+
+  context 'with multiple threads' do
+    it 'maintains thread-local stacks' do
+      first_stack = logger.send(:buffer_stack)
+      expect(first_stack).to be_a Rackstash::BufferStack
+
+      Thread.new do
+        second_stack = logger.send(:buffer_stack)
+        expect(second_stack).to be_a Rackstash::BufferStack
+
+        expect(second_stack).to_not eql first_stack
+      end.join
+    end
+  end
 end

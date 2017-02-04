@@ -3,6 +3,7 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'concurrent'
 require 'forwardable'
 
 require 'rackstash/buffer_stack'
@@ -51,6 +52,8 @@ module Rackstash
       @level = DEBUG
       @progname = PROGNAME
       @formatter = Formatter.new
+
+      @buffer_stack = Concurrent::ThreadLocalVar.new
     end
 
     # Set the base log level as either one of the {SEVERITIES} or a
@@ -239,7 +242,7 @@ module Rackstash
     private
 
     def buffer_stack
-      @buffer_stack ||= Rackstash::BufferStack.new(@sink)
+      @buffer_stack.value ||= BufferStack.new(@sink)
     end
 
     def buffer
