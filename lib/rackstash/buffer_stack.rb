@@ -29,5 +29,31 @@ module Rackstash
         @stack.push buffer
       end
     end
+
+    # Push a new {Buffer} to the internal stack. The new Buffer will buffer
+    # messages by default until it is explicitly flushed with {#flush_and_pop}.
+    #
+    # All new logged messages, and any access to fields and tags will be sent to
+    # this new buffer. Previous Buffers will only be visible once the new Buffer
+    # is poped from the stack with {#flush_and_pop}.
+    #
+    # @param buffer_args [Hash<Symbol => Object>] optional arguments for the new
+    #   {Buffer}. See {Buffer#initialize} for allowed values.
+    # @return [Buffer] the newly created buffer
+    def push(**buffer_args)
+      Buffer.new(sink, **buffer_args).tap do |buffer|
+        @stack.push buffer
+      end
+    end
+
+    # Remove the top-most Buffer from the internal stack.
+    #
+    # If there was a buffer on the stack and it has pending data, it is flushed
+    # to the {#sink} before it is returned.
+    def flush_and_pop
+      @stack.pop.tap do |buffer|
+        buffer.flush if buffer
+      end
+    end
   end
 end
