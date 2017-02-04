@@ -9,6 +9,37 @@ module Rackstash
   # The Buffer holds all the data of a single log event. It can hold multiple
   # messages of multiple calls to the log, additional fields holding structured
   # data about the log event, and tags identiying the type of log.
+  #
+  # Each time, a message is logged or a field or tag is set to a {Logger}, it
+  # is set on a Buffer. Each Buffer belongs to exactly one {BufferStack} (and
+  # thus in turn to exactly one {Logger}) which creates it and controls its
+  # complete life cycle. The data a buffer holds can be exported via a {Sink}
+  # and passed on to one or more {Target}s which send the data to an external
+  # log receiver.
+  #
+  # Most methods of the Buffer are directly exposed to the user-accessible
+  # {Logger}. The Buffer class itself is considered private and should not be
+  # relied on in external code. The {Logger} respectively the {BufferStack}
+  # ensures that a single buffer will only be accessed by one thread at a time
+  # by exposing a Buffer to each thread as the "current Buffer".
+  #
+  # Buffers can be buffering or non-buffering. While this doesn't affect the
+  # behavior of the Buffer itself, it affects when the Buffer is flushed to a
+  # {Sink} and what happens to the data stored in the Buffer after that.
+  #
+  # Generally, a non-buffering Buffer will be flushed to the sink after each
+  # logged message. This thus mostly resembles the way traditional loggers work
+  # in Ruby. A buffering Buffer however holds log messages for a longer time.
+  # Only at a certain time, all log messages and stored fields will be flushed
+  # to the {Sink} as a single log event. A common scope for such an event is a
+  # full request to a Rack app as is used by the shipped Rack {Middleware}.
+  #
+  # While the fields structure of a Buffer is geared towards the format used by
+  # Logstash, it can be adaptd in many ways suited for a specific log target.
+  #
+  # @note The Buffer class is designed to be created and used by its responsible
+  #   {BufferStack} object only and is not intended used from multiple Threads
+  #   concurrently.
   class Buffer
     # A set of field names which are forbidden from being set as fields. The
     # fields mentioned here are all either statically set or are accessed by

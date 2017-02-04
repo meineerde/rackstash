@@ -8,8 +8,8 @@ require 'rackstash/buffer'
 module Rackstash
   # A BufferStack controls one or more Buffers. Each {Buffer} is created,
   # referenced by, and accessed via exactly one BufferStack. Each BufferStack
-  # is used by exactly one BufferedLogger. The responsible {BufferedLogger}
-  # ensures that each BufferStack is only accessed from a single `Thread`.
+  # is used by exactly one {Logger}. The responsible {Logger} ensures that each
+  # BufferStack is only accessed from a single thread.
   class BufferStack
     # @return [Sink] the log sink where the buffers are eventually flushed to
     attr_reader :sink
