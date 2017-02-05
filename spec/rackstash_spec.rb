@@ -31,4 +31,14 @@ describe Rackstash do
 
     expect(Rackstash::ISO8601_PRECISION).to be_a Integer
   end
+
+  it 'defines FIELD_* constants' do
+    constants = Rackstash.constants.select { |c| c.to_s.start_with?('FIELD_') }
+
+    expect(constants).not_to be_empty
+    constants.each do |name|
+      expect(Rackstash.const_get(name)).to be_a String
+      expect(Rackstash.const_get(name)).to be_frozen
+    end
+  end
 end
