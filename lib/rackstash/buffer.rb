@@ -29,10 +29,10 @@ module Rackstash
   #
   # Generally, a non-buffering Buffer will be flushed to the sink after each
   # logged message. This thus mostly resembles the way traditional loggers work
-  # in Ruby. A buffering Buffer however holds log messages for a longer time.
-  # Only at a certain time, all log messages and stored fields will be flushed
-  # to the {Sink} as a single log event. A common scope for such an event is a
-  # full request to a Rack app as is used by the shipped Rack {Middleware}.
+  # in Ruby. A buffering Buffer however holds log messages for a longer time,
+  # e.g., for the duration of a web request. Only after the request finished
+  # all log messages and stored fields for this request will be flushed to the
+  # {Sink} as a single log event.
   #
   # While the fields structure of a Buffer is geared towards the format used by
   # Logstash, it can be adaptd in many ways suited for a specific log target.
