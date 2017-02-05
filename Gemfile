@@ -6,3 +6,8 @@
 source 'https://rubygems.org'
 
 gemspec name: 'rackstash'
+
+platforms :mri do
+  # Complete Markdown package for yard
+  gem 'redcarpet'
+end
