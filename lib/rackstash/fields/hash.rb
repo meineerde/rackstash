@@ -19,8 +19,8 @@ module Rackstash
         end
       end
 
-      # @param field_name [#to_s] the key name. We will always use it as a
-      #   String.
+      # @param key [#to_s] the key name. We will always use it as a
+      #   frozen UTF-8 String.
       # @return [Object, nil] the current value of the field or `nil` if the
       #   field wasn't set (yet)
       def [](key)
@@ -33,12 +33,13 @@ module Rackstash
       # normalized as strings.
       #
       # @param key [#to_s] the field name. When setting the field, this name
-      #   will be normalized as a string.
+      #   will be normalized as a frozen UTF-8 string.
       # @param value [#call, Object] any value which can be serialized to JSON.
-      #   The value will be normalized on insert
+      #   The value will be normalized before being insert so that only JSON-
+      #   compatible objects are inserted into the Hash.
       #
       # @raise [ArgumentError] if you attempt to set one of the forbidden keys.
-      # @return void
+      # @return [void]
       def []=(key, value)
         key = utf8_encode(key)
         raise ArgumentError, "Forbidden field #{key}" if forbidden_key?(key)
@@ -47,6 +48,7 @@ module Rackstash
       end
       alias :store :[]=
 
+      # @return [::Hash] deep-transforms the hash into a plain Ruby Hash
       def as_json(*)
         @raw.each_with_object({}) do |(key, value), memo|
           value = value.as_json if value.is_a?(AbstractCollection)
@@ -56,23 +58,100 @@ module Rackstash
       alias :to_hash :as_json
       alias :to_h :as_json
 
+      # Removes all key-value pairs from `self`.
+      #
+      # @return [self]
       def clear
         @raw.clear
         self
       end
 
+      # @return [Boolean] `true` if the Hash contains no ley-value pairs,
+      #   `false` otherwise.
       def empty?
         @raw.empty?
       end
 
+      # @return [::Array] a new array populated with the keys from this hash.
+      # @see #values
       def keys
         @raw.keys
       end
 
+      # Returns a new {Hash} containing the contents of hash and the contents of
+      # `self`. If no block is specified, the value for entries with duplicate
+      # keys will be that of hash. Otherwise the value for each duplicate key
+      # is determined by calling the block with the `key`, its value in `self`
+      # and its value in `hash`.
+      #
+      # If there are any forbidden fields defined on `self`, An `ArgumentError`
+      # is raised when trying to set any of these. The values are ignored of
+      # `force` is set to `false`.
+      #
+      # If `hash` itself of any of its (deeply-nested) values is a proc, it will
+      # get called and its result will be used instead of it. The proc will be
+      # evaluated in the instance scope of `scope` if given.
+      #
+      # @param hash [::Hash, Hash, Proc] the hash to merge into `self`. If this
+      #   is a proc, it will get called and its result is used instead
+      # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
+      #   set a forbidden key, `false` to silently ingnore these key-value pairs
+      # @param scope [Object] if `hash` or any of its (deeply-nested) values is
+      #   a proc, it will be called in the instance scope of this object.
+      #
+      # @yield [key, old_val, new-val] if a block is given and there is a
+      #   duplicate key, we call the block and use its return value as the value
+      #   to insert
+      # @yieldparam key [String] the hash key
+      # @yieldparam old_val [Object] The existing value for `key` in `self`
+      # @yieldparam new_val [Object] The new normalized value for `key` in
+      #   `hash`
+      # @yieldreturn [Object] the intended new value for `key` to be merged into
+      #   `self` at `key`.
+      #
+      # @raise [ArgumentError] if you attempt to set one of the forbidden fields
+      #   and `force` is `true`
+      #
+      # @return [Hash] a new hash containing the merged key-value pairs
       def merge(hash, force: true, scope: nil, &block)
         dup.merge!(hash, force: force, scope: scope, &block)
       end
 
+      # Adds the contents of hash to `self`. `hash` is normalized before being
+      # added. If no block is specified, entries with duplicate keys are
+      # overwritten with the values from `hash`, otherwise the value of each
+      # duplicate key is determined by calling the block with the `key`, its
+      # value in `self` and its value in `hash`.
+      #
+      # If there are any forbidden fields defined on `self`, An `ArgumentError`
+      # is raised when trying to set any of these. The values are ignored of
+      # `force` is set to `false`.
+      #
+      # If `hash` itself of any of its (deeply-nested) values is a proc, it will
+      # get called and its result will be used instead of it. The proc will be
+      # evaluated in the instance scope of `scope` if given.
+      #
+      # @param hash [::Hash, Hash, Proc] the hash to merge into `self`. If this
+      #   is a proc, it will get called and its result is used instead
+      # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
+      #   set a forbidden key, `false` to silently ingnore these key-value pairs
+      # @param scope [Object] if `hash` or any of its (deeply-nested) values is
+      #   a proc, it will be called in the instance scope of this object.
+      #
+      # @yield [key, old_val, new-val] if a block is given and there is a
+      #   duplicate key, we call the block and use its return value as the value
+      #   to insert
+      # @yieldparam key [String] the hash key
+      # @yieldparam old_val [Object] The existing value for `key` in `self`
+      # @yieldparam new_val [Object] The new normalized value for `key` in
+      #   `hash`
+      # @yieldreturn [Object] the intended new value for `key` to be merged into
+      #   `self` at `key`.
+      #
+      # @raise [ArgumentError] if you attempt to set one of the forbidden fields
+      #   and `force` is `true`
+      #
+      # @return [self]
       def merge!(hash, force: true, scope: nil)
         hash = Hash(normalize(hash, scope: scope, wrap: false))
 
@@ -97,10 +176,15 @@ module Rackstash
       end
       alias :update :merge!
 
+      # @param key [String] The name of a key to check. This MUST be a correctly
+      #   encoded String in order to return valid results
+      # @return [Boolean] `true` if the key is forbidden from being added
       def forbidden_key?(key)
         @forbidden_keys.include?(key)
       end
 
+      # @return [::Array] a new array populated with the values from this hash.
+      # @see #keys
       def values
         @raw.values
       end

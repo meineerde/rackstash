@@ -10,11 +10,21 @@ require 'uri'
 module Rackstash
   module Fields
     class AbstractCollection
+      # Equality — Two collections are equal if they are of exactly the same class
+      # and contain the same raw data according to `Object#==`.
+      #
+      # @return [Boolean] `true` if `other` is an object of the same class and
+      #   contains the same raw data as this object.
       def ==(other)
         self.class == other.class && raw == other.raw
       end
       alias :eql? :==
 
+      # Show a human-readable representation of `self`. To get a machine-
+      # readable "export" of the contained data, use {#as_json} or one of its
+      # aliases instead.
+      #
+      # @return [String] human-redable details about the object.
       def inspect
         "#<#{self.class}:#{format '0x%014x', object_id << 1} #{to_s}>"
       end
@@ -27,10 +37,13 @@ module Rackstash
         nil
       end
 
+      # @return [String] a JSON document of the raw data. This method
+      #   requires the JSON module to be required.
       def to_json(*)
         as_json.to_json
       end
 
+      # @return [String] a string representation of {#as_json}.
       def to_s
         as_json.inspect
       end
