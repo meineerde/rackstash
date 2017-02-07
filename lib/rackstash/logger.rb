@@ -85,6 +85,16 @@ module Rackstash
       end
     end
 
+    # (see Buffer#fields)
+    def fields
+      buffer.fields
+    end
+
+    # (see Buffer#tags)
+    def tags
+      buffer.tags
+    end
+
     # Log a `message` at the DEBUG log level.
     #
     # @param message (see #add)

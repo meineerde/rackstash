@@ -103,6 +103,34 @@ describe Rackstash::Logger do
     end
   end
 
+  describe '#fields' do
+    it 'gets the current buffer\'s fields' do
+      buffer = instance_double('Rackstash::Buffer')
+      expect(logger).to receive(:buffer).and_return(buffer)
+      expect(buffer).to receive(:fields)
+
+      logger.fields
+    end
+
+    it 'returns a Rackstash::Fields::Hash' do
+      expect(logger.fields).to be_a Rackstash::Fields::Hash
+    end
+  end
+
+  describe '#tags' do
+    it 'gets the current buffer\'s tags' do
+      buffer = instance_double('Rackstash::Buffer')
+      expect(logger).to receive(:buffer).and_return(buffer)
+      expect(buffer).to receive(:tags)
+
+      logger.tags
+    end
+
+    it 'returns a Rackstash::Fields::Tags' do
+      expect(logger.tags).to be_a Rackstash::Fields::Tags
+    end
+  end
+
   describe '#add' do
     let(:messages) { [] }
 
