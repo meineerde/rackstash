@@ -249,6 +249,25 @@ module Rackstash
     end
     alias :log :add
 
+    # Create a new buffering {Buffer} and puts in on the {BufferStack} for the
+    # current Thread. For the duration of the block, all new logged messages
+    # and any access to fields and tags will be sent to this new buffer.
+    # Previous buffers will only be visible after the execition left the block.
+    #
+    # @param buffer_args [Hash<Symbol => Object>] optional arguments for the new
+    #   {Buffer}. See {Buffer#initialize} for allowed values.
+    # @return [Object] the return value of the block
+    def with_buffer(**buffer_args)
+      raise ArgumentError, 'block required' unless block_given?
+
+      buffer_stack.push(**buffer_args)
+      begin
+        yield
+      ensure
+        buffer_stack.flush_and_pop
+      end
+    end
+
     private
 
     def buffer_stack

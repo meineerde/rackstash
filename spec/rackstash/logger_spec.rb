@@ -350,6 +350,34 @@ describe Rackstash::Logger do
     end
   end
 
+  describe '#with_buffer' do
+    it 'requires a block' do
+      expect { logger.with_buffer }.to raise_error ArgumentError
+    end
+
+    it 'adds a new buffer' do
+      expect(logger.send(:buffer_stack)).to receive(:push).and_call_original
+      expect(logger.send(:buffer_stack)).to receive(:flush_and_pop).and_call_original
+
+      logger.fields['key'] = 'outer'
+      logger.with_buffer do
+        expect(logger.fields['key']).to be nil
+        logger.fields['key'] = 'inner'
+      end
+      expect(logger.fields['key']).to eql 'outer'
+    end
+
+
+    it 'buffers multiple messages' do
+      expect(logger.sink).to receive(:flush).once
+
+      logger.with_buffer do
+        logger.add 1, 'Hello World'
+        logger.add 0, 'I feel great'
+      end
+    end
+  end
+
   context 'with multiple threads' do
     it 'maintains thread-local stacks' do
       first_stack = logger.send(:buffer_stack)
