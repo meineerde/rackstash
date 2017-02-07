@@ -50,6 +50,9 @@ module Rackstash
     #
     # If there was a buffer on the stack and it has pending data, it is flushed
     # to the {#sink} before it is returned.
+    #
+    # @return [Buffer, nil] the popped and flushed {Buffer} or `nil` if there
+    #   was no Buffer in the stack
     def flush_and_pop
       @stack.pop.tap do |buffer|
         buffer.flush if buffer
