@@ -379,7 +379,7 @@ describe Rackstash::Logger do
   end
 
   context 'with multiple threads' do
-    it 'maintains thread-local stacks' do
+    it '#buffer_stack maintains thread-local stacks' do
       first_stack = logger.send(:buffer_stack)
       expect(first_stack).to be_a Rackstash::BufferStack
 
