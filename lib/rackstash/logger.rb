@@ -213,8 +213,8 @@ module Rackstash
     # along with any previously defined fields and tags will be flushed to the
     # base logger immediately.
     #
-    # @param severity [Integer] The log severity. One of {DEBUG}, {INFO},
-    #   {WARN}, {ERROR}, {FATAL}, or {UNKNOWN}.
+    # @param severity [Integer] The log severity. One of the {SEVERITIES}
+    #   consants.
     # @param msg [#to_s, Exception, nil] The log message. A `String` or
     #   `Exception`. If unset, we try to use the return value of the optional
     #   block.
