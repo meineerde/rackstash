@@ -183,6 +183,33 @@ module Rackstash
         @forbidden_keys.include?(key)
       end
 
+      # Set a `key` of `self` to the returned value of the passed block.
+      # If the key is forbidden from being set or already exists with a value
+      # other than `nil`, the block will not be called and the value will not be
+      # set.
+      #
+      # @param key [#to_s] the field name. When setting the field, this name
+      #   will be normalized as a frozen UTF-8 string.
+      #
+      # @yield [key] if the key doesn't exist yet, we call the block and use its
+      #    return value as the value to insert at `key`
+      # @yieldparam key [String] The normalized key where the value is being
+      #    inserted
+      # @yieldreturn [Object] the intended new value for `key` to be merged into
+      #   `self` at `key`.
+      #
+      # @return [Object, nil] The return value of the block or `nil` if no
+      #   insertion happened. Note that `nil` is also a valid value to insert
+      #   into the hash.
+      def set(key)
+        key = utf8_encode(key)
+
+        return if forbidden_key?(key)
+        return unless @raw[key] == nil
+
+        @raw[key] = normalize(yield(key))
+      end
+
       # @return [::Array] a new array populated with the values from this hash.
       # @see #keys
       def values

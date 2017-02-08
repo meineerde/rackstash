@@ -317,6 +317,39 @@ describe Rackstash::Fields::Hash do
     end
   end
 
+  describe '#set' do
+    it 'allows to set a normalized value' do
+      expect(hash).to receive(:normalize).with(:value).and_call_original
+
+      hash.set(:symbol) { :value }
+
+      expect(hash['symbol']).to eql 'value'
+    end
+
+    it 'ignores forbidden keys' do
+      forbidden_keys << 'forbidden'
+
+      expect { |b| hash.set(:forbidden, &b) }.not_to yield_control
+      expect { |b| hash.set('forbidden', &b) }.not_to yield_control
+
+      expect(hash['forbidden']).to be_nil
+    end
+
+    it 'ignores existing keys' do
+      hash['key'] = 'value'
+
+      expect { |b| hash.set(:key, &b) }.not_to yield_control
+      expect { |b| hash.set('key', &b) }.not_to yield_control
+
+      expect(hash['key']).to eql 'value'
+    end
+
+    it 'overwrites nil value' do
+      hash['nil'] = nil
+      expect { |b| hash.set('nil', &b) }.to yield_control
+    end
+  end
+
   describe '#values' do
     it 'returns an array of values' do
       hash['string'] = 'beep'
