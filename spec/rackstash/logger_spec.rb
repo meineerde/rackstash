@@ -348,6 +348,12 @@ describe Rackstash::Logger do
       logger.unknown { 'Unknown' }
       expect(messages.last).to include message: 'Unknown', severity: 5
     end
+
+    it 'can add a raw message with <<' do
+      logger << :raw_value
+      expect(messages.last).to include message: :raw_value
+      expect(messages.last).not_to include :formatter, :severity
+    end
   end
 
   describe '#with_buffer' do

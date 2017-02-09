@@ -56,6 +56,21 @@ module Rackstash
       @buffer_stack = Concurrent::ThreadLocalVar.new
     end
 
+    # Add a message to the current buffer without any further formatting. If
+    # the current {Buffer} is bufering, the message will just be added. Else,
+    # it will be flushed to the {#sink} directly.
+    #
+    # @param msg [Object]
+    # @return [String] the passed `msg`
+    def <<(msg)
+      buffer.add_message Message.new(
+        msg,
+        time: Time.now.utc.freeze,
+      )
+      msg
+    end
+
+
     # Set the base log level as either one of the {SEVERITIES} or a
     # String/Symbol describing the level. When logging a message, it will only
     # be added if its log level is at or above the base level defined here

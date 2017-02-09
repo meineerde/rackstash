@@ -174,10 +174,11 @@ describe Rackstash::Message do
     end
 
     it 'accepts non-string objects' do
-      exception = StandardError.new('An error')
-      message = Rackstash::Message.new(exception)
-
+      message = Rackstash::Message.new(StandardError.new('An error'))
       expect(message.to_s).to eql '#<StandardError: An error>'
+
+      message = Rackstash::Message.new(:symbol)
+      expect(message.to_s).to eql ':symbol'
     end
 
     it 'is aliased to to_str' do
