@@ -201,6 +201,11 @@ describe Rackstash::Logger do
       expect(messages.last).to include severity: 5
     end
 
+    it 'adds the current formatter to the message' do
+      logger.add(0, 'test')
+      expect(messages.last).to include formatter: logger.formatter
+    end
+
     it 'calls the block if message is nil' do
       temp = 0
       expect do
