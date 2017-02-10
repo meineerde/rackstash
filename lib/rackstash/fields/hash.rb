@@ -8,6 +8,8 @@ require 'rackstash/fields/abstract_collection'
 module Rackstash
   module Fields
     class Hash < AbstractCollection
+      # @param forbidden_keys [Set<String>,Array<String>] a list of strings
+      #   which are not allowed to be used as keys in this hash
       def initialize(forbidden_keys: EMPTY_SET)
         @raw = {}
 
@@ -19,6 +21,8 @@ module Rackstash
         end
       end
 
+      # Retrieve a stored value from a given `key`
+      #
       # @param key [#to_s] the key name. We will always use it as a
       #   frozen UTF-8 String.
       # @return [Object, nil] the current value of the field or `nil` if the
