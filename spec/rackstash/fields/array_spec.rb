@@ -30,6 +30,24 @@ describe Rackstash::Fields::Array do
     end
   end
 
+  describe '#<<' do
+    it 'normalized the value' do
+      expect(array).to receive(:normalize).with('value').twice.and_return('normalized')
+
+      array << 'value'
+      expect(array[0]).to eql 'normalized'
+      expect(array[1]).to be nil
+
+      array << 'value'
+      expect(array[0]).to eql 'normalized'
+      expect(array[1]).to eql 'normalized'
+    end
+
+    it 'returns the array' do
+      expect(array << 'value').to equal array
+    end
+  end
+
   describe '#as_json' do
     before do
       array[0] = 'value'

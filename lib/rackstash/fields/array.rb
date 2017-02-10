@@ -20,6 +20,17 @@ module Rackstash
         @raw[index] = normalize(value)
       end
 
+      # Add a given value at the end of the array
+      #
+      # @param value [#call, Object] any value which can be serialized to JSON.
+      #   The value will be normalized before being added so that only JSON-
+      #   compatible objects are added into the array.
+      # @return [self]
+      def <<(value)
+        @raw << normalize(value)
+        self
+      end
+
       def as_json(*)
         @raw.map { |value|
           value.is_a?(AbstractCollection) ? value.as_json : value
