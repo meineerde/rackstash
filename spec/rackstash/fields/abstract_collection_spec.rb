@@ -439,12 +439,6 @@ describe Rackstash::Fields::AbstractCollection do
 
         expect(normalize(outer)).to match %r{\A#<Proc:0x[0-9a-f]+@#{__FILE__}:#{__LINE__-3}>\z}
       end
-
-      it 'returns the proc when not resolving' do
-        outer = proc { :return }
-
-        expect(normalize(outer, resolve: false)).to equal outer
-      end
     end
 
     it 'transforms Complex to String' do

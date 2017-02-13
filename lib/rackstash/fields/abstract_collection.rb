@@ -88,8 +88,8 @@ module Rackstash
 
       # Note: You should never mutate an array or hash returned by normalize
       # when `wrap` is `false`.
-      def normalize(value, resolve: true, scope: nil, wrap: true)
-        value = resolve_value(value, scope: scope) if resolve
+      def normalize(value, scope: nil, wrap: true)
+        value = resolve_value(value, scope: scope)
 
         case value
         when ::String, ::Symbol
@@ -102,14 +102,14 @@ module Rackstash
           return wrap ? value : value.raw
         when ::Hash
           hash = value.each_with_object({}) do |(k, v), memo|
-            memo[utf8_encode(k)] = normalize(v, scope: scope, resolve: resolve)
+            memo[utf8_encode(k)] = normalize(v, scope: scope)
           end
           hash = Rackstash::Fields::Hash.new.tap do |hash_field|
             hash_field.raw = hash
           end if wrap
           return hash
         when ::Array, ::Set, ::Enumerator
-          array = value.map { |e| normalize(e, scope: scope, resolve: resolve) }
+          array = value.map { |e| normalize(e, scope: scope) }
           array = Rackstash::Fields::Array.new.tap do |array_field|
             array_field.raw = array
           end if wrap
@@ -127,7 +127,7 @@ module Rackstash
           exception << "\n" << value.backtrace.join("\n") if value.backtrace
           return utf8_encode(exception).freeze
         when ::Proc
-          return resolve ? utf8_encode(value.inspect).freeze : value
+          return utf8_encode(value.inspect).freeze
         when ::BigDecimal
           # A BigDecimal would be naturally represented as a JSON number. Most
           # libraries, however, parse non-integer JSON numbers directly as
@@ -152,7 +152,7 @@ module Rackstash
           next unless value.respond_to?(method)
           value = value.public_send(method) rescue next
 
-          return normalize(value, scope: scope, wrap: wrap, resolve: resolve)
+          return normalize(value, scope: scope, wrap: wrap)
         end
 
         utf8_encode(value.inspect).freeze
