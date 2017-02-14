@@ -100,21 +100,21 @@ describe Rackstash::Fields::Hash do
     end
 
     it 'returns a simple hash' do
-      expect(hash.as_json).to be_a ::Hash
+      expect(hash.as_json).to be_instance_of ::Hash
       expect(hash.as_json.keys).to eql %w[simple hash array]
     end
 
     it 'returns a nested hash' do
-      expect(hash['hash']).to be_a Rackstash::Fields::Hash
+      expect(hash['hash']).to be_instance_of Rackstash::Fields::Hash
 
-      expect(hash.as_json['hash']).to be_a Hash
+      expect(hash.as_json['hash']).to be_instance_of Hash
       expect(hash.as_json['hash']).to eql 'key' => 'nested value', 'number' => 42
     end
 
     it 'returns a nested array' do
-      expect(hash['array']).to be_a Rackstash::Fields::Array
+      expect(hash['array']).to be_instance_of Rackstash::Fields::Array
 
-      expect(hash.as_json['array']).to be_an ::Array
+      expect(hash.as_json['array']).to be_instance_of ::Array
       expect(hash.as_json['array']).to eql %w[v1 v2]
     end
 
@@ -291,7 +291,7 @@ describe Rackstash::Fields::Hash do
     it 'returns a new object' do
       new_hash = hash.merge(foo: :bar)
 
-      expect(new_hash).to be_a Rackstash::Fields::Hash
+      expect(new_hash).to be_instance_of Rackstash::Fields::Hash
       expect(new_hash).not_to equal hash
 
       # The origiginal hash is not changed
@@ -370,7 +370,7 @@ describe Rackstash::Fields::Hash do
       raw = { :time => Time.now, 'string' => 'foo' }
       hash = Rackstash::Fields::Hash(raw)
 
-      expect(hash).to be_a Rackstash::Fields::Hash
+      expect(hash).to be_instance_of Rackstash::Fields::Hash
       expect(hash['time']).to be_a String
       expect(hash['string']).to eql 'foo'
     end

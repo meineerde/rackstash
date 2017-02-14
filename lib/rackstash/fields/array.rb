@@ -9,7 +9,7 @@ module Rackstash
   module Fields
     class Array < AbstractCollection
       def initialize
-        @raw = []
+        @raw = Concurrent::Array.new
       end
 
       # Retrieve a stored value from a given `index`

@@ -11,7 +11,7 @@ module Rackstash
       # @param forbidden_keys [Set<String>,Array<String>] a list of strings
       #   which are not allowed to be used as keys in this hash
       def initialize(forbidden_keys: EMPTY_SET)
-        @raw = {}
+        @raw = Concurrent::Hash.new
 
         if forbidden_keys.is_a?(Set)
           forbidden_keys = forbidden_keys.dup.freeze unless forbidden_keys.frozen?

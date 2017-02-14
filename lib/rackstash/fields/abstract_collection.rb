@@ -7,6 +7,8 @@ require 'bigdecimal'
 require 'pathname'
 require 'uri'
 
+require 'concurrent'
+
 module Rackstash
   module Fields
     class AbstractCollection
@@ -101,7 +103,7 @@ module Rackstash
         when Rackstash::Fields::AbstractCollection
           return wrap ? value : value.raw
         when ::Hash
-          hash = value.each_with_object({}) do |(k, v), memo|
+          hash = value.each_with_object(Concurrent::Hash.new) do |(k, v), memo|
             memo[utf8_encode(k)] = normalize(v, scope: scope)
           end
           hash = Rackstash::Fields::Hash.new.tap do |hash_field|
@@ -109,7 +111,9 @@ module Rackstash
           end if wrap
           return hash
         when ::Array, ::Set, ::Enumerator
-          array = value.map { |e| normalize(e, scope: scope) }
+          array = value.each_with_object(Concurrent::Array.new) do |e, memo|
+            memo << normalize(e, scope: scope)
+          end
           array = Rackstash::Fields::Array.new.tap do |array_field|
             array_field.raw = array
           end if wrap

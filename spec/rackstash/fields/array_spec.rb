@@ -56,7 +56,7 @@ describe Rackstash::Fields::Array do
     end
 
     it 'returns a simple array' do
-      expect(array.as_json).to be_a ::Array
+      expect(array.as_json).to be_instance_of ::Array
       expect(array.as_json.length).to eql 3
     end
 
@@ -70,7 +70,7 @@ describe Rackstash::Fields::Array do
     it 'returns a nested array' do
       expect(array[2]).to be_a Rackstash::Fields::Array
 
-      expect(array.as_json[2]).to be_an ::Array
+      expect(array.as_json[2]).to be_instance_of ::Array
       expect(array.as_json[2]).to eql %w[v1 v2]
     end
 
