@@ -309,6 +309,27 @@ describe Rackstash::Fields::AbstractCollection do
           expect(normalize(array, scope: scope)[1][1]).to eql scope
         end
       end
+
+      it 'resolves a proc returning an array' do
+        expect(normalize(-> { ['foo'] })).to be_instance_of Rackstash::Fields::Array
+        expect(normalize(-> { ['foo'] })).to contain_exactly 'foo'
+      end
+
+      it 'resolves nested procs' do
+        expect(normalize(-> { [-> { 'foo' } ] })).to be_instance_of Rackstash::Fields::Array
+        expect(normalize(-> { [-> { 'foo' } ] })).to contain_exactly 'foo'
+      end
+
+
+      it 'returns a raw array returned from a proc with wrap: false' do
+        expect(normalize(-> { ['foo'] }, wrap: false )).to be_a ::Array
+        expect(normalize(-> { ['foo'] }, wrap: false)).to eql ['foo']
+      end
+
+      it 'returns a raw array returned from a nested proc with wrap: false' do
+        expect(normalize(-> { [-> { 'foo' }] }, wrap: false )).to be_a ::Array
+        expect(normalize(-> { [-> { 'foo' }] }, wrap: false)).to eql ['foo']
+      end
     end
 
     it 'wraps an Enumerator in a Rackstash::Fields::Array' do

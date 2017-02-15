@@ -139,6 +139,10 @@ describe Rackstash::Fields::Array do
       expect { array.concat(false) }.to raise_error TypeError
       expect { array.concat(nil) }.to raise_error TypeError
     end
+
+    it 'resolves nested procs' do
+      expect(array.concat(-> { [-> { :foo } ] } )).to contain_exactly 'foo'
+    end
   end
 
   describe '#empty?' do
