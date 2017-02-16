@@ -126,6 +126,37 @@ module Rackstash
         @raw.length
       end
 
+      # Set Union — Add value from `array` to `self` excluding any duplicates
+      # and preserving the order from `self`.
+      #
+      # @param array [Array, ::Array, Proc] an array of values. Each value is
+      #   normalized before being added to `self`.
+      # @param scope [Object, nil] if `array` or any of its (deeply-nested)
+      #   values is a proc, it will be called in the instance scope of this
+      #   object (when given).
+      # @return [self]
+      #
+      # @see #merge
+      def merge(array, scope: nil)
+        new(@raw | normalize(array, wrap: false, scope: scope))
+      end
+
+      # Set Union — Add value from `array` to `self` excluding any duplicates
+      # and preserving the order from `self`.
+      #
+      # @param array [Array, ::Array, Proc] an array of values. Each value is
+      #   normalized before being added to `self`.
+      # @param scope [Object, nil] if `array` or any of its (deeply-nested)
+      #   values is a proc, it will be called in the instance scope of this
+      #   object (when given).
+      # @return [self]
+      #
+      # @see #merge
+      def merge!(array, scope: nil)
+        @raw.replace(@raw | normalize(array, wrap: false, scope: scope))
+        self
+      end
+
       private
 
       def Array(obj)

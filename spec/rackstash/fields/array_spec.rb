@@ -14,7 +14,8 @@ describe Rackstash::Fields::Array do
     it 'returns the addition of elements' do
       array[0] = 'existing'
       expect(array + ['existing', -> { 'new' }, [:nested]])
-        .to contain_exactly 'existing', 'existing', 'new', ['nested']
+        .to contain_exactly('existing', 'existing', 'new', ['nested'])
+        .and be_a(Rackstash::Fields::Array)
     end
 
     it 'returns a new Array' do
@@ -222,6 +223,44 @@ describe Rackstash::Fields::Array do
 
       array.clear
       expect(array.length).to eql 0
+    end
+  end
+
+  describe '#merge' do
+    it 'returns the union of elements' do
+      array[0] = 'existing'
+      expect(array.merge ['new', :existing, -> { 123 }])
+        .to contain_exactly('existing', 'new', 123)
+        .and be_a(Rackstash::Fields::Array)
+    end
+
+    it 'returns a new Array' do
+      expect(array.merge [:foo]).to be_a(Rackstash::Fields::Array)
+      expect(array.merge [:foo]).not_to equal array
+    end
+
+    it 'resolves nested procs with a custom scope' do
+      expect(
+        array.merge(-> { [self, -> { self.to_s.upcase } ] }, scope: :stuff)
+      ).to contain_exactly 'stuff', 'STUFF'
+    end
+  end
+
+  describe '#merge!' do
+    it 'sets the union of elements to self' do
+      array[0] = 'existing'
+      expect(array.merge! ['new', :existing, -> { 123 }])
+        .to contain_exactly 'existing', 'new', 123
+    end
+
+    it 'returns self' do
+      expect(array.merge! [:foo]).to equal array
+    end
+
+    it 'resolves nested procs with a custom scope' do
+      expect(
+        array.merge!(-> { [self, -> { self.to_s.upcase } ] }, scope: :stuff)
+      ).to contain_exactly 'stuff', 'STUFF'
     end
   end
 
