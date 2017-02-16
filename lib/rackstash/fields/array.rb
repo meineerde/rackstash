@@ -165,12 +165,6 @@ module Rackstash
         return obj.to_ary if obj.respond_to?(:to_ary)
         raise TypeError, "no implicit conversion of #{obj.class} into Array"
       end
-
-      def new(raw)
-        self.class.new.tap do |array|
-          array.raw = raw
-        end
-      end
     end
 
     def self.Array(array)
