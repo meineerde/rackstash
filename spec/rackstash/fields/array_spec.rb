@@ -10,6 +10,58 @@ require 'rackstash/fields/array'
 describe Rackstash::Fields::Array do
   let(:array) { Rackstash::Fields::Array.new }
 
+  describe '#+' do
+    it 'returns the addition of elements' do
+      array[0] = 'existing'
+      expect(array + ['existing', -> { 'new' }, [:nested]])
+        .to contain_exactly 'existing', 'existing', 'new', ['nested']
+    end
+
+    it 'returns a new Array' do
+      expect(array + [:foo]).to be_a(Rackstash::Fields::Array)
+      expect(array + [:foo]).not_to equal array
+    end
+  end
+
+  describe '#-' do
+    it 'returns the subtraction of elements' do
+      array[0] = 'foo'
+      array[1] = 'bar'
+      expect(array - [-> { :bar }, ['foo']]).to contain_exactly 'foo'
+    end
+
+    it 'returns a new Array' do
+      expect(array - [:foo]).to be_a(Rackstash::Fields::Array).and be_empty
+      expect(array - [:foo]).not_to equal array
+    end
+  end
+
+  describe '#|' do
+    it 'returns the union of elements' do
+      array[0] = 'existing'
+      expect(array | ['new', :existing, -> { 123 }])
+        .to contain_exactly 'existing', 'new', 123
+    end
+
+    it 'returns a new Array' do
+      expect(array | [:foo]).to be_a(Rackstash::Fields::Array)
+      expect(array | [:foo]).not_to equal array
+    end
+  end
+
+  describe '#&' do
+    it 'returns the intersection of elements' do
+      array[0] = 'existing'
+      expect(array & [:existing, 'new'])
+        .to contain_exactly 'existing'
+    end
+
+    it 'returns a new Array' do
+      expect(array & [:foo]).to be_a(Rackstash::Fields::Array).and be_empty
+      expect(array & [:foo]).not_to equal array
+    end
+  end
+
   describe '#[]' do
     it 'returns nil if a value was not set' do
       expect(array[1]).to be_nil

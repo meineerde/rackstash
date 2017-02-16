@@ -12,6 +12,46 @@ module Rackstash
         @raw = Concurrent::Array.new
       end
 
+      # @!method +(array)
+      #   Concatenation — Returns a new {Rackstash::Fields::Array} built by
+      #   concatenating `self` and  the given `array` together to produce a
+      #   third array.
+      #
+      #   @param array [::Array, Rackstash::Fields::Array]
+      #   @return [Rackstash::Fields::Array]
+
+      # @!method -(array)
+      #   Array Difference — Returns a new {Rackstash::Fields::Array} that is a
+      #   copy of `self`, removing any items that also appear in the given
+      #   `array`. The order is preserved from `self`.
+      #
+      #   @param array [::Array, Rackstash::Fields::Array]
+      #   @return [Rackstash::Fields::Array]
+
+      # @!method |(array)
+      #   Set Union — Returns a new {Rackstash::Fields::Array} by joining `self`
+      #   with the given `array`, excluding any duplicates and preserving the
+      #   order from `self`.
+      #
+      #   @param array [::Array, Rackstash::Fields::Array]
+      #   @return [Rackstash::Fields::Array]
+
+      # @!method &(array)
+      #   Set Intersection — Returns a new {Rackstash::Fields::Array} containing
+      #   elements common to `self` and the given `array`, excluding any
+      #   duplicates. The order is preserved from `self`.
+      #
+      #   @param array [::Array, Rackstash::Fields::Array]
+      #   @return [Rackstash::Fields::Array]
+
+      %i[+ - | &].each do |op|
+        class_eval <<-RUBY, __FILE__ , __LINE__ + 1
+          def #{op}(array)
+            new(@raw #{op} normalize(array, wrap: false))
+          end
+        RUBY
+      end
+
       # Retrieve a stored value from a given `index`
       #
       # @param index [Integer] the index in the array where we fetch the value
@@ -92,6 +132,13 @@ module Rackstash
         return obj.to_ary if obj.respond_to?(:to_ary)
         raise TypeError, "no implicit conversion of #{obj.class} into Array"
       end
+
+      def new(raw)
+        self.class.new.tap do |array|
+          array.raw = raw
+        end
+      end
+
     end
 
     def self.Array(array)
