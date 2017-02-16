@@ -199,7 +199,7 @@ describe Rackstash::Fields::Array do
 
     it 'resolves nested procs with a custom scope' do
       expect(
-        array.concat(-> { [self, -> { self.to_s.upcase } ] }, scope: :stuff )
+        array.concat(-> { [self, -> { self.to_s.upcase } ] }, scope: :stuff)
       ).to contain_exactly 'stuff', 'STUFF'
     end
   end
