@@ -61,12 +61,28 @@ describe Rackstash::Fields::AbstractCollection do
     end
   end
 
+  describe '#clone' do
+    it 'clones the raw value' do
+      raw = 'hello'
+      collection.send(:raw=, raw)
+      expect(collection.send(:raw)).to equal raw
+
+      expect(raw).to receive(:clone).and_call_original
+      cloned = collection.clone
+
+      expect(cloned).not_to equal collection
+      expect(cloned.send(:raw)).to eql 'hello'
+      expect(cloned.send(:raw)).not_to equal raw
+    end
+  end
+
   describe '#dup' do
     it 'dups the raw value' do
       raw = 'hello'
       collection.send(:raw=, raw)
       expect(collection.send(:raw)).to equal raw
 
+      expect(raw).to receive(:dup).and_call_original
       duped = collection.dup
 
       expect(duped).not_to equal collection
