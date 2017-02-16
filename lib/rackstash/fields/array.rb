@@ -107,8 +107,9 @@ module Rackstash
       #
       # @param array [Array, ::Array, Proc] an array of values. Each value is
       #   normalized before being added to `self`.
-      # @param scope [Object] if `array` or any of its (deeply-nested) values is
-      #   a proc, it will be called in the instance scope of this object.
+      # @param scope [Object, nil] if `array` or any of its (deeply-nested)
+      #   values is a proc, it will be called in the instance scope of this
+      #   object (when given).
       # @return [self]
       def concat(array, scope: nil)
         array = Array(normalize(array, wrap: false, scope: scope))

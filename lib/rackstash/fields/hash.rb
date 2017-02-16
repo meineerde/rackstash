@@ -100,8 +100,9 @@ module Rackstash
       #   is a proc, it will get called and its result is used instead
       # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
       #   set a forbidden key, `false` to silently ingnore these key-value pairs
-      # @param scope [Object] if `hash` or any of its (deeply-nested) values is
-      #   a proc, it will be called in the instance scope of this object.
+      # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
+      #   values is a proc, it will be called in the instance scope of this
+      #   object (when given).
       #
       # @yield [key, old_val, new-val] if a block is given and there is a
       #   duplicate key, we call the block and use its return value as the value
@@ -139,9 +140,9 @@ module Rackstash
       #   is a proc, it will get called and its result is used instead
       # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
       #   set a forbidden key, `false` to silently ingnore these key-value pairs
-      # @param scope [Object] if `hash` or any of its (deeply-nested) values is
-      #   a proc, it will be called in the instance scope of this object.
-      #
+      # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
+      #   values is a proc, it will be called in the instance scope of this
+      #   object (when given).
       # @yield [key, old_val, new-val] if a block is given and there is a
       #   duplicate key, we call the block and use its return value as the value
       #   to insert
