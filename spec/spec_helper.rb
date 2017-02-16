@@ -3,6 +3,25 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+if ENV['COVERAGE']
+  require 'simplecov'
+  require 'coveralls'
+
+  if ENV['TRAVIS']
+    SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+        SimpleCov::Formatter::HTMLFormatter,
+        Coveralls::SimpleCov::Formatter
+    ]
+  else
+    SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+  end
+
+  SimpleCov.start do
+    project_name 'Rackstash'
+    add_filter '/spec/'
+  end
+end
+
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rackstash'
 

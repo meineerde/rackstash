@@ -26,6 +26,9 @@ rvm:
 jdk:
   - oraclejdk8
 
+env:
+  - COVERAGE=1
+
 matrix:
   allow_failures:
     - rvm: ruby-head

@@ -11,3 +11,8 @@ platforms :mri do
   # Complete Markdown package for yard
   gem 'redcarpet'
 end
+
+group :coverage do
+  gem 'simplecov', :require => false
+  gem 'coveralls', '~> 0.8.18', :require => false
+end
