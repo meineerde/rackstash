@@ -158,7 +158,7 @@ module Rackstash
       #
       # @return [self]
       def merge!(hash, force: true, scope: nil)
-        hash = Hash(normalize(hash, scope: scope, wrap: false))
+        hash = implicit(normalize(hash, scope: scope, wrap: false))
 
         if force
           forbidden = @forbidden_keys & hash.keys
@@ -223,7 +223,7 @@ module Rackstash
 
       private
 
-      def Hash(obj)
+      def implicit(obj)
         return obj.to_hash if obj.respond_to?(:to_hash)
         raise TypeError, "no implicit conversion of #{obj.class} into Hash"
       end

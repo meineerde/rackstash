@@ -112,7 +112,7 @@ module Rackstash
       #   object (when given).
       # @return [self]
       def concat(array, scope: nil)
-        array = Array(normalize(array, wrap: false, scope: scope))
+        array = implicit(normalize(array, wrap: false, scope: scope))
         @raw.concat(array)
         self
       end
@@ -160,7 +160,7 @@ module Rackstash
 
       private
 
-      def Array(obj)
+      def implicit(obj)
         return obj.to_ary if obj.respond_to?(:to_ary)
         raise TypeError, "no implicit conversion of #{obj.class} into Array"
       end
