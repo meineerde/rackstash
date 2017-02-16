@@ -50,7 +50,7 @@ module Rackstash
 
         @raw[key] = normalize(value)
       end
-      alias :store :[]=
+      alias store []=
 
       # @return [::Hash] deep-transforms the hash into a plain Ruby Hash
       def as_json(*)
@@ -59,8 +59,8 @@ module Rackstash
           memo[key] = value
         end
       end
-      alias :to_hash :as_json
-      alias :to_h :as_json
+      alias to_hash as_json
+      alias to_h as_json
 
       # Removes all key-value pairs from `self`.
       #
@@ -143,6 +143,7 @@ module Rackstash
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
       #   values is a proc, it will be called in the instance scope of this
       #   object (when given).
+      #
       # @yield [key, old_val, new-val] if a block is given and there is a
       #   duplicate key, we call the block and use its return value as the value
       #   to insert
@@ -179,7 +180,7 @@ module Rackstash
         end
         self
       end
-      alias :update :merge!
+      alias update merge!
 
       # @param key [String] The name of a key to check. This MUST be a correctly
       #   encoded String in order to return valid results

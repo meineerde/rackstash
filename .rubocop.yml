@@ -1,0 +1,94 @@
+AllCops:
+  TargetRubyVersion: 2.1
+
+# Sometimes we want to capture all exceptions. We need to make sure to re-raise
+# these again in any case.
+Lint/RescueException:
+  Enabled: false
+
+# As long as methods and classes are readable, this should be fine.
+# In any case, this shouldn't be a hard error. We try to improve where sensible
+# using tools like RubyCritic instead
+Metrics/AbcSize:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+# Long classes and methods are not a problem per se, as long as it is kept kind
+# of sane. In any case, this shouldn't be a hard error..
+Metrics/ClassLength:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+
+# As long as methods are readable, this should be fine.
+# In any case, this shouldn't be a hard error. We try to improve where sensible
+# using tools like RubyCritic instead
+
+# rspec uses long blocks by definition
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+
+# Try to keep lines below 80 chars wherever possible though
+Metrics/LineLength:
+  AllowURI: true
+  Max: 100
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
+  Exclude:
+    - 'spec/**/*'
+
+Style/Copyright:
+  Enabled: true
+  Notice: '^# Copyright (\(c\) )?2[0-9]{3} .+'
+
+# Use === when it makes sense to do so
+Style/CaseEquality:
+  Enabled: false
+
+# Double negation is fine to reliably produce a Boolean from any value.
+Style/DoubleNegation:
+  Enabled: false
+
+# Multiline indentation is always tricky. Format it as deemed useful in the
+# local method, but try to avoid it at all wherever possible
+Style/MultilineOperationIndentation:
+  Enabled: false
+
+# We generally use `obj == nil` instead of `obj.nil?` because the former is
+# faster.
+Style/NilComparison:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    '%w': '[]'
+    '%i': '[]'
+
+# Sometimes, an explicit self really adds some clarity to the code
+# We make sure to not use it when not needed though
+Style/RedundantSelf:
+  Enabled: false
+
+# Doesn't work with Refinements and is sometimes clearer with the expanded
+# version
+Style/SymbolProc:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Exclude:
+    - 'spec/**/*'
+
+# We know what we are doing and only use the rescue modifier when we really
+# don't care
+Style/RescueModifier:
+  Enabled: false
+
+# Use %w when it makes sense. Use literal arrays where it is more clear.
+Style/WordArray:
+  Enabled: false
+

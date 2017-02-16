@@ -52,9 +52,9 @@ module Rackstash
       cleanup @formatter.call(severity_label, @time, @progname, @message)
     end
 
-    alias :as_json :to_s
+    alias as_json to_s
     # Messages are implicitly conversible to Strings
-    alias :to_str :to_s
+    alias to_str to_s
 
     def to_json
       as_json.to_json

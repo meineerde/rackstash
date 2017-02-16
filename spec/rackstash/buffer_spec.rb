@@ -21,7 +21,7 @@ describe Rackstash::Buffer do
   describe '#add_message' do
     it 'adds a message to the buffer' do
       msg = double(message: 'Hello World', time: Time.now)
-      expect(buffer.add_message msg).to equal msg
+      expect(buffer.add_message(msg)).to equal msg
 
       expect(buffer.messages).to eql [msg]
     end

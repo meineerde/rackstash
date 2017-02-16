@@ -12,7 +12,7 @@ describe Rackstash do
   end
 
   it 'defines SEVERITIES constants' do
-    expect(Rackstash::SEVERITIES).to eql (0..5).to_a
+    expect(Rackstash::SEVERITIES).to eql((0..5).to_a)
 
     expect(Rackstash::DEBUG).to eql 0
     expect(Rackstash::INFO).to eql 1

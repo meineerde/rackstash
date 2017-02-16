@@ -24,8 +24,8 @@ module Rackstash
       def as_json(*)
         @raw.to_a
       end
-      alias :to_ary :as_json
-      alias :to_a :as_json
+      alias to_ary as_json
+      alias to_a as_json
 
       def clear
         @raw.clear
@@ -83,4 +83,3 @@ module Rackstash
     end
   end
 end
-

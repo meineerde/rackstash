@@ -65,11 +65,10 @@ module Rackstash
     def <<(msg)
       buffer.add_message Message.new(
         msg,
-        time: Time.now.utc.freeze,
+        time: Time.now.utc.freeze
       )
       msg
     end
-
 
     # Set the base log level as either one of the {SEVERITIES} or a
     # String/Symbol describing the level. When logging a message, it will only
@@ -262,7 +261,7 @@ module Rackstash
 
       msg
     end
-    alias :log :add
+    alias log add
 
     # Create a new buffering {Buffer} and puts in on the {BufferStack} for the
     # current Thread. For the duration of the block, all new logged messages

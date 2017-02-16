@@ -13,7 +13,7 @@ module Rackstash
       end
 
       # @!method +(array)
-      #   Concatenation — Returns a new {Rackstash::Fields::Array} built by
+      #   Concatenation -- Returns a new {Rackstash::Fields::Array} built by
       #   concatenating `self` and  the given `array` together to produce a
       #   third array.
       #
@@ -21,7 +21,7 @@ module Rackstash
       #   @return [Rackstash::Fields::Array]
 
       # @!method -(array)
-      #   Array Difference — Returns a new {Rackstash::Fields::Array} that is a
+      #   Array Difference -- Returns a new {Rackstash::Fields::Array} that is a
       #   copy of `self`, removing any items that also appear in the given
       #   `array`. The order is preserved from `self`.
       #
@@ -29,7 +29,7 @@ module Rackstash
       #   @return [Rackstash::Fields::Array]
 
       # @!method |(array)
-      #   Set Union — Returns a new {Rackstash::Fields::Array} by joining `self`
+      #   Set Union -- Returns a new {Rackstash::Fields::Array} by joining `self`
       #   with the given `array`, excluding any duplicates and preserving the
       #   order from `self`.
       #
@@ -37,7 +37,7 @@ module Rackstash
       #   @return [Rackstash::Fields::Array]
 
       # @!method &(array)
-      #   Set Intersection — Returns a new {Rackstash::Fields::Array} containing
+      #   Set Intersection -- Returns a new {Rackstash::Fields::Array} containing
       #   elements common to `self` and the given `array`, excluding any
       #   duplicates. The order is preserved from `self`.
       #
@@ -45,7 +45,7 @@ module Rackstash
       #   @return [Rackstash::Fields::Array]
 
       %i[+ - | &].each do |op|
-        class_eval <<-RUBY, __FILE__ , __LINE__ + 1
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
           def #{op}(array)
             new(@raw #{op} normalize(array, wrap: false))
           end
@@ -92,8 +92,8 @@ module Rackstash
           value.is_a?(AbstractCollection) ? value.as_json : value
         }
       end
-      alias :to_ary :as_json
-      alias :to_a :as_json
+      alias to_ary as_json
+      alias to_a as_json
 
       # Removes all elements from `self`.
       #
@@ -127,7 +127,7 @@ module Rackstash
         @raw.length
       end
 
-      # Set Union — Add value from `array` to `self` excluding any duplicates
+      # Set Union -- Add value from `array` to `self` excluding any duplicates
       # and preserving the order from `self`.
       #
       # @param array [Array, ::Array, Proc] an array of values. Each value is
@@ -137,12 +137,13 @@ module Rackstash
       #   object (when given).
       # @return [self]
       #
-      # @see #merge
+      # @see #|
+      # @see #merge!
       def merge(array, scope: nil)
         new(@raw | normalize(array, wrap: false, scope: scope))
       end
 
-      # Set Union — Add value from `array` to `self` excluding any duplicates
+      # Set Union -- Add value from `array` to `self` excluding any duplicates
       # and preserving the order from `self`.
       #
       # @param array [Array, ::Array, Proc] an array of values. Each value is
@@ -170,7 +171,6 @@ module Rackstash
           array.raw = raw
         end
       end
-
     end
 
     def self.Array(array)

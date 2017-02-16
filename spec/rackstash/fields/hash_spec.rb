@@ -177,7 +177,6 @@ describe Rackstash::Fields::Hash do
       expect(hash.forbidden_key?('forbidden')).to be true
       expect(hash.forbidden_key?('foo')).to be false
     end
-
   end
 
   describe '#keys' do
@@ -215,7 +214,7 @@ describe Rackstash::Fields::Hash do
     end
 
     it 'merges a normalized hash' do
-      to_merge = {foo: :bar}
+      to_merge = { foo: :bar }
       expect(hash).to receive(:normalize).with(to_merge, anything).ordered.and_call_original
       expect(hash).to receive(:normalize).with(:bar, anything).ordered.and_call_original
 
@@ -377,7 +376,8 @@ describe Rackstash::Fields::Hash do
 
     it 'can specify forbidden_keys' do
       raw = { foo: :bar, forbidden: 'ignored' }
-      expect { Rackstash::Fields::Hash(raw, forbidden_fields: ['forbidden']) }.to raise_error ArgumentError
+      expect { Rackstash::Fields::Hash(raw, forbidden_fields: ['forbidden']) }
+        .to raise_error ArgumentError
     end
   end
 end

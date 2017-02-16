@@ -19,8 +19,8 @@ describe Rackstash::Formatter do
     expect(formatter.call('ERROR', Time.now, 'progname', 123)).to eql "123\n"
   end
 
-  it 'formats Hashes' do
-    expect(formatter.call('ERROR', Time.now, 'progname', { k: 'v' })).to eql "{:k=>\"v\"}\n"
+  it 'formats Arrays' do
+    expect(formatter.call('ERROR', Time.now, 'progname', [1, 'y'])).to eql "[1, \"y\"]\n"
   end
 
   it 'formats exceptions' do
@@ -61,5 +61,4 @@ describe Rackstash::RawFormatter do
     expect(obj).to receive(:inspect).and_return('object')
     expect(formatter.call('ERROR', Time.now, 'progname', obj)).to eql 'object'
   end
-
 end

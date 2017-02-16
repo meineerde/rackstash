@@ -378,7 +378,6 @@ describe Rackstash::Logger do
       expect(logger.fields['key']).to eql 'outer'
     end
 
-
     it 'buffers multiple messages' do
       expect(logger.sink).to receive(:flush).once
 

@@ -12,15 +12,15 @@ require 'concurrent'
 module Rackstash
   module Fields
     class AbstractCollection
-      # Equality — Two collections are equal if they are of exactly the same class
-      # and contain the same raw data according to `Object#==`.
+      # Equality -- Two collections are equal if they are of exactly the same
+      # class and contain the same raw data according to `Object#==`.
       #
       # @return [Boolean] `true` if `other` is an object of the same class and
       #   contains the same raw data as this object.
       def ==(other)
         self.class == other.class && raw == other.raw
       end
-      alias :eql? :==
+      alias eql? ==
 
       # Show a human-readable representation of `self`. To get a machine-
       # readable "export" of the contained data, use {#as_json} or one of its
@@ -28,7 +28,7 @@ module Rackstash
       #
       # @return [String] human-redable details about the object.
       def inspect
-        "#<#{self.class}:#{format '0x%014x', object_id << 1} #{to_s}>"
+        "#<#{self.class}:#{format '0x%014x', object_id << 1} #{self}>"
       end
 
       # Provide a copy of the wrapped {#raw} data in a format allowing direct
@@ -106,17 +106,21 @@ module Rackstash
           hash = value.each_with_object(Concurrent::Hash.new) do |(k, v), memo|
             memo[utf8_encode(k)] = normalize(v, scope: scope)
           end
-          hash = Rackstash::Fields::Hash.new.tap do |hash_field|
-            hash_field.raw = hash
-          end if wrap
+          if wrap
+            hash = Rackstash::Fields::Hash.new.tap do |hash_field|
+              hash_field.raw = hash
+            end
+          end
           return hash
         when ::Array, ::Set, ::Enumerator
           array = value.each_with_object(Concurrent::Array.new) do |e, memo|
             memo << normalize(e, scope: scope)
           end
-          array = Rackstash::Fields::Array.new.tap do |array_field|
-            array_field.raw = array
-          end if wrap
+          if wrap
+            array = Rackstash::Fields::Array.new.tap do |array_field|
+              array_field.raw = array
+            end
+          end
           return array
         when ::Time
           return value.utc.iso8601(ISO8601_PRECISION).freeze

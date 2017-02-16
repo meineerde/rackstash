@@ -191,7 +191,7 @@ describe Rackstash::Fields::AbstractCollection do
         hash = { 1 => 1, :two => 2, 'three' => 3, nil => 4 }
 
         expect(normalize(hash, wrap: false)).to eql(
-          { '1' => 1, 'two' => 2, 'three' => 3, '' => 4 }
+          '1' => 1, 'two' => 2, 'three' => 3, '' => 4
         )
         expect(normalize(hash, wrap: false).keys).to all be_frozen
       end
@@ -316,18 +316,17 @@ describe Rackstash::Fields::AbstractCollection do
       end
 
       it 'resolves nested procs' do
-        expect(normalize(-> { [-> { 'foo' } ] })).to be_instance_of Rackstash::Fields::Array
-        expect(normalize(-> { [-> { 'foo' } ] })).to contain_exactly 'foo'
+        expect(normalize(-> { [-> { 'foo' }] })).to be_instance_of Rackstash::Fields::Array
+        expect(normalize(-> { [-> { 'foo' }] })).to contain_exactly 'foo'
       end
 
-
       it 'returns a raw array returned from a proc with wrap: false' do
-        expect(normalize(-> { ['foo'] }, wrap: false )).to be_a ::Array
+        expect(normalize(-> { ['foo'] }, wrap: false)).to be_a ::Array
         expect(normalize(-> { ['foo'] }, wrap: false)).to eql ['foo']
       end
 
       it 'returns a raw array returned from a nested proc with wrap: false' do
-        expect(normalize(-> { [-> { 'foo' }] }, wrap: false )).to be_a ::Array
+        expect(normalize(-> { [-> { 'foo' }] }, wrap: false)).to be_a ::Array
         expect(normalize(-> { [-> { 'foo' }] }, wrap: false)).to eql ['foo']
       end
     end
@@ -458,7 +457,7 @@ describe Rackstash::Fields::AbstractCollection do
         inner = proc { :return }
         outer = proc { inner }
 
-        expect(normalize(outer)).to match %r{\A#<Proc:0x[0-9a-f]+@#{__FILE__}:#{__LINE__-3}>\z}
+        expect(normalize(outer)).to match %r{\A#<Proc:0x[0-9a-f]+@#{__FILE__}:#{__LINE__ - 3}>\z}
       end
     end
 
@@ -487,7 +486,7 @@ describe Rackstash::Fields::AbstractCollection do
           obj = double("#{method} - successful")
 
           methods[0..i].each_with_index do |check, j|
-            expect(obj).to receive(:respond_to?).with(check).and_return(i==j)
+            expect(obj).to receive(:respond_to?).with(check).and_return(i == j)
               .ordered.once
           end
 

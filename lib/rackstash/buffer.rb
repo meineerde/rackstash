@@ -144,10 +144,10 @@ module Rackstash
     # @return [self,nil] returns `self` if the buffer was flushed, `nil`
     #   otherwise
     def flush
-      if pending?
-        @sink.flush(self)
-        self
-      end
+      return unless pending?
+
+      @sink.flush(self)
+      self
     end
 
     # Return all logged messages on the current buffer.
