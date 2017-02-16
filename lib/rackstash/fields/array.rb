@@ -17,7 +17,7 @@ module Rackstash
       #   concatenating `self` and  the given `array` together to produce a
       #   third array.
       #
-      #   @param array [::Array, Rackstash::Fields::Array]
+      #   @param array [::Array, Rackstash::Fields::Array, Proc]
       #   @return [Rackstash::Fields::Array]
 
       # @!method -(array)
@@ -25,7 +25,7 @@ module Rackstash
       #   copy of `self`, removing any items that also appear in the given
       #   `array`. The order is preserved from `self`.
       #
-      #   @param array [::Array, Rackstash::Fields::Array]
+      #   @param array [::Array, Rackstash::Fields::Array, Proc]
       #   @return [Rackstash::Fields::Array]
 
       # @!method |(array)
@@ -33,7 +33,7 @@ module Rackstash
       #   with the given `array`, excluding any duplicates and preserving the
       #   order from `self`.
       #
-      #   @param array [::Array, Rackstash::Fields::Array]
+      #   @param array [::Array, Rackstash::Fields::Array, Proc]
       #   @return [Rackstash::Fields::Array]
 
       # @!method &(array)
@@ -41,7 +41,7 @@ module Rackstash
       #   elements common to `self` and the given `array`, excluding any
       #   duplicates. The order is preserved from `self`.
       #
-      #   @param array [::Array, Rackstash::Fields::Array]
+      #   @param array [::Array, Rackstash::Fields::Array, Proc]
       #   @return [Rackstash::Fields::Array]
 
       %i[+ - | &].each do |op|
@@ -67,7 +67,7 @@ module Rackstash
       # You can set nested hashes and arrays here.
       #
       # @param index [Integer] the index in the array where we fetch the value
-      # @param value [#call, Object] any value which can be serialized to JSON.
+      # @param value [Object, Proc] any value which can be serialized to JSON.
       #   The value will be normalized before being set so that only JSON-
       #   compatible objects are added into the array.
       # @return [void]
@@ -77,7 +77,7 @@ module Rackstash
 
       # Add a given value at the end of the array
       #
-      # @param value [#call, Object] any value which can be serialized to JSON.
+      # @param value [Object, Proc] any value which can be serialized to JSON.
       #   The value will be normalized before being added so that only JSON-
       #   compatible objects are added into the array.
       # @return [self]
@@ -105,7 +105,7 @@ module Rackstash
 
       # Appends the elements of `array` to self.
       #
-      # @param array [Array, ::Array] an array of values. Each value is
+      # @param array [Array, ::Array, Proc] an array of values. Each value is
       #   normalized before being added to `self`.
       # @param scope [Object] if `array` or any of its (deeply-nested) values is
       #   a proc, it will be called in the instance scope of this object.

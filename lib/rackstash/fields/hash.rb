@@ -38,7 +38,7 @@ module Rackstash
       #
       # @param key [#to_s] the field name. When setting the field, this name
       #   will be normalized as a frozen UTF-8 string.
-      # @param value [#call, Object] any value which can be serialized to JSON.
+      # @param value [Proc, Object] any value which can be serialized to JSON.
       #   The value will be normalized before being insert so that only JSON-
       #   compatible objects are inserted into the Hash.
       #
@@ -199,8 +199,8 @@ module Rackstash
       #    return value as the value to insert at `key`
       # @yieldparam key [String] The normalized key where the value is being
       #    inserted
-      # @yieldreturn [Object] the intended new value for `key` to be merged into
-      #   `self` at `key`.
+      # @yieldreturn [Proc, Object] the intended new value for `key` to be
+      #   merged into `self` at `key`.
       #
       # @return [Object, nil] The return value of the block or `nil` if no
       #   insertion happened. Note that `nil` is also a valid value to insert
