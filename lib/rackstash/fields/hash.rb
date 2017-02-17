@@ -76,6 +76,24 @@ module Rackstash
         @raw.empty?
       end
 
+      # Returns true if the given key is present in `self`.
+      #
+      #     h = Rackstash::Fields::Hash.new
+      #     h.merge!({ "a" => 100, "b" => 200 })
+      #
+      #     h.key?("a")   #=> true
+      #     h.key?("z")   #=> false
+      #
+      # @param key [#to_s] the field name. The key will be converted to an
+      #   UTF-8 string before being checked.
+      # @return [Boolean] `true` if the normalized key is present in `self`
+      def key?(key)
+        @raw.key? utf8_encode(key)
+      end
+      alias has_key? key?
+      alias include? key?
+      alias member? key?
+
       # @return [::Array] a new array populated with the keys from this hash.
       # @see #values
       def keys

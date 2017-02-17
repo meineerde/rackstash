@@ -179,6 +179,45 @@ describe Rackstash::Fields::Hash do
     end
   end
 
+  describe '#key?' do
+    it 'checks whether a key was set' do
+      hash['hello'] = 'World'
+      expect(hash.key?('hello')).to be true
+      expect(hash.key?('Hello')).to be false
+      expect(hash.key?('goodbye')).to be false
+    end
+
+    it 'checks keys with stringified names' do
+      hash['hello'] = 'World'
+      expect(hash.key?('hello')).to be true
+      expect(hash.key?(:hello)).to be true
+    end
+
+    it 'can use the alias #has_key?' do
+      hash['hello'] = 'World'
+      expect(hash.has_key?('hello')).to be true
+      expect(hash.has_key?('goodbye')).to be false
+
+      # We can also use the rspec matcher
+      expect(hash).to have_key 'hello'
+    end
+
+    it 'can use the alias #include?' do
+      hash['hello'] = 'World'
+      expect(hash.include?('hello')).to be true
+      expect(hash.include?('goodbye')).to be false
+
+      # We can also use the rspec matcher
+      expect(hash).to include 'hello'
+    end
+
+    it 'can use the alias #member?' do
+      hash['hello'] = 'World'
+      expect(hash.member?('hello')).to be true
+      expect(hash.member?('goodbye')).to be false
+    end
+  end
+
   describe '#keys' do
     it 'returns an array of keys' do
       hash['foo'] = 'bar'
