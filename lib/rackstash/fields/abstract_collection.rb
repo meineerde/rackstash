@@ -22,6 +22,16 @@ module Rackstash
       end
       alias eql? ==
 
+      # Compute a hash-code for this collection.
+      #
+      # Two collections with the same raw content will have the same hash code
+      # (and will compare using {#eql?}).
+      #
+      # @return [Integer] the hash ID of `self`
+      def hash
+        [self.class, raw].hash
+      end
+
       # Show a human-readable representation of `self`. To get a machine-
       # readable "export" of the contained data, use {#as_json} or one of its
       # aliases instead.

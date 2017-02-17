@@ -91,6 +91,18 @@ describe Rackstash::Fields::AbstractCollection do
     end
   end
 
+  describe '#hash' do
+    it 'returns the same hash for the same raw content' do
+      collection.send(:raw=, [123, 'foo'])
+
+      collection2 = Rackstash::Fields::AbstractCollection.new
+      collection2.send(:raw=, [123, 'foo'])
+
+      expect(collection.send(:raw)).not_to equal collection2.send(:raw)
+      expect(collection.hash).to eql collection2.hash
+    end
+  end
+
   describe '#raw' do
     it 'is a protected accessor' do
       expect { collection.raw = nil }.to raise_error NoMethodError
