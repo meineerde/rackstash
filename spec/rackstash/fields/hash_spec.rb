@@ -160,6 +160,161 @@ describe Rackstash::Fields::Hash do
     end
   end
 
+  describe '#deep_merge' do
+    # This works almost exactly the same as deep_merge! although we don't repeat
+    # all of the tests here
+    it 'calls merge' do
+      value = { hello: -> { self } }
+      scope = 'world'
+
+      expect(hash).to receive(:merge).with(value, force: false, scope: scope)
+        .and_call_original
+      new_hash = hash.deep_merge(value, force: false, scope: scope)
+      expect(new_hash).to have_key 'hello'
+    end
+
+    it 'returns a new Hash' do
+      hash['foo'] = ['bar']
+
+      new_hash = hash.deep_merge('beep' => :boop, 'foo' => [123])
+      expect(new_hash).to be_a Rackstash::Fields::Hash
+
+      expect(hash).not_to have_key 'beep'
+      expect(hash['foo']).to contain_exactly 'bar'
+
+      expect(new_hash).not_to equal hash
+      expect(new_hash).to include 'beep', 'foo'
+      expect(new_hash['foo']).to contain_exactly 'bar', 123
+    end
+  end
+
+  describe '#deep_merge!' do
+    let(:forbidden_keys) { ['forbidden'] }
+
+    it 'calls merge!' do
+      value = { hello: -> { self } }
+      scope = 'world'
+
+      expect(hash).to receive(:merge!).with(value, force: false, scope: scope)
+        .and_call_original
+      hash.deep_merge!(value, force: false, scope: scope)
+      expect(hash).to have_key 'hello'
+    end
+
+    it 'returns self' do
+      expect(hash.deep_merge!(foo: :bar)).to equal hash
+    end
+
+    it 'rejects not hash-convertible arguments' do
+      expect { hash.deep_merge!(nil) }.to raise_error TypeError
+      expect { hash.deep_merge!(false) }.to raise_error TypeError
+      expect { hash.deep_merge!(true) }.to raise_error TypeError
+      expect { hash.deep_merge!(123) }.to raise_error TypeError
+      expect { hash.deep_merge!(:foo) }.to raise_error TypeError
+      expect { hash.deep_merge!('foo') }.to raise_error TypeError
+      expect { hash.deep_merge!([]) }.to raise_error TypeError
+      expect { hash.deep_merge!(['foo']) }.to raise_error TypeError
+
+      expect { hash.deep_merge!(-> { 3 }) }.to raise_error TypeError
+      expect { hash.deep_merge!(-> { 'foo' }) }.to raise_error TypeError
+      expect { hash.deep_merge!(-> { ['foo'] }) }.to raise_error TypeError
+    end
+
+    context 'with force: true' do
+      it 'adds fields, overwriting existing ones' do
+        hash['foo'] = 'original'
+        hash.deep_merge!('foo' => 'overwritten', 'bar' => 'some value')
+
+        expect(hash.keys).to contain_exactly 'foo', 'bar'
+        expect(hash['foo']).to eql 'overwritten'
+        expect(hash['bar']).to eql 'some value'
+      end
+
+      it 'merges nested hashes, overwriting existing nested values' do
+        hash['key'] = { 'foo' => 'bar' }
+
+        hash.deep_merge! 'key' => { foo: 'fizz', baz: 'qux' }
+        expect(hash['key'].as_json).to eql 'foo' => 'fizz', 'baz' => 'qux'
+      end
+
+      it 'overwrites nested values unless types match' do
+        hash['key'] = { nested_key: 'value' }
+
+        hash.deep_merge! 'key' => [:foo, 'baz']
+        expect(hash['key'])
+          .to be_a(Rackstash::Fields::Array)
+          .and contain_exactly 'foo', 'baz'
+
+        hash.deep_merge! 'key' => 123
+        expect(hash['key']).to eql 123
+      end
+    end
+
+    context 'with force: false' do
+      it 'adds fields, ignoring existing ones' do
+        hash['foo'] = 'original'
+        hash.deep_merge!({ 'foo' => 'ignored', 'bar' => 'some value' }, force: false)
+
+        expect(hash.keys).to contain_exactly 'foo', 'bar'
+        expect(hash['foo']).to eql 'original'
+        expect(hash['bar']).to eql 'some value'
+      end
+
+      it 'merges nested hashes, ingoring existing nested values' do
+        hash['key'] = { 'foo' => 'bar' }
+        expect(hash['key'].as_json).to eql 'foo' => 'bar'
+
+        hash.deep_merge!({ 'key' => { foo: 'fizz', baz: 'qux' } }, force: false)
+        expect(hash['key'].as_json).to eql 'foo' => 'bar', 'baz' => 'qux'
+      end
+
+      it 'ignores nested values unless types match' do
+        hash['key'] = { nested_key: 'value' }
+
+        hash.deep_merge!({ 'key' => [:foo, 'baz'] }, force: false)
+        expect(hash['key'])
+          .to be_a(Rackstash::Fields::Hash)
+          .and have_key 'nested_key'
+
+        hash.deep_merge!({ 'key' => 123 }, force: false)
+        expect(hash['key'])
+          .to be_a(Rackstash::Fields::Hash)
+          .and have_key 'nested_key'
+      end
+
+      it 'overwrites nil' do
+        hash['key'] = nil
+        expect(hash).to have_key 'key'
+
+        hash.deep_merge!({ 'key' => { nested: 'value' } }, force: false)
+        expect(hash['key']).to be_a Rackstash::Fields::Hash
+      end
+    end
+
+    it 'normalizes string-like array elements to strings' do
+      hash.deep_merge! 'key' => [:foo, [123, 'bar'], [:qux, { fizz: [:buzz, 42] }]]
+      expect(hash['key'].as_json)
+        .to eql ['foo', [123, 'bar'], ['qux', { 'fizz' => ['buzz', 42] }]]
+
+      hash.deep_merge! 'key' => ['foo', :baz, [123, :bar]]
+      expect(hash['key'].as_json)
+        .to eql ['foo', [123, 'bar'], ['qux', { 'fizz' => ['buzz', 42] }], 'baz']
+    end
+
+    it 'raises an error when trying to merge forbidden fields' do
+      expect { hash.deep_merge!(forbidden: 'value') }.to raise_error ArgumentError
+      expect { hash.deep_merge!('forbidden' => 'value') }.to raise_error ArgumentError
+      expect(hash).to_not have_key 'forbidden'
+    end
+
+    it 'allows to merge forbidden fields in nested hashes' do
+      hash.deep_merge!(top: { 'forbidden' => 'value' })
+      expect(hash['top'])
+        .to be_a(Rackstash::Fields::Hash)
+        .and have_key 'forbidden'
+    end
+  end
+
   describe '#empty?' do
     it 'returns true of there are any fields' do
       expect(hash.empty?).to be true

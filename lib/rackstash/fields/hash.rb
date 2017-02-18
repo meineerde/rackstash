@@ -70,6 +70,142 @@ module Rackstash
         self
       end
 
+      # Returns a new {Hash} containing the contents of hash and the contents of
+      # `self`. `hash` is normalized before being added. In contrast to
+      # {#merge}, this method deep-merges Hash and Array values if the existing
+      # and merged values are of the same type.
+      #
+      # If the value is a callable object (e.g. a proc or lambda), we will call
+      # it and use the returned value instead, which must then be a Hash of
+      # course. If any of the values of the hash is a proc, it will also be
+      # called and the return value will be used.
+      #
+      # If you give the optional `scope` argument, the Procs will be evaluated
+      # in the instance scope of this object. If you leave the `scope` empty,
+      # they will be called in the scope of their creation environment.
+      #
+      # The following examples are thus all equivalent:
+      #
+      #     empty_hash.deep_merge 'foo' => 'bar'
+      #     empty_hash.deep_merge 'foo' => -> { 'bar' }
+      #     empty_hash.deep_merge -> { 'foo' => 'bar' }
+      #     empty_hash.deep_merge -> { 'foo' => -> { 'bar' } }
+      #     empty_hash.deep_merge({ 'foo' => -> { self } }, scope: 'bar')
+      #     empty_hash.deep_merge -> { { 'foo' => -> { self } } }, scope: 'bar'
+      #
+      # Nested hashes will be deep-merged and all field names will be normalized
+      # to strings, even on deeper levels. Given an empty Hash, these calls
+      #
+      #     empty_hash.merge! 'foo' => { 'bar' => 'baz' }
+      #     empty_hash.deep_merge 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
+      #
+      # will be equivalent to a single call of
+      #
+      #     empty_hash.deep_merge 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
+      #
+      # As you can see, the new `"qux"` value of the nested `"bar"` field
+      # overwrites the old `"baz"` value.
+      #
+      # When setting the `force` argument to `false`, we will not overwrite
+      # existing leaf value anymore but will just ignore the value. We will
+      # still attempt to merge nested Hashes and Arrays if the existing and new
+      # values are compatible. Thus, given an empty Hash, these calls
+      #
+      #     empty_hash.merge!({ 'foo' => { 'bar' => 'baz' } }, force: false)
+      #     empty_hash.deep_merge({ 'foo' => { 'bar' => 'qux', fizz' => 'buzz' } }, force: false)
+      #
+      # will be equivalent to a single call of
+      #
+      #     empty_hash.deep_merge({ 'foo' => { 'bar' => 'baz', fizz' => 'buzz' } })
+      #
+      # With `force: false` the new `"qux"` value of the nested `"bar"` field is
+      # ignored since it was already set.
+      #
+      # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
+      # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
+      #   set a forbidden key, `false` to silently ingnore these key-value pairs
+      # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
+      #   values is a proc, it will be called in the instance scope of this
+      #   object (when given).
+      # @raise [ArgumentError] if you attempt to set one of the forbidden fields
+      #   and `force` is `true`
+      # @return [Rackstash::Fields::Hash] a new hash containing the merged
+      #   key-value pairs
+      #
+      # @see #merge
+      # @see #deep_merge!
+      def deep_merge(hash, force: true, scope: nil)
+        resolver = deep_merge_resolver(:merge, force: force)
+        merge(hash, force: force, scope: scope, &resolver)
+      end
+
+      # Adds the contents of `hash` to `self`. `hash` is normalized before being
+      # added. In contrast to {#merge!}, this method deep-merges Hash and Array
+      # values if the existing and merged values are of the same type.
+      #
+      # If the value is a callable object (e.g. a proc or lambda), we will call
+      # it and use the returned value instead, which must then be a Hash of
+      # course. If any of the values of the hash is a proc, it will also be
+      # called and the return value will be used.
+      #
+      # If you give the optional `scope` argument, the Procs will be evaluated
+      # in the instance scope of this object. If you leave the `scope` empty,
+      # they will be called in the scope of their creation environment.
+      #
+      # The following examples are thus all equivalent:
+      #
+      #     empty_hash.deep_merge! 'foo' => 'bar'
+      #     empty_hash.deep_merge! 'foo' => -> { 'bar' }
+      #     empty_hash.deep_merge! -> { 'foo' => 'bar' }
+      #     empty_hash.deep_merge! -> { 'foo' => -> { 'bar' } }
+      #     empty_hash.deep_merge!({ 'foo' => -> { self } }, scope: 'bar')
+      #     empty_hash.deep_merge! -> { { 'foo' => -> { self } } }, scope: 'bar'
+      #
+      # Nested hashes will be deep-merged and all field names will be normalized
+      # to strings, even on deeper levels. Given an empty Hash, these calls
+      #
+      #     empty_hash.merge! 'foo' => { 'bar' => 'baz' }
+      #     empty_hash.deep_merge! 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
+      #
+      # will be equivalent to a single call of
+      #
+      #     empty_hash.deep_merge! 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
+      #
+      # As you can see, the new `"qux"` value of the nested `"bar"` field
+      # overwrites the old `"baz"` value.
+      #
+      # When setting the `force` argument to `false`, we will not overwrite
+      # existing leaf value anymore but will just ignore the value. We will
+      # still attempt to merge nested Hashes and Arrays if the existing and new
+      # values are compatible. Thus, given an empty Hash, these calls
+      #
+      #     empty_hash.merge!({ 'foo' => { 'bar' => 'baz' } }, force: false)
+      #     empty_hash.deep_merge!({ 'foo' => { 'bar' => 'qux', fizz' => 'buzz' } }, force: false)
+      #
+      # will be equivalent to a single call of
+      #
+      #     empty_hash.deep_merge!({ 'foo' => { 'bar' => 'baz', fizz' => 'buzz' } })
+      #
+      # With `force: false` the new `"qux"` value of the nested `"bar"` field is
+      # ignored since it was already set.
+      #
+      # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
+      # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
+      #   set a forbidden key, `false` to silently ingnore these key-value pairs
+      # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
+      #   values is a proc, it will be called in the instance scope of this
+      #   object (when given).
+      # @raise [ArgumentError] if you attempt to set one of the forbidden fields
+      #   and `force` is `true`
+      # @return [self]
+      #
+      # @see #merge!
+      # @see #deep_merge
+      def deep_merge!(hash, force: true, scope: nil)
+        resolver = deep_merge_resolver(:merge!, force: force)
+        merge!(hash, force: force, scope: scope, &resolver)
+      end
+
       # @return [Boolean] `true` if the Hash contains no ley-value pairs,
       #   `false` otherwise.
       def empty?
@@ -245,6 +381,23 @@ module Rackstash
       def implicit(obj)
         return obj.to_hash if obj.respond_to?(:to_hash)
         raise TypeError, "no implicit conversion of #{obj.class} into Hash"
+      end
+
+      # @param merge_method [Symbol] the name of a method used for a nested
+      #   merge operation, usually either `:merge` or `:merge!`
+      # @param force [Boolean] set to `true` to overwrite keys with divering
+      #   value types, or `false` to silently ignore the new value
+      # @return [Lambda] a resolver block for deep-merging a hash.
+      def deep_merge_resolver(merge_method, force: true)
+        resolver = lambda do |_key, old_val, new_val|
+          if old_val.is_a?(Hash) && new_val.is_a?(Hash)
+            old_val.public_send(merge_method, new_val, force: force, &resolver)
+          elsif old_val.is_a?(Array) && new_val.is_a?(Array)
+            old_val.public_send(merge_method, new_val)
+          else
+            force || old_val == nil ? new_val : old_val
+          end
+        end
       end
     end
 
