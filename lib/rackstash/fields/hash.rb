@@ -8,7 +8,7 @@ require 'rackstash/fields/abstract_collection'
 module Rackstash
   module Fields
     class Hash < AbstractCollection
-      # @param forbidden_keys [Set<String>,Array<String>] a list of strings
+      # @param forbidden_keys [Set<String>,::Array<String>] a list of strings
       #   which are not allowed to be used as keys in this hash
       def initialize(forbidden_keys: EMPTY_SET)
         @raw = Concurrent::Hash.new
@@ -230,7 +230,8 @@ module Rackstash
       alias include? key?
       alias member? key?
 
-      # @return [::Array] a new array populated with the keys from this hash.
+      # @return [::Array<String>] a new array populated with the keys from this
+      #   hash.
       # @see #values
       def keys
         @raw.keys
@@ -250,8 +251,9 @@ module Rackstash
       # get called and its result will be used instead of it. The proc will be
       # evaluated in the instance scope of `scope` if given.
       #
-      # @param hash [::Hash, Hash, Proc] the hash to merge into `self`. If this
-      #   is a proc, it will get called and its result is used instead
+      # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
+      #   the hash to merge into `self`. If this is a proc, it will get called
+      #   and its result is used instead.
       # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
       #   set a forbidden key, `false` to silently ingnore these key-value pairs
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
@@ -267,11 +269,10 @@ module Rackstash
       #   `hash`
       # @yieldreturn [Object] the intended new value for `key` to be merged into
       #   `self` at `key`.
-      #
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
-      #
-      # @return [Hash] a new hash containing the merged key-value pairs
+      # @return [Rackstash::Fields::Hash] a new hash containing the merged
+      #   key-value pairs
       def merge(hash, force: true, scope: nil, &block)
         dup.merge!(hash, force: force, scope: scope, &block)
       end
@@ -290,8 +291,9 @@ module Rackstash
       # get called and its result will be used instead of it. The proc will be
       # evaluated in the instance scope of `scope` if given.
       #
-      # @param hash [::Hash, Hash, Proc] the hash to merge into `self`. If this
-      #   is a proc, it will get called and its result is used instead
+      # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
+      #   the hash to merge into `self`. If this is a proc, it will get called
+      #   and its result is used instead
       # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
       #   set a forbidden key, `false` to silently ingnore these key-value pairs
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
@@ -307,10 +309,8 @@ module Rackstash
       #   `hash`
       # @yieldreturn [Object] the intended new value for `key` to be merged into
       #   `self` at `key`.
-      #
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
-      #
       # @return [self]
       def merge!(hash, force: true, scope: nil)
         hash = implicit(normalize(hash, scope: scope, wrap: false))
@@ -378,6 +378,12 @@ module Rackstash
 
       private
 
+      # Converts an object to a Hash using `to_hash`. Raise TypeError if this
+      # is not possible.
+      #
+      # @param obj [#to_hash]
+      # @return [Hash]
+      # @raise [TypeError] of `obj` doesn't respond to `to_hash`
       def implicit(obj)
         return obj.to_hash if obj.respond_to?(:to_hash)
         raise TypeError, "no implicit conversion of #{obj.class} into Hash"
