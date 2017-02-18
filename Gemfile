@@ -13,6 +13,6 @@ platforms :mri do
 end
 
 group :coverage do
-  gem 'simplecov', :require => false
-  gem 'coveralls', '~> 0.8.18', :require => false
+  gem 'coveralls', '~> 0.8.18', require: false
+  gem 'simplecov', require: false
 end
