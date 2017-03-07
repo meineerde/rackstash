@@ -343,6 +343,66 @@ module Rackstash
       end
       alias update merge!
 
+
+      # Returns a new {Hash} containing the contents of `hash` and the contents
+      # of `self`. `hash` is normalized before being added. In contrast to
+      # {#merge}, this method preserves any non-nil values of existing keys in
+      # `self` in the returned hash.
+      #
+      # If `hash` is a callable object (e.g. a proc or lambda), we will call
+      # it and use the returned value instead, which must then be a Hash of
+      # course. If any of the values of the hash is a proc, it will also be
+      # called and the return value will be used.
+      #
+      # If you give the optional `scope` argument, the Procs will be evaluated
+      # in the instance scope of this object. If you leave the `scope` empty,
+      # they will be called in the scope of their creation environment.
+      #
+      # @param hash (see #merge)
+      # @param scope (see #merge)
+      # @return [Rackstash::Fields::Hash] a new hash containing the merged
+      #   key-value pairs
+      #
+      # @see #merge
+      # @see #reverse_merge!
+      def reverse_merge(hash, scope: nil)
+        merge(hash, force: false, scope: scope) { |_key, old_val, new_val|
+          old_val == nil ? new_val : old_val
+        }
+      end
+
+      # Adds the contents of `hash` to `self`. `hash` is normalized before being
+      # added. In contrast to {#merge!}, this method deep-merges Hash and Array
+      # values if the existing and merged values are of the same type.
+      #
+
+      # Returns a new {Hash} containing the contents of `hash` and the contents
+      # of `self`. `hash` is normalized before being added. In contrast to
+      # {#merge}, this method preserves any non-nil values of existing keys in
+      # `self`.
+      #
+      # If `hash` is a callable object (e.g. a proc or lambda), we will call
+      # it and use the returned value instead, which must then be a Hash of
+      # course. If any of the values of the hash is a proc, it will also be
+      # called and the return value will be used.
+      #
+      # If you give the optional `scope` argument, the Procs will be evaluated
+      # in the instance scope of this object. If you leave the `scope` empty,
+      # they will be called in the scope of their creation environment.
+      #
+      # @param hash (see #merge!)
+      # @param scope (see #merge!)
+      # @return [self]
+      #
+      # @see #merge!
+      # @see #reverse_merge
+      def reverse_merge!(hash, scope: nil)
+        merge!(hash, force: false, scope: scope) { |_key, old_val, new_val|
+          old_val == nil ? new_val : old_val
+        }
+      end
+      alias reverse_update reverse_merge!
+
       # Set a `key` of `self` to the returned value of the passed block.
       # If the key is forbidden from being set or already exists with a value
       # other than `nil`, the block will not be called and the value will not be

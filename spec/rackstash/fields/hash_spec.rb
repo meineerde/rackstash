@@ -510,6 +510,82 @@ describe Rackstash::Fields::Hash do
     end
   end
 
+  describe '#reverse_merge' do
+    before do
+      hash['foo'] = 'bar'
+    end
+
+    it 'creates a new hash' do
+      expect(hash.reverse_merge(foo: :baz, beep: :boop)).not_to equal hash
+      expect(hash).not_to include 'beep'
+    end
+
+    it 'does not overwrite existing values' do
+      expect(hash.reverse_merge(foo: :baz, beep: :boop)['foo']).to eql 'bar'
+    end
+
+    it 'adds new values' do
+      expect(hash.reverse_merge(foo: :baz, beep: :boop)['beep']).to eql 'boop'
+    end
+
+    it 'evaluates procs' do
+      expect(hash.reverse_merge(-> { { beep: -> { self } } }, scope: 42)['beep'])
+        .to eql 42
+    end
+
+    it 'overwrites nil values' do
+      hash['beep'] = nil
+      expect(hash).to include 'beep'
+
+      expect(hash.reverse_merge(beep: :boop)['beep']).to eql 'boop'
+    end
+
+    it 'raises an error for non-hash arguments' do
+      expect { hash.reverse_merge [] }.to raise_error TypeError
+      expect { hash.reverse_merge nil }.to raise_error TypeError
+      expect { hash.reverse_merge false }.to raise_error TypeError
+      expect { hash.reverse_merge 'value' }.to raise_error TypeError
+    end
+  end
+
+  describe '#reverse_merge!' do
+    before do
+      hash['foo'] = 'bar'
+    end
+
+    it 'mutates the existing hash' do
+      expect(hash.reverse_merge!(foo: :baz, beep: :boop)).to equal hash
+      expect(hash).to include 'beep'
+    end
+
+    it 'does not overwrite existing values' do
+      expect(hash.reverse_merge!(foo: :baz, beep: :boop)['foo']).to eql 'bar'
+    end
+
+    it 'adds new values' do
+      expect(hash.reverse_merge!(foo: :baz, beep: :boop)['beep']).to eql 'boop'
+    end
+
+    it 'evaluates procs' do
+      expect(hash.reverse_merge!(-> { { beep: -> { self } } }, scope: 42)['beep'])
+        .to eql 42
+    end
+
+    it 'overwrites nil values' do
+      hash['beep'] = nil
+      expect(hash).to include 'beep'
+
+      expect(hash.reverse_merge!(beep: :boop)['beep']).to eql 'boop'
+    end
+
+    it 'raises an error for non-hash arguments' do
+      expect { hash.reverse_merge! [] }.to raise_error TypeError
+      expect { hash.reverse_merge! nil }.to raise_error TypeError
+      expect { hash.reverse_merge! false }.to raise_error TypeError
+      expect { hash.reverse_merge! 'value' }.to raise_error TypeError
+    end
+  end
+
   describe '#set' do
     it 'allows to set a normalized value' do
       expect(hash).to receive(:normalize).with(:value).and_call_original
