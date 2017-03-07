@@ -70,8 +70,8 @@ module Rackstash
         self
       end
 
-      # Returns a new {Hash} containing the contents of hash and the contents of
-      # `self`. `hash` is normalized before being added. In contrast to
+      # Returns a new {Hash} containing the contents of `hash` and the contents
+      # of `self`. `hash` is normalized before being added. In contrast to
       # {#merge}, this method deep-merges Hash and Array values if the existing
       # and merged values are of the same type.
       #
@@ -119,14 +119,12 @@ module Rackstash
       #     empty_hash.deep_merge({ 'foo' => { 'bar' => 'baz', fizz' => 'buzz' } })
       #
       # With `force: false` the new `"qux"` value of the nested `"bar"` field is
-      # ignored since it was already set.
+      # ignored since it was already set. We will ignore any attempt to
+      # overwrite any existing non-nil value.
       #
-      # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
-      # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
-      #   set a forbidden key, `false` to silently ingnore these key-value pairs
-      # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
-      #   values is a proc, it will be called in the instance scope of this
-      #   object (when given).
+      # @param hash (see #merge)
+      # @param force (see #merge)
+      # @param scope (see #merge)
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
       # @return [Rackstash::Fields::Hash] a new hash containing the merged
@@ -187,14 +185,12 @@ module Rackstash
       #     empty_hash.deep_merge!({ 'foo' => { 'bar' => 'baz', fizz' => 'buzz' } })
       #
       # With `force: false` the new `"qux"` value of the nested `"bar"` field is
-      # ignored since it was already set.
+      # ignored since it was already set. We will ignore any attempt to
+      # overwrite any existing non-nil value.
       #
-      # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
-      # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
-      #   set a forbidden key, `false` to silently ingnore these key-value pairs
-      # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
-      #   values is a proc, it will be called in the instance scope of this
-      #   object (when given).
+      # @param hash (see #merge!)
+      # @param force (see #merge!)
+      # @param scope (see #merge!)
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
       # @return [self]
@@ -244,7 +240,7 @@ module Rackstash
         @raw.keys
       end
 
-      # Returns a new {Hash} containing the contents of hash and the contents of
+      # Returns a new {Hash} containing the contents of `hash` and of
       # `self`. If no block is specified, the value for entries with duplicate
       # keys will be that of hash. Otherwise the value for each duplicate key
       # is determined by calling the block with the `key`, its value in `self`
@@ -284,7 +280,7 @@ module Rackstash
         dup.merge!(hash, force: force, scope: scope, &block)
       end
 
-      # Adds the contents of hash to `self`. `hash` is normalized before being
+      # Adds the contents of `hash` to `self`. `hash` is normalized before being
       # added. If no block is specified, entries with duplicate keys are
       # overwritten with the values from `hash`, otherwise the value of each
       # duplicate key is determined by calling the block with the `key`, its
