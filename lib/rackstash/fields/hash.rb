@@ -212,6 +212,13 @@ module Rackstash
         @raw.empty?
       end
 
+      # @param key [String] The name of a key to check. This MUST be a correctly
+      #   encoded String in order to return valid results
+      # @return [Boolean] `true` if the key is forbidden from being added
+      def forbidden_key?(key)
+        @forbidden_keys.include?(key)
+      end
+
       # Returns true if the given key is present in `self`.
       #
       #     h = Rackstash::Fields::Hash.new
@@ -335,13 +342,6 @@ module Rackstash
         self
       end
       alias update merge!
-
-      # @param key [String] The name of a key to check. This MUST be a correctly
-      #   encoded String in order to return valid results
-      # @return [Boolean] `true` if the key is forbidden from being added
-      def forbidden_key?(key)
-        @forbidden_keys.include?(key)
-      end
 
       # Set a `key` of `self` to the returned value of the passed block.
       # If the key is forbidden from being set or already exists with a value
