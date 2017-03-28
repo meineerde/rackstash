@@ -276,8 +276,14 @@ module Rackstash
       #   and `force` is `true`
       # @return [Rackstash::Fields::Hash] a new hash containing the merged
       #   key-value pairs
-      def merge(hash, force: true, scope: nil, &block)
-        dup.merge!(hash, force: force, scope: scope, &block)
+      def merge(hash, force: true, scope: nil)
+        if block_given?
+          dup.merge!(hash, force: force, scope: scope) { |key, old_val, new_val|
+            yield key, old_val, new_val
+          }
+        else
+          dup.merge!(hash, force: force, scope: scope)
+        end
       end
 
       # Adds the contents of `hash` to `self`. `hash` is normalized before being
