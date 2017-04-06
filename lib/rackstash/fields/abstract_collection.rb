@@ -12,6 +12,10 @@ require 'concurrent'
 module Rackstash
   module Fields
     class AbstractCollection
+      # @!visibility private
+      # we want to look "native", 7 for 32-bit, 14 for 64-bit
+      DEFAULT_OBJ_ID_STR_WIDTH = 0.size == 4 ? 7 : 14
+
       # Equality -- Two collections are equal if they are of exactly the same
       # class and contain the same raw data according to `Object#==`.
       #
@@ -38,7 +42,8 @@ module Rackstash
       #
       # @return [String] human-redable details about the object.
       def inspect
-        "#<#{self.class}:#{format '0x%014x', object_id << 1} #{self}>"
+        id_str = (object_id << 1).to_s(16).rjust(DEFAULT_OBJ_ID_STR_WIDTH, '0')
+        "#<#{self.class.name}:0x#{id_str} #{self}>"
       end
 
       # Provide a copy of the wrapped {#raw} data in a format allowing direct
