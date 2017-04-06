@@ -76,10 +76,8 @@ module Rackstash
       @buffering = !!buffering
       @allow_empty = !!allow_empty
 
-      @messages = []
-      @fields = Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
-      @tags = Rackstash::Fields::Tags.new
-      @timestamp = nil
+      # initialize the internal data structures for fields, tags, ...
+      clear
     end
 
     # Add a new message to the buffer. This will mark the current buffer as
@@ -130,9 +128,9 @@ module Rackstash
     #
     # @return [self]
     def clear
-      @messages.clear
-      @fields.clear
-      @tags.clear
+      @messages = []
+      @fields = Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
+      @tags = Rackstash::Fields::Tags.new
       @timestamp = nil
 
       self
