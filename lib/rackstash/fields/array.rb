@@ -85,6 +85,7 @@ module Rackstash
         @raw << normalize(value)
         self
       end
+      alias push <<
 
       # @return [::Array] deep-transforms the array into a plain Ruby Array
       def as_json(*)

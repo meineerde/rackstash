@@ -99,6 +99,12 @@ describe Rackstash::Fields::Array do
     it 'returns the array' do
       expect(array << 'value').to equal array
     end
+
+    it 'can use push as an alias' do
+      expect(array.push 'value').to equal array
+      expect(array[0]).to eql 'value'
+    end
+
   end
 
   describe '#as_json' do
