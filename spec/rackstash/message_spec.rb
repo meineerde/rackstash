@@ -6,35 +6,99 @@
 require 'spec_helper'
 
 require 'digest'
+require 'json'
 require 'rackstash/message'
 
 describe Rackstash::Message do
-  describe '#message' do
-    it 'dups the message string' do
-      str = 'a message'.encode(Encoding::ASCII_8BIT)
-      message = Rackstash::Message.new(str)
+  describe '#initialize' do
+    it 'immediately formats the message' do
+      severity = 0
+      time = Time.now
+      progname = 'ProgramName'
+      message = 'Hello World'
 
-      expect(message.message).to eql str
-      expect(message.message).not_to equal str
-      expect(message.message.encoding).to eql Encoding::ASCII_8BIT
-      expect(message.message).to be_frozen
+      formatter = double('formatter')
+      expect(formatter).to receive(:call)
+        .with('DEBUG', time, progname, message)
+
+      message = Rackstash::Message.new(
+        message,
+        severity: severity,
+        time: time,
+        progname: progname,
+        formatter: formatter
+      )
+    end
+
+    it 'cleans the message' do
+      messages = [
+        ["First\r\nSecond",         "First\nSecond"],
+        ["First\r\nSecond\n\r",     "First\nSecond\n\n"],
+        ["Foo\r\n\rBar",            "Foo\n\nBar"],
+        ["\r \tWord\n\nPhrase\n",   "\n \tWord\n\nPhrase\n"],
+        ["\e[31mRED TEXT\e[0m",     'RED TEXT']
+      ]
+
+      messages.each do |msg, clean|
+        message = Rackstash::Message.new(msg)
+        expect(message.message).to eql clean
+        expect(message.message).to be_frozen
+      end
+    end
+
+    it 'encodes the message as UTF-8' do
+      utf8_str = 'Dönerstraße'
+      latin_str = utf8_str.encode(Encoding::ISO8859_9)
+      expect(latin_str.encoding).to eql Encoding::ISO8859_9
+
+      message = Rackstash::Message.new(latin_str)
+      expect(message.message).to eql utf8_str
+      expect(message.message.encoding).to eql Encoding::UTF_8
+    end
+
+    it 'does not raise an error on incompatible encodings' do
+      binary = Digest::SHA256.digest('string')
+      message = Rackstash::Message.new(binary)
+
+      expect(message.message).to include '�'
+      expect(message.message.encoding).to eql Encoding::UTF_8
     end
 
     it 'accepts non-string objects' do
-      exception = StandardError.new('An error')
-      message = Rackstash::Message.new(exception)
+      message = Rackstash::Message.new(StandardError.new('An error'))
+      expect(message.message).to eql '#<StandardError: An error>'
+      expect(message.message).to be_frozen
 
-      expect(message.message).to eq exception
+      message = Rackstash::Message.new(:symbol)
+      expect(message.message).to eql ':symbol'
+      expect(message.message).to be_frozen
     end
 
-    it 'attempts to dup non-frozen objects' do
-      rational = Rational(2, 3)
-      expect(rational).to_not be_frozen
+    it 'dups and freezes all messages' do
+      str = 'hello'
+      expect(str.encoding).to eql Encoding::UTF_8
 
-      message = Rackstash::Message.new(rational)
+      message = Rackstash::Message.new(str)
+      expect(message.message).to be_frozen
+      expect(message.message).not_to equal str
+      expect(message.message).to eql str
+    end
+  end
 
-      expect(message.message).to_not be_frozen
-      expect(message.message).to equal rational
+  describe '#message' do
+    it 'is aliased to to_str' do
+      message = Rackstash::Message.new('hello world')
+      expect(message.to_s).to eql 'hello world'
+    end
+
+    it 'is aliased to to_str' do
+      message = Rackstash::Message.new('hello world')
+      expect(message.to_str).to eql 'hello world'
+    end
+
+    it 'is aliased to as_json' do
+      message = Rackstash::Message.new('hello world')
+      expect(message.as_json).to eql 'hello world'
     end
   end
 
@@ -117,88 +181,11 @@ describe Rackstash::Message do
     end
   end
 
-  describe '#to_s' do
-    it 'formats the message' do
-      severity = 0
-      time = Time.now
-      progname = 'ProgramName'
-      message = 'Hello World'
 
-      formatter = double('formatter')
-      expect(formatter).to receive(:call)
-        .with('DEBUG', time, progname, message)
-        .and_return('Formatted Message')
-
-      message = Rackstash::Message.new(
-        message,
-        severity: severity,
-        time: time,
-        progname: progname,
-        formatter: formatter
-      )
-
-      expect(message.to_s).to eql 'Formatted Message'
-    end
-
-    it 'cleans the message' do
-      messages = [
-        ["First\r\nSecond",         "First\nSecond"],
-        ["First\r\nSecond\n\r",     "First\nSecond\n\n"],
-        ["Foo\r\n\rBar",            "Foo\n\nBar"],
-        ["\r \tWord\n\nPhrase\n",   "\n \tWord\n\nPhrase\n"],
-        ["\e[31mRED TEXT\e[0m",     'RED TEXT']
-      ]
-
-      messages.each do |msg, clean|
-        message = Rackstash::Message.new(msg)
-        expect(message.to_s).to eql clean
-      end
-    end
-
-    it 'encodes the message as UTF-8' do
-      utf8_str = 'Dönerstraße'
-      latin_str = utf8_str.encode(Encoding::ISO8859_9)
-      expect(latin_str.encoding).to eql Encoding::ISO8859_9
-
-      message = Rackstash::Message.new(latin_str)
-      expect(message.to_s).to eql utf8_str
-      expect(message.to_s.encoding).to eql Encoding::UTF_8
-    end
-
-    it 'does not raise an error on incompatible encodings' do
-      binary = Digest::SHA256.digest('string')
-      message = Rackstash::Message.new(binary)
-
-      expect(message.to_s).to include '�'
-      expect(message.to_s.encoding).to eql Encoding::UTF_8
-    end
-
-    it 'accepts non-string objects' do
-      message = Rackstash::Message.new(StandardError.new('An error'))
-      expect(message.to_s).to eql '#<StandardError: An error>'
-
-      message = Rackstash::Message.new(:symbol)
-      expect(message.to_s).to eql ':symbol'
-    end
-
-    it 'is aliased to to_str' do
+  describe '#to_json' do
+    it 'formats the message as JSON' do
       message = Rackstash::Message.new('hello world')
-      expect(message.to_str).to eql 'hello world'
+      expect(message.to_json).to eql '"hello world"'
     end
-
-    it 'is aliased to as_json' do
-      message = Rackstash::Message.new('hello world')
-      expect(message.as_json).to eql 'hello world'
-    end
-  end
-
-  it 'formats the message as JSON' do
-    message = Rackstash::Message.new('hello world')
-    as_json = 'hello world'
-
-    expect(message).to receive(:as_json).and_return(as_json)
-    expect(as_json).to receive(:to_json).and_return('"json string"')
-
-    expect(message.to_json).to eql '"json string"'
   end
 end

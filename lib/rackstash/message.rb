@@ -19,6 +19,11 @@ module Rackstash
 
     attr_reader :message
 
+    alias as_json message
+    # Messages are implicitly conversible to Strings
+    alias to_s message
+    alias to_str message
+
     attr_reader :severity
 
     attr_reader :progname
@@ -28,33 +33,25 @@ module Rackstash
     attr_reader :formatter
 
     def initialize(
-      msg,
+      message,
       severity: UNKNOWN,
       time: Time.now.utc.freeze,
       progname: PROGNAME,
       formatter: RAW_FORMATTER
     )
-      @message = dup_freeze(msg)
-
       @severity = Integer(severity)
       @severity = 0 if @severity < 0
 
       @time = dup_freeze(time)
       @progname = dup_freeze(progname)
       @formatter = formatter
+
+      @message = cleanup @formatter.call(severity_label, @time, @progname, message)
     end
 
     def severity_label
       SEVERITY_LABEL[@severity] || SEVERITY_LABEL.last
     end
-
-    def to_s
-      cleanup @formatter.call(severity_label, @time, @progname, @message)
-    end
-
-    alias as_json to_s
-    # Messages are implicitly conversible to Strings
-    alias to_str to_s
 
     def to_json
       as_json.to_json
