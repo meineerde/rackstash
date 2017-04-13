@@ -115,7 +115,7 @@ module Rackstash
           return value
         when true, false, nil
           return value
-        when Rackstash::Fields::AbstractCollection
+        when Rackstash::Fields::Hash, Rackstash::Fields::Array
           return wrap ? value : value.raw
         when ::Hash
           hash = value.each_with_object(Concurrent::Hash.new) do |(k, v), memo|
