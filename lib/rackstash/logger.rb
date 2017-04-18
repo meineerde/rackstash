@@ -82,20 +82,7 @@ module Rackstash
       if severity.is_a?(Integer)
         @level = severity
       else
-        case severity.to_s.downcase
-        when 'debug'.freeze
-          @level = DEBUG
-        when 'info'.freeze
-          @level = INFO
-        when 'warn'.freeze
-          @level = WARN
-        when 'error'.freeze
-          @level = ERROR
-        when 'fatal'.freeze
-          @level = FATAL
-        when 'unknown'.freeze
-          @level = UNKNOWN
-        else
+        @level = SEVERITY_NAMES.fetch(severity.to_s.downcase) do
           raise ArgumentError, "invalid log level: #{severity}"
         end
       end

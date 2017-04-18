@@ -17,6 +17,15 @@ module Rackstash
     UNKNOWN = 5
   ].freeze
 
+  SEVERITY_NAMES = {
+    'debug' => DEBUG,
+    'info' => INFO,
+    'warn' => WARN,
+    'error' => ERROR,
+    'fatal' => FATAL,
+    'unknown' => UNKNOWN
+  }.freeze
+
   SEVERITY_LABELS = [
     'DEBUG'.freeze,
     'INFO'.freeze,
