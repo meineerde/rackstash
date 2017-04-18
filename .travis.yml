@@ -10,12 +10,12 @@ cache: bundler
 
 rvm:
   # Latest Rubies on top
-  - 2.4.0
-  - jruby-9.1.7.0
+  - 2.4.1
+  - jruby-9.1.8.0
 
   # Older versions
-  - 2.3.3
-  - 2.2.6
+  - 2.3.4
+  - 2.2.7
   - 2.1.10
   - jruby-9.0.5.0
 
@@ -28,7 +28,7 @@ jdk:
 
 matrix:
   include:
-    - rvm: 2.3.3
+    - rvm: 2.3.4
       jdk: oraclejdk8
       env: COVERAGE=1
 
