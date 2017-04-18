@@ -6,17 +6,6 @@
 module Rackstash
   # This class and all its data are immutable after initialization
   class Message
-    RAW_FORMATTER = RawFormatter.new
-
-    SEVERITY_LABEL = [
-      'DEBUG'.freeze,
-      'INFO'.freeze,
-      'WARN'.freeze,
-      'ERROR'.freeze,
-      'FATAL'.freeze,
-      'ANY'.freeze
-    ].freeze
-
     attr_reader :message
 
     alias as_json message
@@ -30,27 +19,14 @@ module Rackstash
 
     attr_reader :time
 
-    attr_reader :formatter
-
-    def initialize(
-      message,
-      severity: UNKNOWN,
-      time: Time.now.utc.freeze,
-      progname: PROGNAME,
-      formatter: RAW_FORMATTER
-    )
+    def initialize(message, severity: UNKNOWN, time: Time.now.utc.freeze, progname: PROGNAME)
       @severity = Integer(severity)
       @severity = 0 if @severity < 0
 
       @time = dup_freeze(time)
       @progname = dup_freeze(progname)
-      @formatter = formatter
 
-      @message = cleanup @formatter.call(severity_label, @time, @progname, message)
-    end
-
-    def severity_label
-      SEVERITY_LABEL[@severity] || SEVERITY_LABEL.last
+      @message = cleanup(message)
     end
 
     def to_json
@@ -65,6 +41,7 @@ module Rackstash
     # @param msg [#to_s] a message to be added to the buffer
     # @return [String] the sanitized frozen message
     def cleanup(msg)
+      msg = msg.inspect unless msg.is_a?(String)
       msg = utf8_encode(msg)
       # remove useless ANSI color codes
       msg.gsub!(/\e\[[0-9;]*m/, EMPTY_STRING)

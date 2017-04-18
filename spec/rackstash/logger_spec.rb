@@ -166,30 +166,30 @@ describe Rackstash::Logger do
 
     it 'sets the provided a severity' do
       logger.log(Rackstash::DEBUG, 'Debug message')
-      expect(messages.last).to include message: 'Debug message', severity: 0
+      expect(messages.last).to include message: "Debug message\n", severity: 0
 
       logger.log(Rackstash::INFO, 'Info message')
-      expect(messages.last).to include message: 'Info message', severity: 1
+      expect(messages.last).to include message: "Info message\n", severity: 1
 
       logger.log(Rackstash::WARN, 'Warn message')
-      expect(messages.last).to include message: 'Warn message', severity: 2
+      expect(messages.last).to include message: "Warn message\n", severity: 2
 
       logger.log(Rackstash::ERROR, 'Error message')
-      expect(messages.last).to include message: 'Error message', severity: 3
+      expect(messages.last).to include message: "Error message\n", severity: 3
 
       logger.log(Rackstash::FATAL, 'Fatal message')
-      expect(messages.last).to include message: 'Fatal message', severity: 4
+      expect(messages.last).to include message: "Fatal message\n", severity: 4
 
       logger.log(Rackstash::UNKNOWN, 'Unknown message')
-      expect(messages.last).to include message: 'Unknown message', severity: 5
+      expect(messages.last).to include message: "Unknown message\n", severity: 5
 
       # Positive severities are passed along
       logger.log(42, 'The answer')
-      expect(messages.last).to include message: 'The answer', severity: 42
+      expect(messages.last).to include message: "The answer\n", severity: 42
 
       # nil is changed to UNKNOWN
       logger.log(nil, 'Missing')
-      expect(messages.last).to include message: 'Missing', severity: 5
+      expect(messages.last).to include message: "Missing\n", severity: 5
 
       # Non-number arguments result in an error
       expect { logger.log(:debug, 'Missing') }.to raise_error(TypeError)
@@ -201,9 +201,16 @@ describe Rackstash::Logger do
       expect(messages.last).to include severity: 5
     end
 
-    it 'adds the current formatter to the message' do
-      logger.add(0, 'test')
-      expect(messages.last).to include formatter: logger.formatter
+    it 'formats the message' do
+      time = Time.now
+      formatter = double('formatter')
+
+      logger.formatter = formatter
+
+      expect(formatter).to receive(:call)
+        .with('DEBUG', instance_of(Time), Rackstash::PROGNAME, 'Hello World')
+
+      logger.add(0, 'Hello World')
     end
 
     it 'calls the block if message is nil' do
@@ -230,134 +237,137 @@ describe Rackstash::Logger do
       # If there is a message, it will be logged
       logger.add(0, 'Hello', nil)
       expect(messages.last).to include(
-        message: 'Hello', severity: 0, progname: Rackstash::PROGNAME
+        message: "Hello\n", severity: 0, progname: Rackstash::PROGNAME
       )
 
       logger.add(4, 'Hello', 'prog')
       expect(messages.last).to include(
-        message: 'Hello', severity: 4, progname: 'prog'
+        message: "Hello\n", severity: 4, progname: 'prog'
       )
 
       logger.add(5, 'Hello', 'prog') { 'block' }
       expect(messages.last).to include(
-        message: 'Hello', severity: 5, progname: 'prog'
+        message: "Hello\n", severity: 5, progname: 'prog'
       )
 
       logger.add(nil, 'Hello', nil)
       expect(messages.last).to include(
-        message: 'Hello', severity: 5, progname: Rackstash::PROGNAME
+        message: "Hello\n", severity: 5, progname: Rackstash::PROGNAME
       )
 
       # If there is no message, we use the block
       logger.add(1, nil, 'prog') { 'Hello' }
       expect(messages.last).to include(
-        message: 'Hello', severity: 1, progname: 'prog'
+        message: "Hello\n", severity: 1, progname: 'prog'
       )
       logger.add(1, nil, nil) { 'Hello' }
       expect(messages.last).to include(
-        message: 'Hello', severity: 1, progname: Rackstash::PROGNAME
+        message: "Hello\n", severity: 1, progname: Rackstash::PROGNAME
       )
 
       # If there is no block either, we use the progname and pass the default
       # progname to the message
       logger.add(2, nil, 'prog')
       expect(messages.last).to include(
-        message: 'prog', severity: 2, progname: Rackstash::PROGNAME
+        message: "prog\n", severity: 2, progname: Rackstash::PROGNAME
       )
       # ... which defaults to `Rackstash::BufferedLogger::PROGNAME`
       logger.add(3, nil, nil)
       expect(messages.last).to include(
-        message: Rackstash::PROGNAME, severity: 3, progname: Rackstash::PROGNAME
+        message: "#{Rackstash::PROGNAME}\n", severity: 3, progname: Rackstash::PROGNAME
       )
 
       # If we resolve the message to a blank string, we still add it
       logger.add(1, '', nil) { 'Hello' }
       expect(messages.last).to include(
-        message: '', severity: 1, progname: Rackstash::PROGNAME
+        message: "\n", severity: 1, progname: Rackstash::PROGNAME
       )
       # Same with nil which is later inspect'ed by the formatter
       logger.add(0, nil, 'prog') { nil }
       expect(messages.last).to include(
-        message: nil, severity: 0, progname: 'prog'
+        message: "nil\n", severity: 0, progname: 'prog'
       )
     end
 
     it 'can use debug shortcut' do
       expect(logger).to receive(:add).with(0, 'Debug').and_call_original
       logger.debug('Debug')
-      expect(messages.last).to include message: 'Debug', severity: 0
+      expect(messages.last).to include message: "Debug\n", severity: 0
     end
 
     it 'can use debug shortcut with a block' do
       expect(logger).to receive(:add).with(0, nil).and_call_original
       logger.debug { 'Debug' }
-      expect(messages.last).to include message: 'Debug', severity: 0
+      expect(messages.last).to include message: "Debug\n", severity: 0
     end
 
     it 'can use info shortcut' do
       expect(logger).to receive(:add).with(1, 'Info').and_call_original
       logger.info('Info')
-      expect(messages.last).to include message: 'Info', severity: 1
+      expect(messages.last).to include message: "Info\n", severity: 1
     end
 
     it 'can use info shortcut with a block' do
       expect(logger).to receive(:add).with(1, nil).and_call_original
       logger.info { 'Info' }
-      expect(messages.last).to include message: 'Info', severity: 1
+      expect(messages.last).to include message: "Info\n", severity: 1
     end
 
     it 'can use warn shortcut' do
       expect(logger).to receive(:add).with(2, 'Warn').and_call_original
       logger.warn('Warn')
-      expect(messages.last).to include message: 'Warn', severity: 2
+      expect(messages.last).to include message: "Warn\n", severity: 2
     end
 
     it 'can use warn shortcut with a block' do
       expect(logger).to receive(:add).with(2, nil).and_call_original
       logger.warn { 'Warn' }
-      expect(messages.last).to include message: 'Warn', severity: 2
+      expect(messages.last).to include message: "Warn\n", severity: 2
     end
 
     it 'can use error shortcut' do
       expect(logger).to receive(:add).with(3, 'Error').and_call_original
       logger.error('Error')
-      expect(messages.last).to include message: 'Error', severity: 3
+      expect(messages.last).to include message: "Error\n", severity: 3
     end
 
     it 'can use error shortcut with a block' do
       expect(logger).to receive(:add).with(3, nil).and_call_original
       logger.error { 'Error' }
-      expect(messages.last).to include message: 'Error', severity: 3
+      expect(messages.last).to include message: "Error\n", severity: 3
     end
 
     it 'can use fatal shortcut' do
       expect(logger).to receive(:add).with(4, 'Fatal').and_call_original
       logger.fatal('Fatal')
-      expect(messages.last).to include message: 'Fatal', severity: 4
+      expect(messages.last).to include message: "Fatal\n", severity: 4
     end
 
     it 'can use fatal shortcut with a block' do
       expect(logger).to receive(:add).with(4, nil).and_call_original
       logger.fatal { 'Fatal' }
-      expect(messages.last).to include message: 'Fatal', severity: 4
+      expect(messages.last).to include message: "Fatal\n", severity: 4
     end
 
     it 'can use unknown shortcut' do
       expect(logger).to receive(:add).with(5, 'Unknown').and_call_original
       logger.unknown('Unknown')
-      expect(messages.last).to include message: 'Unknown', severity: 5
+      expect(messages.last).to include message: "Unknown\n", severity: 5
     end
 
     it 'can use unknown shortcut with a block' do
       expect(logger).to receive(:add).with(5, nil).and_call_original
       logger.unknown { 'Unknown' }
-      expect(messages.last).to include message: 'Unknown', severity: 5
+      expect(messages.last).to include message: "Unknown\n", severity: 5
     end
 
     it 'can add a raw message with <<' do
       logger << :raw_value
-      expect(messages.last).to include message: :raw_value
-      expect(messages.last).not_to include :formatter, :severity
+      expect(messages.last).to include(
+        message: :raw_value,
+        severity: 5,
+        time: instance_of(Time)
+      )
     end
   end
 

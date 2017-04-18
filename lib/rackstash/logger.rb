@@ -65,7 +65,9 @@ module Rackstash
     def <<(msg)
       buffer.add_message Message.new(
         msg,
-        time: Time.now.utc.freeze
+        time: Time.now.utc.freeze,
+        progname: @progname,
+        severity: UNKNOWN
       )
       msg
     end
@@ -251,15 +253,21 @@ module Rackstash
         end
       end
 
+      time = Time.now.utc.freeze
+      formatted_msg = formatter.call(
+        severity_label(severity),
+        time,
+        progname,
+        msg
+      )
       buffer.add_message Message.new(
-        msg,
-        time: Time.now.utc.freeze,
+        formatted_msg,
+        time: time,
         progname: progname,
-        severity: severity,
-        formatter: formatter
+        severity: severity
       )
 
-      msg
+      formatted_msg
     end
     alias log add
 
@@ -290,6 +298,10 @@ module Rackstash
 
     def buffer
       buffer_stack.current
+    end
+
+    def severity_label(severity)
+      SEVERITY_LABELS[severity] || SEVERITY_LABELS.last
     end
   end
 end

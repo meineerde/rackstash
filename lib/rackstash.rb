@@ -17,6 +17,15 @@ module Rackstash
     UNKNOWN = 5
   ].freeze
 
+  SEVERITY_LABELS = [
+    'DEBUG'.freeze,
+    'INFO'.freeze,
+    'WARN'.freeze,
+    'ERROR'.freeze,
+    'FATAL'.freeze,
+    'ANY'.freeze
+  ].freeze
+
   PROGNAME = "rackstash/v#{Rackstash::VERSION}".freeze
 
   EMPTY_STRING = ''.freeze

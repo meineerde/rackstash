@@ -11,25 +11,6 @@ require 'rackstash/message'
 
 describe Rackstash::Message do
   describe '#initialize' do
-    it 'immediately formats the message' do
-      severity = 0
-      time = Time.now
-      progname = 'ProgramName'
-      message = 'Hello World'
-
-      formatter = double('formatter')
-      expect(formatter).to receive(:call)
-        .with('DEBUG', time, progname, message)
-
-      message = Rackstash::Message.new(
-        message,
-        severity: severity,
-        time: time,
-        progname: progname,
-        formatter: formatter
-      )
-    end
-
     it 'cleans the message' do
       messages = [
         ["First\r\nSecond",         "First\nSecond"],
@@ -126,18 +107,6 @@ describe Rackstash::Message do
     end
   end
 
-  describe '#severity_label' do
-    it 'formats the given severity as a string' do
-      %w[DEBUG INFO WARN ERROR FATAL ANY].each_with_index do |label, severity|
-        expect(Rackstash::Message.new('', severity: severity).severity_label).to eql label
-      end
-    end
-
-    it 'returns ANY for unknown severities' do
-      expect(Rackstash::Message.new('', severity: 42).severity_label).to eql 'ANY'
-    end
-  end
-
   describe 'progname' do
     it 'dups the progname' do
       progname = 'a message'
@@ -171,16 +140,6 @@ describe Rackstash::Message do
       expect(Rackstash::Message.new('').time).to be_utc
     end
   end
-
-  describe 'formatter' do
-    it 'defaults to RAW_FORMATTER' do
-      expect(Rackstash::Message.new('').formatter).to equal Rackstash::Message::RAW_FORMATTER
-
-      message = Rackstash::Message.new('Beep boop')
-      expect(message.to_s).to eql 'Beep boop'
-    end
-  end
-
 
   describe '#to_json' do
     it 'formats the message as JSON' do
