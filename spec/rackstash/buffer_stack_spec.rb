@@ -23,13 +23,12 @@ describe Rackstash::BufferStack do
 
     it 'adds a new implicit buffer' do
       expect(stack.current).to be_a Rackstash::Buffer
-      expect(stack.flush_and_pop).to be_a Rackstash::Buffer
+      stack.flush_and_pop
 
-      # no further Buffer on the stack
-      expect(stack.flush_and_pop).to be nil
+      expect(stack.instance_variable_get(:@stack).count).to eql 0
 
       expect(stack.current).to be_a Rackstash::Buffer
-      expect(stack.flush_and_pop).to be_a Rackstash::Buffer
+      expect(stack.instance_variable_get(:@stack).count).to eql 1
     end
   end
 
@@ -63,9 +62,15 @@ describe Rackstash::BufferStack do
         .to change { stack.instance_variable_get(:@stack).count }.from(1).to(0)
     end
 
-    it 'returns the removed buffer' do
+    it 'does nothing if there is no buffer' do
+      expect(stack.instance_variable_get(:@stack).count).to eql 0
+      expect { stack.flush_and_pop }
+        .not_to change { stack.instance_variable_get(:@stack) }
+    end
+
+    it 'always returns nil' do
       new_buffer = stack.push
-      expect(stack.flush_and_pop).to equal new_buffer
+      expect(stack.flush_and_pop).to be nil
       expect(stack.flush_and_pop).to be nil
     end
 
@@ -75,7 +80,7 @@ describe Rackstash::BufferStack do
       expect(new_buffer).to receive(:flush).once
 
       stack.flush_and_pop
-      stack.flush_and_pop # nil, thus `#flush` is not called again
+      stack.flush_and_pop # no further buffer, thus `#flush` is not called again
     end
   end
 end
