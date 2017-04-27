@@ -12,10 +12,6 @@ require 'concurrent'
 module Rackstash
   module Fields
     class AbstractCollection
-      # @!visibility private
-      # we want to look "native", 7 for 32-bit, 14 for 64-bit
-      DEFAULT_OBJ_ID_STR_WIDTH = 0.size == 4 ? 7 : 14
-
       # Equality -- Two collections are equal if they are of exactly the same
       # class and contain the same raw data according to `Object#==`.
       #
