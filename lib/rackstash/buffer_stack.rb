@@ -3,6 +3,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'thread'
+
 require 'rackstash/buffer'
 
 module Rackstash
@@ -17,6 +19,7 @@ module Rackstash
     def initialize(sink)
       @sink = sink
       @stack = []
+      @stack_mutex = Mutex.new
     end
 
     # Get the current, i.e., latest, top-most, {Buffer} on the internal stack.
@@ -25,8 +28,10 @@ module Rackstash
     #
     # @return [Buffer]
     def current
-      @stack.last || Buffer.new(@sink, buffering: false).tap do |buffer|
-        @stack.push buffer
+      @stack_mutex.synchronize do
+        @stack.last || Buffer.new(@sink, buffering: false).tap do |buffer|
+          @stack.push buffer
+        end
       end
     end
 
@@ -41,9 +46,12 @@ module Rackstash
     #   {Buffer}. See {Buffer#initialize} for allowed values.
     # @return [Buffer] the newly created buffer
     def push(**buffer_args)
-      Buffer.new(sink, **buffer_args).tap do |buffer|
+      buffer = Buffer.new(sink, **buffer_args)
+      @stack_mutex.synchronize do
         @stack.push buffer
       end
+
+      buffer
     end
 
     # Remove the top-most Buffer from the internal stack.
@@ -53,7 +61,7 @@ module Rackstash
     #
     # @return [nil]
     def flush_and_pop
-      buffer = @stack.pop
+      buffer = @stack_mutex.synchronize { @stack.pop }
       buffer.flush if buffer
       nil
     end
