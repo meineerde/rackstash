@@ -128,7 +128,7 @@ module Rackstash
     #
     # @return [self]
     def clear
-      @messages = []
+      @messages = Concurrent::Array.new
       @fields = Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
       @tags = Rackstash::Fields::Tags.new
       @timestamp = nil
