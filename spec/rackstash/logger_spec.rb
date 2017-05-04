@@ -202,11 +202,8 @@ describe Rackstash::Logger do
     end
 
     it 'formats the message' do
-      time = Time.now
       formatter = double('formatter')
-
       logger.formatter = formatter
-
       expect(formatter).to receive(:call)
         .with('DEBUG', instance_of(Time), Rackstash::PROGNAME, 'Hello World')
 

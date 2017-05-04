@@ -69,7 +69,7 @@ describe Rackstash::BufferStack do
     end
 
     it 'always returns nil' do
-      new_buffer = stack.push
+      stack.push
       expect(stack.flush_and_pop).to be nil
       expect(stack.flush_and_pop).to be nil
     end
