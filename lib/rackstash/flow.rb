@@ -4,7 +4,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  class Target
+  class Flow
     def initialize(adapter = nil)
       @adapter = adapter
     end
