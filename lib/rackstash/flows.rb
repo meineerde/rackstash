@@ -46,7 +46,7 @@ module Rackstash
     alias size length
 
     def to_ary
-      @flows.to_a
+      @flows.to_a.compact
     end
     alias to_a to_ary
 

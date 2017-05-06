@@ -90,7 +90,7 @@ describe Rackstash::Flows do
     it 'adds nil flows if necessary' do
       flow = a_flow
       flows[3] = flow
-      expect(flows.to_a).to eql [nil, nil, nil, flow]
+      expect(flows.length).to eql 4
     end
 
     it 'tries to find a matching flow' do
