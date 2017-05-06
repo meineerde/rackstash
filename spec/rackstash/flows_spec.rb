@@ -138,17 +138,32 @@ describe Rackstash::Flows do
     it 'returns an array' do
       flows << a_flow
 
-      expect(flows.to_a).to be_an_instance_of(::Array)
-      expect(flows.to_a).not_to be_empty
+      expect(flows.to_ary).to be_an_instance_of(::Array)
+      expect(flows.to_ary).not_to be_empty
     end
 
     it 'returns a new object each time' do
-      array = flows.to_a
-      expect(flows.to_a).to eql array
-      expect(flows.to_a).not_to equal array
+      array = flows.to_ary
+      expect(flows.to_ary).to eql array
+      expect(flows.to_ary).not_to equal array
 
       array << a_flow
-      expect(flows.to_a).not_to eql array
+      expect(flows.to_ary).not_to eql array
+    end
+
+    it 'does not include nil elements' do
+      flow = a_flow
+      flows[3] = flow
+
+      expect(flows.size).to eql 4
+      expect(flows.to_ary).to eql [flow]
+    end
+
+    it 'can use to_a alias' do
+      flows << a_flow
+
+      expect(flows.to_a).to be_an_instance_of(::Array)
+      expect(flows.to_a).not_to be_empty
     end
   end
 
