@@ -22,6 +22,12 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/meineerde/rackstash'
   spec.license       = 'MIT'
 
+  # We require at least Ruby 2.1 due to the use of:
+  # * implicit String#scrub during String#encode as used in
+  #   Rackstash::Fields::AbstractCollection#utf8_encode.
+  #   We might be able to use the string-scrub gem as a polyfill and explicitly
+  #   call scrub on lower versions though.
+  # * mandatory keyword arguments
   spec.required_ruby_version = '>= 2.1.0'
 
   files = `git ls-files -z`.split("\x0")
