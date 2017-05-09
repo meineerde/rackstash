@@ -32,6 +32,13 @@ describe Rackstash::Flows do
       list_with_splat = Rackstash::Flows.new(*raw_flows)
       expect(list_with_splat.size).to eql 3
     end
+
+    it 'creates flows if necessary' do
+      flow_class = class_double('Rackstash::Flow').as_stubbed_const
+      expect(flow_class).to receive(:new).with(:dummy).and_return(a_flow)
+
+      Rackstash::Flows.new(:dummy)
+    end
   end
 
   describe '#<<' do
