@@ -24,12 +24,12 @@ describe Rackstash::Flows do
     end
 
     it 'accepts a list of flows' do
-      flows = 3.times.map { a_flow }
+      raw_flows = Array.new(3) { a_flow }
 
-      list_with_array = Rackstash::Flows.new(flows)
+      list_with_array = Rackstash::Flows.new(raw_flows)
       expect(list_with_array.size).to eql 3
 
-      list_with_splat = Rackstash::Flows.new(*flows)
+      list_with_splat = Rackstash::Flows.new(*raw_flows)
       expect(list_with_splat.size).to eql 3
     end
   end
@@ -163,12 +163,12 @@ describe Rackstash::Flows do
 
   describe '#length' do
     it 'returns the number of flows' do
-      expect { flows << a_flow}
+      expect { flows << a_flow }
         .to change { flows.length }.from(0).to(1)
     end
 
     it 'can use size alias' do
-      expect { flows << a_flow}
+      expect { flows << a_flow }
         .to change { flows.size }.from(0).to(1)
     end
   end
