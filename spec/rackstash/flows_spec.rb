@@ -105,6 +105,45 @@ describe Rackstash::Flows do
     end
   end
 
+  describe '#each' do
+    it 'yield each flow' do
+      flow1 = a_flow
+      flow2 = a_flow
+
+      flows << flow1
+      flows << flow2
+
+      expect { |b| flows.each(&b) }.to yield_successive_args(flow1, flow2)
+    end
+
+    it 'does not yield nil values' do
+      flows[3] = a_flow
+      expect { |b| flows.each(&b) }.to yield_control.once
+    end
+
+    it 'returns an array if a block was provided' do
+      flows << a_flow
+      expect(flows.each {}).to be_instance_of Array
+    end
+
+    it 'returns an Enumerator if no block was provided' do
+      flows << a_flow
+      expect(flows.each).to be_instance_of Enumerator
+    end
+
+    it 'operators on a copy of the internal data' do
+      yielded = 0
+      flows << a_flow
+
+      flows.each do |flow|
+        yielded += 1
+        flows[1] = flow
+      end
+
+      expect(yielded).to eql 1
+    end
+  end
+
   describe '#empty?' do
     it 'is true if empty' do
       expect(flows).to be_empty
