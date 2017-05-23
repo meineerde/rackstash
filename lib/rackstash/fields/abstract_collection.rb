@@ -114,8 +114,9 @@ module Rackstash
         when Rackstash::Fields::Hash, Rackstash::Fields::Array
           return wrap ? value : value.raw
         when ::Hash
-          hash = value.each_with_object(Concurrent::Hash.new) do |(k, v), memo|
-            memo[utf8_encode(k)] = normalize(v, scope: scope)
+          hash = Concurrent::Hash.new
+          value.each_pair do |k, v|
+            hash[utf8_encode(k)] = normalize(v, scope: scope)
           end
           if wrap
             hash = Rackstash::Fields::Hash.new.tap do |hash_field|
@@ -124,8 +125,9 @@ module Rackstash
           end
           return hash
         when ::Array, ::Set, ::Enumerator
-          array = value.each_with_object(Concurrent::Array.new) do |e, memo|
-            memo << normalize(e, scope: scope)
+          array = Concurrent::Array.new
+          value.each do |e|
+            array << normalize(e, scope: scope)
           end
           if wrap
             array = Rackstash::Fields::Array.new.tap do |array_field|

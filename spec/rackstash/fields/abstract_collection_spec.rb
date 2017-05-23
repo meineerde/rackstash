@@ -224,6 +224,11 @@ describe Rackstash::Fields::AbstractCollection do
         expect(normalize(hash, wrap: false).keys).to all be_frozen
       end
 
+      it 'returns a Concurrent::Hash with wrap: false' do
+        hash = { 'one' => 1 }
+        expect(normalize(hash, wrap: false)).to be_an_instance_of(Concurrent::Hash)
+      end
+
       it 'normalizes all values' do
         hash = { 'key' => :beepboop }
 
@@ -286,6 +291,11 @@ describe Rackstash::Fields::AbstractCollection do
 
         expect(normalize(array, wrap: false)).to eql [1, 'two', 'three']
         expect(normalize(array, wrap: false)).to all be_frozen
+      end
+
+      it 'returns a Concurrent::Array with wrap: false' do
+        array = [1, :two, 'three']
+        expect(normalize(array, wrap: false)).to be_an_instance_of(Concurrent::Array)
       end
 
       it 'normalizes all values' do
