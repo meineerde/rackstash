@@ -63,5 +63,17 @@ describe Rackstash::Adapters::IO do
       adapter.write("a full line.\n")
       expect(io.tap(&:rewind).read).to eql "a full line.\n"
     end
+
+    context 'with flush_immediately' do
+      before do
+        adapter.flush_immediately = true
+      end
+
+      it 'flushes after each write' do
+        expect(io).to receive(:flush).twice
+        adapter.write('foo')
+        adapter.write('bar')
+      end
+    end
   end
 end

@@ -37,14 +37,23 @@ module Rackstash
     class IO < Adapter
       register_for ->(o) { o.respond_to?(:write) && o.respond_to?(:close) }
 
+      # @return [Boolean] `true` to ensure that the IO device is flushed after
+      #   each {#write} or `false` to never explicitly flush but rely on the IO
+      #   object to eventually flush on its own.
+      attr_accessor :flush_immediately
+
       # @param io [#write, #close] an IO object. It must at least respond to
       #   `write` and `close`.
-      def initialize(io)
+      # @param flush_immediately [Boolean] set to `true` to flush the IO object
+      #   after each write.
+      def initialize(io, flush_immediately: false)
         unless io.respond_to?(:write) && io.respond_to?(:close)
           raise TypeError, "#{io.inspect} does not look like an IO object"
         end
 
         @io = io
+        @flush_immediately = !!flush_immediately
+
         @mutex = Mutex.new
       end
 
@@ -56,6 +65,7 @@ module Rackstash
       def write_single(log)
         @mutex.synchronize do
           @io.write normalize_line(log)
+          @io.flush if @flush_immediately
         end
         nil
       end
