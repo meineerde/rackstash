@@ -11,18 +11,18 @@ module Rackstash
   module Fields
     class Tags < AbstractCollection
       def initialize
-        @raw = Set.new
+        @raw = Concurrent::Hash.new
       end
 
       def <<(tag)
         tag = resolve_value(tag)
         tag = utf8_encode(tag).freeze
-        @raw << tag unless tag.empty?
+        @raw[tag] = true unless tag.empty?
         self
       end
 
       def as_json(*)
-        @raw.to_a
+        @raw.keys
       end
       alias to_ary as_json
       alias to_a as_json
@@ -42,18 +42,18 @@ module Rackstash
 
       def merge!(tags, scope: nil)
         tags = normalize_tags(tags, scope: scope)
-        tags.reject!(&:empty?)
-
-        @raw.merge tags
+        Array(tags).each do |tag|
+          @raw[tag] = true unless tag.empty?
+        end
         self
       end
 
       def tagged?(tag)
-        @raw.include? utf8_encode(tag)
+        @raw.key? utf8_encode(tag)
       end
 
       def to_set
-        @raw.dup
+        Set.new to_a
       end
 
       protected
