@@ -143,3 +143,4 @@ module Rackstash
     end
   end
 end
+

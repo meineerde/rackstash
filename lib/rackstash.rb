@@ -54,3 +54,5 @@ module Rackstash
 end
 
 require 'rackstash/logger'
+
+require 'rackstash/adapters/io'
