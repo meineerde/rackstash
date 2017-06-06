@@ -4,7 +4,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  # Version information about Rackstash.
+  # Version information about Rackstash. We follow semantic versioning.
   module Version
     # MAJOR version. It is incremented after incompatible API changes
     MAJOR = 0
@@ -28,6 +28,7 @@ module Rackstash
     end
 
     # @return [String] the Rackstash version as a semver-compliant string
+    # @see http://semver.org/
     def self.to_s
       STRING
     end

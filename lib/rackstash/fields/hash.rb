@@ -258,7 +258,7 @@ module Rackstash
       #   the hash to merge into `self`. If this is a proc, it will get called
       #   and its result is used instead.
       # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
-      #   set a forbidden key, `false` to silently ingnore these key-value pairs
+      #   set a forbidden key, `false` to silently ignore these key-value pairs
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
       #   values is a proc, it will be called in the instance scope of this
       #   object (when given).
@@ -304,7 +304,7 @@ module Rackstash
       #   the hash to merge into `self`. If this is a proc, it will get called
       #   and its result is used instead
       # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
-      #   set a forbidden key, `false` to silently ingnore these key-value pairs
+      #   set a forbidden key, `false` to silently ignore these key-value pairs
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
       #   values is a proc, it will be called in the instance scope of this
       #   object (when given).

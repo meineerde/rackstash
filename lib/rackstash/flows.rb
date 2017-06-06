@@ -11,9 +11,10 @@ module Rackstash
   # The `Flows` class provides a thread-safe list of {Flow} objects which are
   # used to dispatch a single log events to multiple flows from the {Sink}.
   class Flows
-    # @param flows ::Array<Flow, Adapter> the {Flow} objects which should be
-    #   part of the list. If any of the arguments is not a {Flow} already, we
-    #   assume it is an adapter and create a new {Flow} for it.
+    # @param flows [::Array<Flow, Adapters::Adapter, Object>] the {Flow} objects
+    #   which should be part of the list. If any of the arguments is not a
+    #   {Flow} already, we assume it is an adapter and create a new {Flow} for
+    #   it.
     def initialize(*flows)
       @flows = Concurrent::Array.new
 
@@ -24,9 +25,9 @@ module Rackstash
 
     # Add a new flow at the end of the list.
     #
-    # @param flow [Flow, Adapter] The flow to add to the end of the list. If
-    #   the argument is not a {Flow}, we assume it is an adapter and create a
-    #   new {Flow} for it.
+    # @param flow [Flow, Adapters::Adapter, Object] The flow to add to the end
+    #   of the list. If the argument is not a {Flow}, we assume it is an adapter
+    #   and create a new {Flow} with it.
     # @return [self]
     def <<(flow)
       flow = Flow.new(flow) unless flow.is_a?(Flow)
@@ -47,9 +48,9 @@ module Rackstash
     # is an adapter and create a new {Flow} for it.
     #
     # @param index [Integer] the index in the list where we set the flow
-    # @param value [Flow, Adapter] The flow to add to the end at `index`. If the
-    #   argument is not a {Flow}, we assume it is an adapter and create a new
-    #   {Flow} for it.
+    # @param flow [Flow, Adapters::Adapter, Object] The flow to add at `index`.
+    #   If the argument is not a {Flow}, we assume it is an adapter and create
+    #   a new {Flow} with it.
     # @return [void]
     def []=(index, flow)
       flow = Flow.new(flow) unless flow.is_a?(Flow)
@@ -90,7 +91,7 @@ module Rackstash
     end
     alias size length
 
-    # @return [Array<Flow>] an array of all flow elementswithout any `nil`
+    # @return [Array<Flow>] an array of all flow elements without any `nil`
     #   values
     def to_ary
       @flows.to_a.compact

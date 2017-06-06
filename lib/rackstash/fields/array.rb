@@ -66,7 +66,7 @@ module Rackstash
       #
       # You can set nested hashes and arrays here.
       #
-      # @param index [Integer] the index in the array where we fetch the value
+      # @param index [Integer] the index in the array where we set the value
       # @param value [Object, Proc] any value which can be serialized to JSON.
       #   The value will be normalized before being set so that only JSON-
       #   compatible objects are added into the array.

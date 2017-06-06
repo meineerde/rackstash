@@ -14,7 +14,7 @@ module Rackstash
   # is set on a Buffer. Each Buffer belongs to exactly one {BufferStack} (and
   # thus in turn to exactly one {Logger}) which creates it and controls its
   # complete life cycle. The data a buffer holds can be exported via a {Sink}
-  # and passed on to one or more {Target}s which send the data to an external
+  # and passed on to one or more {Flow}s which send the data to an external
   # log receiver.
   #
   # Most methods of the Buffer are directly exposed to the user-accessible
@@ -59,7 +59,7 @@ module Rackstash
     #   current buffer. It contains frozen strings only.
     attr_reader :tags
 
-    # @return [Sink] the log sink where the buffer is eventually flushed to
+    # @return [Sink] the log {Sink} where the buffer is eventually flushed to
     attr_reader :sink
 
     # @param buffering [Boolean] When set to `true`, this buffer is considered
@@ -136,8 +136,11 @@ module Rackstash
       self
     end
 
-    # Flush the current buffer to the log sink. Does nothing if the buffer is
-    # not pending.
+    # Flush the current buffer to the log {#sink} if it is pending.
+    #
+    # After the flush, the existing buffer should not be used anymore. You
+    # should either call {#clear} to remove all volatile data or create a new
+    # buffer instance instead.
     #
     # @return [self,nil] returns `self` if the buffer was flushed, `nil`
     #   otherwise
@@ -153,7 +156,7 @@ module Rackstash
     # @return [Array<Message>] the list of messages of the curent buffer
     # @note You can not add messsages to the buffer by modifying this array.
     #   Instead, use {#add_message} to add new messages or add filters to the
-    #   responsible codec to remove or change messages.
+    #   responsible {Flow} to remove or change messages.
     def messages
       @messages.dup
     end
