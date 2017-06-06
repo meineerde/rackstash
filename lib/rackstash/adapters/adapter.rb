@@ -41,6 +41,15 @@ module Rackstash
       def initialize(*)
       end
 
+      # Return a new Encoder instance which can be used with the concrete adapter
+      # If no explicit encoder is defined in a {Flow}, this encoder will be used
+      # there
+      #
+      # @return [#call] an encoder
+      def default_encoder
+        Rackstash::Encoders::JSON.new
+      end
+
       # Close the underlying log device if supported by it.
       #
       # This method needs to be overwritten in child classes. By default, this

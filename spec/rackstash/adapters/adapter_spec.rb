@@ -18,6 +18,12 @@ describe Rackstash::Adapters::Adapter do
     end
   end
 
+  describe '.default_encoder' do
+    it 'returns an encoder' do
+      expect(adapter.default_encoder).to respond_to(:encode)
+    end
+  end
+
   describe '#close' do
     it 'does nothing' do
       expect(adapter.close).to be nil
