@@ -56,3 +56,4 @@ end
 require 'rackstash/logger'
 
 require 'rackstash/adapters/io'
+require 'rackstash/adapters/callable'
