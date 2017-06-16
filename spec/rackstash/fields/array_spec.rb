@@ -268,6 +268,27 @@ describe Rackstash::Fields::Array do
     end
   end
 
+  describe '#pop' do
+    it 'returns nothing from an empty array' do
+      expect(array.pop).to be_nil
+      expect(array.pop(42)).to be_instance_of(Array).and be_empty
+    end
+
+    it 'returns and removes the last element' do
+      array << 'foo' << 'bar'
+
+      expect(array.pop).to eql 'bar'
+      expect(array[0]).to eql 'foo'
+    end
+
+    it 'returns and removes at most n elements' do
+      array << 'foo' << 'bar' << 'baz'
+
+      expect(array.pop(2)).to eql ['bar', 'baz']
+      expect(array[0]).to eql 'foo'
+    end
+  end
+
   describe '#push' do
     it 'can append multiple values' do
       expect(array.push 'value', 'value2').to equal array

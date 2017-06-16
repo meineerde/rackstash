@@ -159,6 +159,22 @@ module Rackstash
         self
       end
 
+      # Removes the last element from `self` and returns it, or `nil` if the
+      # array is empty. If a number `n` is given, returns an array of the last
+      # `n` elements (or less).
+      #
+      # See {#push} for the opposite effect.
+      #
+      # @param n [Integer, nil] the (optional) number of elements to return from
+      #   the end
+      # @return [Object, Array<Object>, nil] If `n` was given, we always return
+      #   an array with at most `n` elements. Else, we return the last element
+      #   or `nil` if the array is empty.
+      #
+      def pop(n = nil)
+        n.nil? ? @raw.pop : @raw.pop(n)
+      end
+
       # Append — Pushes the given object(s) on to the end of this array. All
       # values will be normalized before being added. This method returns the
       # array itself, so several appends may be chained together.
