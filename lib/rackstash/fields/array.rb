@@ -85,7 +85,6 @@ module Rackstash
         @raw << normalize(value)
         self
       end
-      alias push <<
 
       # @return [::Array] deep-transforms the array into a plain Ruby Array
       def as_json(*)
@@ -159,6 +158,20 @@ module Rackstash
         @raw.replace(@raw | normalize(array, wrap: false, scope: scope))
         self
       end
+
+      # Append — Pushes the given object(s) on to the end of this array. All
+      # values will be normalized before being added. This method returns the
+      # array itself, so several appends may be chained together.
+      #
+      # @param values [::Array] a list of values to append at the end of `self`
+      # @param scope [Object, nil] if any of the (deeply-nested) values is a
+      #   proc, it will be called in the instance scope of this object (when
+      #   given).
+      # @return [self]
+      def push(*values, scope: nil)
+        concat(values, scope: scope)
+      end
+      alias append push
 
       private
 

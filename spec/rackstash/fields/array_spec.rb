@@ -96,15 +96,13 @@ describe Rackstash::Fields::Array do
       expect(array[1]).to eql 'normalized'
     end
 
+    it 'can append only one value' do
+      expect { array.<< 'foo', 'bar' }.to raise_error ArgumentError
+    end
+
     it 'returns the array' do
       expect(array << 'value').to equal array
     end
-
-    it 'can use push as an alias' do
-      expect(array.push 'value').to equal array
-      expect(array[0]).to eql 'value'
-    end
-
   end
 
   describe '#as_json' do
@@ -267,6 +265,27 @@ describe Rackstash::Fields::Array do
       expect(
         array.merge!(-> { [self, -> { self.to_s.upcase }] }, scope: :stuff)
       ).to contain_exactly 'stuff', 'STUFF'
+    end
+  end
+
+  describe '#push' do
+    it 'can append multiple values' do
+      expect(array.push 'value', 'value2').to equal array
+      expect(array[0]).to eql 'value'
+      expect(array[1]).to eql 'value2'
+    end
+
+    it 'appends arrays as is' do
+      value = ['hello']
+      array.push value
+
+      expect(array[0]).to be_a Rackstash::Fields::Array
+      expect(array[0].to_a).to eql value
+    end
+
+    it 'can use append as an alias' do
+      expect(array.append 'foo').to equal array
+      expect(array[0]).to eql 'foo'
     end
   end
 
