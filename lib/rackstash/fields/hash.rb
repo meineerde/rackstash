@@ -54,9 +54,9 @@ module Rackstash
 
       # @return [::Hash] deep-transforms the hash into a plain Ruby Hash
       def as_json(*)
-        @raw.each_with_object({}) do |(key, value), memo|
-          value = value.as_json if value.is_a?(AbstractCollection)
-          memo[key] = value
+        hash = @raw.to_h
+        hash.each_pair do |key, value|
+          hash[key] = value.as_json if value.is_a?(AbstractCollection)
         end
       end
       alias to_hash as_json

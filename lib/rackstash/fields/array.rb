@@ -89,7 +89,7 @@ module Rackstash
 
       # @return [::Array] deep-transforms the array into a plain Ruby Array
       def as_json(*)
-        @raw.map { |value|
+        @raw.to_a.map! { |value|
           value.is_a?(AbstractCollection) ? value.as_json : value
         }
       end
