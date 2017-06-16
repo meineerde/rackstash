@@ -85,13 +85,20 @@ module Rackstash
         end
       end
 
-      # @param str [#to_s]
+      # Encode the given String in UTF-8. If the given `str` is already
+      # correctly encoded and frozen, we just return it unchanged. In all other
+      # cases we return a UTF-8 encoded and frozen copy of the string.
+      #
+      # @param str [String, #to_s]
+      # @return [String]
       def utf8_encode(str)
-        str.to_s.encode(
-          Encoding::UTF_8,
-          invalid: :replace,
-          undef: :replace
-        )
+        if str.instance_of?(String) && str.encoding == Encoding::UTF_8 && str.valid_encoding?
+          str.frozen? ? str : str.dup.freeze
+        else
+          str = str.to_s
+          str = str.encode(Encoding::UTF_8, invalid: :replace, undef: :replace)
+          str.freeze
+        end
       end
 
       def resolve_value(value, scope: nil)
@@ -105,8 +112,10 @@ module Rackstash
         value = resolve_value(value, scope: scope)
 
         case value
-        when ::String, ::Symbol
-          return utf8_encode(value).freeze
+        when ::String
+          return utf8_encode(value)
+        when ::Symbol
+          return utf8_encode(value.to_s.freeze)
         when ::Integer, ::Float
           return value
         when true, false, nil
@@ -142,13 +151,13 @@ module Rackstash
         when ::Date
           return value.iso8601.encode!(Encoding::UTF_8).freeze
         when ::Regexp, ::Range, ::URI::Generic, ::Pathname
-          return utf8_encode(value).freeze
+          return utf8_encode(value)
         when Exception
           exception = "#{value.message} (#{value.class})"
           exception << "\n" << value.backtrace.join("\n") if value.backtrace
-          return utf8_encode(exception).freeze
+          return utf8_encode(exception)
         when ::Proc
-          return utf8_encode(value.inspect).freeze
+          return utf8_encode(value.inspect)
         when ::BigDecimal
           # A BigDecimal would be naturally represented as a JSON number. Most
           # libraries, however, parse non-integer JSON numbers directly as
@@ -159,7 +168,7 @@ module Rackstash
         when ::Complex
           # A complex number can not reliably converted to a float or rational,
           # thus we always transform it to a String
-          return utf8_encode(value).freeze
+          return utf8_encode(value)
         end
 
         # Try to convert the value to a known basic type and recurse
@@ -176,7 +185,7 @@ module Rackstash
           return normalize(value, scope: scope, wrap: wrap)
         end
 
-        utf8_encode(value.inspect).freeze
+        utf8_encode(value.inspect)
       end
     end
   end

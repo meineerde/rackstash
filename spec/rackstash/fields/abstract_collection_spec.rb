@@ -141,14 +141,19 @@ describe Rackstash::Fields::AbstractCollection do
         expect(normalize(strange)).to be_frozen
       end
 
-      it 'does not alter valid strings' do
-        valid = 'Dönerstraße'.freeze
+      it 'dups and freezes valid strings' do
+        valid = String.new('Dönerstraße')
+        expect(valid).to_not be_frozen
 
-        expect(normalize(valid)).to eql valid
-        # All strings are still copied and frozen, even if they don't need to
-        # be re-encoded.
+        expect(normalize(valid)).to eql(valid)
+        # Not object-equal since the string was dup'ed
         expect(normalize(valid)).not_to equal valid
         expect(normalize(valid)).to be_frozen
+      end
+
+      it 'does not alter valid frozen strings' do
+        valid = 'Dönerstraße'.freeze
+        expect(normalize(valid)).to equal(valid)
       end
     end
 
