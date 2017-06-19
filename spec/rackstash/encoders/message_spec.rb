@@ -1,0 +1,24 @@
+# Copyright 2017 Holger Just
+#
+# This software may be modified and distributed under the terms
+# of the MIT license. See the LICENSE.txt file for details.
+
+require 'spec_helper'
+
+require 'rackstash/encoders/message'
+
+describe Rackstash::Encoders::Message do
+  let(:encoder) { Rackstash::Encoders::Message.new }
+
+  describe '#encode' do
+    it 'gets the message from the event hash' do
+      event = { 'hello' => 'world', 'message' => 'hello' }
+      expect(encoder.encode(event)).to eql 'hello'
+    end
+
+    it 'rstrips the message' do
+      event = { 'message' => "\n\t \nline1\nline2\n  \n\t\n" }
+      expect(encoder.encode(event)).to eql "\n\t \nline1\nline2"
+    end
+  end
+end
