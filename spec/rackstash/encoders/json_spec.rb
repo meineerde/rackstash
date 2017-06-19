@@ -21,8 +21,8 @@ describe Rackstash::Encoders::JSON do
       expect(encoder.encode(event)).to eql '{"message":"text\nwith\nnewlines"}'
     end
 
-    it 'rstrips the message' do
-      event = { 'message' => "line1\nline2\n  \n\t\n" }
+    it 'strips the message from all surpunding whitespace' do
+      event = { 'message' => "\n\t \nline1\nline2\n  \n\t\n" }
       expect(encoder.encode(event)).to eql '{"message":"line1\nline2"}'
     end
   end
