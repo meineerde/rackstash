@@ -126,6 +126,7 @@ module Rackstash
       def length
         @raw.length
       end
+      alias size length
 
       # Set Union -- Add value from `array` to `self` excluding any duplicates
       # and preserving the order from `self`.

@@ -228,6 +228,12 @@ describe Rackstash::Fields::Array do
       array.clear
       expect(array.length).to eql 0
     end
+
+    it 'can use size as an alias' do
+      expect(array.size).to eql 0
+      array[0] = 'first'
+      expect(array.size).to eql 1
+    end
   end
 
   describe '#merge' do
