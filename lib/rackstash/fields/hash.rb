@@ -8,17 +8,23 @@ require 'rackstash/fields/abstract_collection'
 module Rackstash
   module Fields
     class Hash < AbstractCollection
+      # @return [Set<String>] a frozen list of strings which are not allowed to
+      #   be used as keys in this hash.
+      attr_reader :forbidden_keys
+
       # @param forbidden_keys [Set<String>,::Array<String>] a list of strings
       #   which are not allowed to be used as keys in this hash
       def initialize(forbidden_keys: EMPTY_SET)
         @raw = Concurrent::Hash.new
 
-        if forbidden_keys.is_a?(Set)
-          forbidden_keys = forbidden_keys.dup.freeze unless forbidden_keys.frozen?
-          @forbidden_keys = forbidden_keys
-        else
-          @forbidden_keys = Set[*forbidden_keys].freeze
+        unless forbidden_keys.is_a?(Set) &&
+               forbidden_keys.frozen? &&
+               forbidden_keys.all? { |key| String === key && key.frozen? }
+          forbidden_keys = Set.new(forbidden_keys) { |key| utf8_encode key }
+          forbidden_keys.freeze
         end
+
+        @forbidden_keys = forbidden_keys
       end
 
       # Retrieve a stored value from a given `key`

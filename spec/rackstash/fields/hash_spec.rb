@@ -18,12 +18,35 @@ describe Rackstash::Fields::Hash do
 
     it 'accepts forbidden_keys as an Array' do
       hash = Rackstash::Fields::Hash.new(forbidden_keys: ['field'])
-      expect(hash.instance_variable_get('@forbidden_keys')).to be_a Set
+
+      expect(hash.forbidden_keys)
+        .to be_a(Set)
+        .and be_frozen
+        .and all(
+          be_frozen.and be_a String
+        )
     end
 
     it 'accepts forbidden_keys as a Set' do
-      hash = Rackstash::Fields::Hash.new(forbidden_keys: Set['field'])
-      expect(hash.instance_variable_get('@forbidden_keys')).to be_a Set
+      forbidden_keys = Set['field']
+      hash = Rackstash::Fields::Hash.new(forbidden_keys: forbidden_keys)
+
+      expect(hash.forbidden_keys)
+        .to be_a(Set)
+        .and be_frozen
+        .and all(
+          be_frozen.and be_a String
+        )
+
+      # We create a new set without affecting the passed one
+      expect(hash.forbidden_keys).not_to equal forbidden_keys
+    end
+
+    it 'accepts forbidden_keys as a frozen Set' do
+      forbidden_keys = Set['field'.freeze].freeze
+      hash = Rackstash::Fields::Hash.new(forbidden_keys: forbidden_keys)
+
+      expect(hash.forbidden_keys).to equal forbidden_keys
     end
   end
 
@@ -73,14 +96,12 @@ describe Rackstash::Fields::Hash do
       it 'denies setting a forbidden field' do
         expect { hash[:forbidden] = 'value' }.to raise_error ArgumentError
         expect { hash['forbidden'] = 'value' }.to raise_error ArgumentError
-      end
 
-      it 'ignores non string-values in forbidden_keys' do
-        expect { hash[:foo] = 'value' }.not_to raise_error
-        expect { hash['foo'] = 'value' }.not_to raise_error
-        expect { hash[42] = 'value' }.not_to raise_error
-        expect { hash['42'] = 'value' }.not_to raise_error
-        expect { hash[:'42'] = 'value' }.not_to raise_error
+        expect { hash[:foo] = 'value' }.to raise_error ArgumentError
+        expect { hash['foo'] = 'value' }.to raise_error ArgumentError
+        expect { hash[42] = 'value' }.to raise_error ArgumentError
+        expect { hash['42'] = 'value' }.to raise_error ArgumentError
+        expect { hash[:'42'] = 'value' }.to raise_error ArgumentError
       end
 
       it 'returns nil when accessing forbidden fields' do
@@ -330,7 +351,7 @@ describe Rackstash::Fields::Hash do
 
     it 'checks if a key is forbidden' do
       expect(hash.forbidden_key?('forbidden')).to be true
-      expect(hash.forbidden_key?('foo')).to be false
+      expect(hash.forbidden_key?('foo')).to be true
     end
   end
 
