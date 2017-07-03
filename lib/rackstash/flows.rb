@@ -81,8 +81,8 @@ module Rackstash
 
     # @return [String] a string representation of `self`
     def inspect
-      id_str = (object_id << 1).to_s(16).rjust(DEFAULT_OBJ_ID_STR_WIDTH, '0')
-      "#<#{self.class.name}:0x#{id_str} #{self}>"
+      id_str = Object.instance_method(:to_s).bind(self).call[2..-2]
+      "#<#{id_str} #{self}>"
     end
 
     # @return [Integer] the number of elements in `self`. May be zero.

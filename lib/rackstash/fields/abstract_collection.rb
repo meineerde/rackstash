@@ -38,8 +38,8 @@ module Rackstash
       #
       # @return [String] human-redable details about the object.
       def inspect
-        id_str = (object_id << 1).to_s(16).rjust(DEFAULT_OBJ_ID_STR_WIDTH, '0')
-        "#<#{self.class.name}:0x#{id_str} #{self}>"
+        id_str = Object.instance_method(:to_s).bind(self).call[2..-2]
+        "#<#{id_str} #{self}>"
       end
 
       # Provide a copy of the wrapped {#raw} data in a format allowing direct

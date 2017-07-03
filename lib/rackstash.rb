@@ -47,10 +47,6 @@ module Rackstash
   FIELD_TAGS = 'tags'.freeze
   FIELD_TIMESTAMP = '@timestamp'.freeze
   FIELD_VERSION = '@version'.freeze
-
-  # @!visibility private
-  # we want to look "native" with our inspect values, 7 for 32-bit, 14 for 64-bit
-  DEFAULT_OBJ_ID_STR_WIDTH = 0.size == 4 ? 7 : 14
 end
 
 require 'rackstash/logger'
