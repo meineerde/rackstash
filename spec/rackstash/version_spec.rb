@@ -10,6 +10,7 @@ require 'rackstash/version'
 describe 'Rackstash::Version' do
   it 'has a version number' do
     expect(Rackstash::Version::STRING).to be_a String
+    expect(Rackstash::Version::STRING).to equal Rackstash::Version.to_s
   end
 
   it 'exposes the version as Rackstash::VERSION' do
@@ -18,6 +19,7 @@ describe 'Rackstash::Version' do
 
   it 'exposes a gem_version method' do
     expect(Rackstash::Version.gem_version).to be_a Gem::Version
-    expect(Rackstash::Version.gem_version.to_s).to eql Rackstash::VERSION
+    expect(Rackstash::Version.gem_version.to_s.gsub('.pre.', '-'))
+      .to eql Rackstash::VERSION
   end
 end
