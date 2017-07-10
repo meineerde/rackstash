@@ -47,9 +47,19 @@ module Rackstash
   FIELD_TAGS = 'tags'.freeze
   FIELD_TIMESTAMP = '@timestamp'.freeze
   FIELD_VERSION = '@version'.freeze
+
+  def self.severity_label(severity)
+    if severity.is_a?(Integer)
+      SEVERITY_LABELS[severity] || SEVERITY_LABELS.last
+    else
+      severity = SEVERITY_NAMES.fetch(severity.to_s.downcase, UNKNOWN)
+      SEVERITY_LABELS[severity]
+    end
+  end
 end
 
 require 'rackstash/logger'
 
-require 'rackstash/adapters/io'
 require 'rackstash/adapters/callable'
+require 'rackstash/adapters/file'
+require 'rackstash/adapters/io'
