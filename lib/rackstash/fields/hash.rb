@@ -92,22 +92,24 @@ module Rackstash
       #
       # The following examples are thus all equivalent:
       #
-      #     empty_hash.deep_merge 'foo' => 'bar'
-      #     empty_hash.deep_merge 'foo' => -> { 'bar' }
-      #     empty_hash.deep_merge -> { 'foo' => 'bar' }
-      #     empty_hash.deep_merge -> { 'foo' => -> { 'bar' } }
-      #     empty_hash.deep_merge({ 'foo' => -> { self } }, scope: 'bar')
-      #     empty_hash.deep_merge -> { { 'foo' => -> { self } } }, scope: 'bar'
+      #     hash = Rackstash::Fields::Hash.new
+      #
+      #     merged = hash.deep_merge 'foo' => 'bar'
+      #     merged = hash.deep_merge 'foo' => -> { 'bar' }
+      #     merged = hash.deep_merge -> { 'foo' => 'bar' }
+      #     merged = hash.deep_merge -> { 'foo' => -> { 'bar' } }
+      #     merged = hash.deep_merge({ 'foo' => -> { self } }, scope: 'bar')
+      #     merged = hash.deep_merge -> { { 'foo' => -> { self } } }, scope: 'bar'
       #
       # Nested hashes will be deep-merged and all field names will be normalized
       # to strings, even on deeper levels. Given an empty Hash, these calls
       #
-      #     empty_hash.merge! 'foo' => { 'bar' => 'baz' }
-      #     empty_hash.deep_merge 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
+      #     hash = Rackstash::Fields::Hash('foo' => { 'bar' => 'baz' })
+      #     merged = hash.deep_merge 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
       #
-      # will be equivalent to a single call of
+      # will be equivalent to
       #
-      #     empty_hash.deep_merge 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
+      #     merged = Rackstash::Fields::Hash('foo' => { 'bar' => 'qux', fizz' => 'buzz' })
       #
       # As you can see, the new `"qux"` value of the nested `"bar"` field
       # overwrites the old `"baz"` value.
@@ -117,20 +119,29 @@ module Rackstash
       # still attempt to merge nested Hashes and Arrays if the existing and new
       # values are compatible. Thus, given an empty Hash, these calls
       #
-      #     empty_hash.merge!({ 'foo' => { 'bar' => 'baz' } }, force: false)
-      #     empty_hash.deep_merge({ 'foo' => { 'bar' => 'qux', fizz' => 'buzz' } }, force: false)
+      #     hash = Rackstash::Fields::Hash('foo' => { 'bar' => 'baz' })
+      #     merged = hash.deep_merge({ 'foo' => { 'bar' => 'qux', fizz' => 'buzz' } }, force: false)
       #
-      # will be equivalent to a single call of
+      # will be equivalent to
       #
-      #     empty_hash.deep_merge({ 'foo' => { 'bar' => 'baz', fizz' => 'buzz' } })
+      #     merged = Rackstash::Fields::Hash('foo' => { 'bar' => 'baz', fizz' => 'buzz' })
       #
       # With `force: false` the new `"qux"` value of the nested `"bar"` field is
       # ignored since it was already set. We will ignore any attempt to
       # overwrite any existing non-nil value.
       #
+      # When providing an (optional) block, it will be used for conflict
+      # resolution in incompatible values. Compatible `Hash`es and `Array`s will
+      # always be deep-merged though.
+      #
       # @param hash (see #merge)
-      # @param force (see #merge)
+      # @param force [Boolean] set to `true` to overwrite keys with divering
+      #   value types, raise an `ArgumentError` when trying to set a forbidden
+      #   field. When set to `false` we silently ignore new values if they exist
+      #   already or are forbidden from being set.
       # @param scope (see #merge)
+      # @yield (see #merge)
+      # @yieldreturn (see #merge)
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
       # @return [Rackstash::Fields::Hash] a new hash containing the merged
@@ -138,8 +149,8 @@ module Rackstash
       #
       # @see #merge
       # @see #deep_merge!
-      def deep_merge(hash, force: true, scope: nil)
-        resolver = deep_merge_resolver(:merge, force: force)
+      def deep_merge(hash, force: true, scope: nil, &block)
+        resolver = deep_merge_resolver(:merge, force: force, scope: scope, &block)
         merge(hash, force: force, scope: scope, &resolver)
       end
 
@@ -158,22 +169,24 @@ module Rackstash
       #
       # The following examples are thus all equivalent:
       #
-      #     empty_hash.deep_merge! 'foo' => 'bar'
-      #     empty_hash.deep_merge! 'foo' => -> { 'bar' }
-      #     empty_hash.deep_merge! -> { 'foo' => 'bar' }
-      #     empty_hash.deep_merge! -> { 'foo' => -> { 'bar' } }
-      #     empty_hash.deep_merge!({ 'foo' => -> { self } }, scope: 'bar')
-      #     empty_hash.deep_merge! -> { { 'foo' => -> { self } } }, scope: 'bar'
+      #     hash = Rackstash::Fields::Hash.new
+      #
+      #     hash.deep_merge! 'foo' => 'bar'
+      #     hash.deep_merge! 'foo' => -> { 'bar' }
+      #     hash.deep_merge! -> { 'foo' => 'bar' }
+      #     hash.deep_merge! -> { 'foo' => -> { 'bar' } }
+      #     hash.deep_merge!({ 'foo' => -> { self } }, scope: 'bar')
+      #     hash.deep_merge! -> { { 'foo' => -> { self } } }, scope: 'bar'
       #
       # Nested hashes will be deep-merged and all field names will be normalized
       # to strings, even on deeper levels. Given an empty Hash, these calls
       #
-      #     empty_hash.merge! 'foo' => { 'bar' => 'baz' }
-      #     empty_hash.deep_merge! 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
+      #     hash = Rackstash::Fields::Hash('foo' => { 'bar' => 'baz' })
+      #     hash.deep_merge! 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
       #
-      # will be equivalent to a single call of
+      # will be equivalent to
       #
-      #     empty_hash.deep_merge! 'foo' => { 'bar' => 'qux', fizz' => 'buzz' }
+      #     hash = Rackstash::Fields::Hash('foo' => { 'bar' => 'qux', fizz' => 'buzz' })
       #
       # As you can see, the new `"qux"` value of the nested `"bar"` field
       # overwrites the old `"baz"` value.
@@ -183,28 +196,37 @@ module Rackstash
       # still attempt to merge nested Hashes and Arrays if the existing and new
       # values are compatible. Thus, given an empty Hash, these calls
       #
-      #     empty_hash.merge!({ 'foo' => { 'bar' => 'baz' } }, force: false)
-      #     empty_hash.deep_merge!({ 'foo' => { 'bar' => 'qux', fizz' => 'buzz' } }, force: false)
+      #     hash = Rackstash::Fields::Hash('foo' => { 'bar' => 'baz' })
+      #     hash.deep_merge!({ 'foo' => { 'bar' => 'qux', fizz' => 'buzz' } }, force: false)
       #
-      # will be equivalent to a single call of
+      # will be equivalent to
       #
-      #     empty_hash.deep_merge!({ 'foo' => { 'bar' => 'baz', fizz' => 'buzz' } })
+      #     hash = Rackstash::Fields::Hash({ 'foo' => { 'bar' => 'baz', fizz' => 'buzz' } })
       #
       # With `force: false` the new `"qux"` value of the nested `"bar"` field is
       # ignored since it was already set. We will ignore any attempt to
       # overwrite any existing non-nil value.
       #
+      # When providing an (optional) block, it will be used for conflict
+      # resolution in incompatible values. Compatible `Hash`es and `Array`s will
+      # always be deep-merged though.
+      #
       # @param hash (see #merge!)
-      # @param force (see #merge!)
+      # @param force [Boolean] set to `true` to overwrite keys with divering
+      #   value types, raise an `ArgumentError` when trying to set a forbidden
+      #   field. When set to `false` we silently ignore new values if they exist
+      #   already or are forbidden from being set.
       # @param scope (see #merge!)
+      # @yield (see #merge!)
+      # @yieldreturn (see #merge!)
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
       # @return [self]
       #
       # @see #merge!
       # @see #deep_merge
-      def deep_merge!(hash, force: true, scope: nil)
-        resolver = deep_merge_resolver(:merge!, force: force)
+      def deep_merge!(hash, force: true, scope: nil, &block)
+        resolver = deep_merge_resolver(:merge!, force: force, scope: scope, &block)
         merge!(hash, force: force, scope: scope, &resolver)
       end
 
@@ -263,13 +285,15 @@ module Rackstash
       # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
       #   the hash to merge into `self`. If this is a proc, it will get called
       #   and its result is used instead.
-      # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
-      #   set a forbidden key, `false` to silently ignore these key-value pairs
+      # @param force [Boolean] if `true`, we overwrite existing values for
+      #   conflicting keys but raise an `ArgumentError` when trying to set a
+      #   forbidden key. If `false`, we silently ignore values for existing or
+      #   forbidden keys.
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
       #   values is a proc, it will be called in the instance scope of this
       #   object (when given).
       #
-      # @yield [key, old_val, new-val] if a block is given and there is a
+      # @yield [key, old_val, new_val] if a block is given and there is a
       #   duplicate key, we call the block and use its return value as the value
       #   to insert
       # @yieldparam key [String] the hash key
@@ -277,7 +301,7 @@ module Rackstash
       # @yieldparam new_val [Object] The new normalized value for `key` in
       #   `hash`
       # @yieldreturn [Object] the intended new value for `key` to be merged into
-      #   `self` at `key`.
+      #   `self` at `key`. The value will be normalized under the given `scope`.
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
       # @return [Rackstash::Fields::Hash] a new hash containing the merged
@@ -293,29 +317,43 @@ module Rackstash
       end
 
       # Adds the contents of `hash` to `self`. `hash` is normalized before being
-      # added. If no block is specified, entries with duplicate keys are
-      # overwritten with the values from `hash`, otherwise the value of each
-      # duplicate key is determined by calling the block with the `key`, its
-      # value in `self` and its value in `hash`.
+      # added.
       #
-      # If there are any forbidden fields defined on `self`, An `ArgumentError`
-      # is raised when trying to set any of these. The values are ignored of
-      # `force` is set to `false`.
+      # If there are any forbidden keys defined on `self`, {#merge!} will raise
+      # an `ArgumentError` when trying to set any of these. The keys are
+      # silently ignored if `force` is set to `false`.
       #
-      # If `hash` itself of any of its (deeply-nested) values is a proc, it will
-      # get called and its result will be used instead of it. The proc will be
-      # evaluated in the instance scope of `scope` if given.
+      # If there are any conflicts, i.e. if any of the keys to be merged already
+      # exist in `self` we will determine the value to be added by calling the
+      # supplied block with the `key`, its value in `self` and its value in the
+      # merged `hash`.
+      #
+      # If no block was provided, the conflict resolution depends on the value
+      # of `force`. If `force` is `true`, we will overwrite exisging keys with
+      # the value from `hash`. If `force` is false, we use the existing value in
+      # `self` if it is not `nil`.
+      #
+      # If `hash` itself of any of its (deeply-nested) values is a callable
+      # object (e.g. a proc or lambda) we call it and use its normalized result
+      # instead of the proc.
+      #
+      # If you give the optional `scope` argument, the Procs will be evaluated
+      # in the instance scope of the `scope` object. If you leave the `scope`
+      # empty, Procs will be called in the scope of their closure (creation
+      # environment).
       #
       # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
       #   the hash to merge into `self`. If this is a proc, it will get called
       #   and its result is used instead
-      # @param force [Boolean] `true` to raise an `ArgumentError` when trying to
-      #   set a forbidden key, `false` to silently ignore these key-value pairs
+      # @param force [Boolean] if `true`, we overwrite existing values for
+      #   conflicting keys but raise an `ArgumentError` when trying to set a
+      #   forbidden key. If `false`, we silently ignore values for existing or
+      #   forbidden keys.
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
       #   values is a proc, it will be called in the instance scope of this
       #   object (when given).
       #
-      # @yield [key, old_val, new-val] if a block is given and there is a
+      # @yield [key, old_val, new_val] if a block is given and there is a
       #   duplicate key, we call the block and use its return value as the value
       #   to insert
       # @yieldparam key [String] the hash key
@@ -323,7 +361,7 @@ module Rackstash
       # @yieldparam new_val [Object] The new normalized value for `key` in
       #   `hash`
       # @yieldreturn [Object] the intended new value for `key` to be merged into
-      #   `self` at `key`.
+      #   `self` at `key`. The value will be normalized under the given `scope`.
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
       # @return [self]
@@ -344,13 +382,16 @@ module Rackstash
             yielded = yield(key, old_val, new_val)
             normalize(yielded, scope: scope)
           }
-        else
+        elsif force
           @raw.merge!(hash)
+        else
+          @raw.merge!(hash) { |_key, old_val, new_val|
+            old_val.nil? ? new_val : old_val
+          }
         end
         self
       end
       alias update merge!
-
 
       # Returns a new {Hash} containing the contents of `hash` and the contents
       # of `self`. `hash` is normalized before being added. In contrast to
@@ -374,20 +415,12 @@ module Rackstash
       # @see #merge
       # @see #reverse_merge!
       def reverse_merge(hash, scope: nil)
-        merge(hash, force: false, scope: scope) { |_key, old_val, new_val|
-          old_val == nil ? new_val : old_val
-        }
+        merge(hash, force: false, scope: scope)
       end
 
       # Adds the contents of `hash` to `self`. `hash` is normalized before being
-      # added. In contrast to {#merge!}, this method deep-merges Hash and Array
-      # values if the existing and merged values are of the same type.
-      #
-
-      # Returns a new {Hash} containing the contents of `hash` and the contents
-      # of `self`. `hash` is normalized before being added. In contrast to
-      # {#merge}, this method preserves any non-nil values of existing keys in
-      # `self`.
+      # added. `hash` is normalized before being added. In contrast to {#merge},
+      # this method preserves any non-nil values of existing keys in `self`.
       #
       # If `hash` is a callable object (e.g. a proc or lambda), we will call
       # it and use the returned value instead, which must then be a Hash of
@@ -405,9 +438,7 @@ module Rackstash
       # @see #merge!
       # @see #reverse_merge
       def reverse_merge!(hash, scope: nil)
-        merge!(hash, force: false, scope: scope) { |_key, old_val, new_val|
-          old_val == nil ? new_val : old_val
-        }
+        merge!(hash, force: false, scope: scope)
       end
       alias reverse_update reverse_merge!
 
@@ -462,14 +493,19 @@ module Rackstash
       # @param force [Boolean] set to `true` to overwrite keys with divering
       #   value types, or `false` to silently ignore the new value
       # @return [Lambda] a resolver block for deep-merging a hash.
-      def deep_merge_resolver(merge_method, force: true)
-        resolver = lambda do |_key, old_val, new_val|
+      def deep_merge_resolver(merge_method, force: true, scope: nil)
+        resolver = lambda do |key, old_val, new_val|
           if old_val.is_a?(Hash) && new_val.is_a?(Hash)
             old_val.public_send(merge_method, new_val, force: force, &resolver)
           elsif old_val.is_a?(Array) && new_val.is_a?(Array)
             old_val.public_send(merge_method, new_val)
+          elsif block_given?
+            value = yield(key, old_val, new_val)
+            normalize(value, scope: scope)
+          elsif force
+            new_val
           else
-            force || old_val == nil ? new_val : old_val
+            old_val.nil? ? new_val : old_val
           end
         end
       end

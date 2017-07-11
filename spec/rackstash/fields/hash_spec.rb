@@ -269,6 +269,21 @@ describe Rackstash::Fields::Hash do
         hash.deep_merge! 'key' => 123
         expect(hash['key']).to eql 123
       end
+
+      it 'raises an error when trying to merge forbidden fields' do
+        expect { hash.deep_merge!({ forbidden: 'value' }, force: true) }
+          .to raise_error ArgumentError
+        expect { hash.deep_merge!({ 'forbidden' => 'value' }, force: true) }
+          .to raise_error ArgumentError
+        expect(hash).to_not have_key 'forbidden'
+      end
+
+      it 'allows to merge forbidden fields in nested hashes' do
+        hash.deep_merge!({ top: { 'forbidden' => 'value' } }, force: true)
+        expect(hash['top'])
+          .to be_a(Rackstash::Fields::Hash)
+          .and have_key 'forbidden'
+      end
     end
 
     context 'with force: false' do
@@ -281,7 +296,7 @@ describe Rackstash::Fields::Hash do
         expect(hash['bar']).to eql 'some value'
       end
 
-      it 'merges nested hashes, ingoring existing nested values' do
+      it 'merges nested hashes, ignoring existing nested values' do
         hash['key'] = { 'foo' => 'bar' }
         expect(hash['key'].as_json).to eql 'foo' => 'bar'
 
@@ -310,6 +325,21 @@ describe Rackstash::Fields::Hash do
         hash.deep_merge!({ 'key' => { nested: 'value' } }, force: false)
         expect(hash['key']).to be_a Rackstash::Fields::Hash
       end
+
+      it 'ignores forbidden fields' do
+        expect { hash.deep_merge!({ forbidden: 'value' }, force: false) }
+          .not_to raise_error
+        expect { hash.deep_merge!({ 'forbidden' => 'value' }, force: false) }
+          .not_to raise_error
+        expect(hash).to_not have_key 'forbidden'
+      end
+
+      it 'allows to merge forbidden fields in nested hashes' do
+        hash.deep_merge!({ top: { 'forbidden' => 'value' } }, force: false)
+        expect(hash['top'])
+          .to be_a(Rackstash::Fields::Hash)
+          .and have_key 'forbidden'
+      end
     end
 
     it 'normalizes string-like array elements to strings' do
@@ -322,17 +352,36 @@ describe Rackstash::Fields::Hash do
         .to eql ['foo', [123, 'bar'], ['qux', { 'fizz' => ['buzz', 42] }], 'baz']
     end
 
-    it 'raises an error when trying to merge forbidden fields' do
-      expect { hash.deep_merge!(forbidden: 'value') }.to raise_error ArgumentError
-      expect { hash.deep_merge!('forbidden' => 'value') }.to raise_error ArgumentError
-      expect(hash).to_not have_key 'forbidden'
+    it 'resolves conflicting values with the passed block' do
+      hash['key'] = 'value'
+      hash.deep_merge!('key' => 'new') { |key, old_val, new_val| [old_val, new_val] }
+
+      expect(hash['key'].as_json).to eql ['value', 'new']
     end
 
-    it 'allows to merge forbidden fields in nested hashes' do
-      hash.deep_merge!(top: { 'forbidden' => 'value' })
-      expect(hash['top'])
-        .to be_a(Rackstash::Fields::Hash)
-        .and have_key 'forbidden'
+    it 'always merges compatible hashes' do
+      hash['key'] = { 'deep' => 'value' }
+      hash.deep_merge!(
+        'key' => { 'deep' => 'stuff', 'new' => 'things' }
+      ) { |key, old_val, new_val| old_val + new_val }
+
+      expect(hash['key'].as_json).to eql 'deep' => 'valuestuff', 'new' => 'things'
+    end
+
+    it 'always merges compatible arrays' do
+      hash['key'] = { 'deep' => 'value', 'array' => ['v1'] }
+      hash.deep_merge!(
+        'key' => { 'deep' => 'stuff', 'array' => ['v2'] }
+      ) { |key, old_val, new_val| old_val + new_val }
+
+      expect(hash['key'].as_json).to eql 'deep' => 'valuestuff', 'array' => ['v1', 'v2']
+    end
+
+    it 'uses the scope to resolve values returned by the block' do
+      hash['key'] = 'value'
+      hash.deep_merge!({'key' => 'new'}, scope: 123) { |_key, _old, _new| -> { self } }
+
+      expect(hash['key']).to eql 123
     end
   end
 
@@ -440,14 +489,30 @@ describe Rackstash::Fields::Hash do
       expect(hash['foo']).to be_frozen
     end
 
-    it 'overwrites existing fields' do
-      hash['foo'] = 'bar'
+    context 'with force: true' do
+      it 'overwrites existing fields' do
+        hash['foo'] = 'bar'
 
-      hash.merge!({ foo: 42 }, force: true)
-      expect(hash['foo']).to eql 42
+        hash.merge!({ foo: 42 }, force: true)
+        expect(hash['foo']).to eql 42
+      end
+    end
 
-      hash.merge!({ foo: 'value' }, force: false)
-      expect(hash['foo']).to eql 'value'
+    context 'with force: false' do
+      it 'keeps existing values' do
+        hash['foo'] = 'bar'
+
+        hash.merge!({ foo: 'value' }, force: false)
+        expect(hash['foo']).to eql 'bar'
+      end
+
+      it 'overwrites nil values' do
+        hash['foo'] = nil
+        expect(hash['foo']).to be_nil
+
+        hash.merge!({ foo: 'value' }, force: false)
+        expect(hash['foo']).to eql 'value'
+      end
     end
 
     it 'calls the block on merge conflicts' do
@@ -524,7 +589,7 @@ describe Rackstash::Fields::Hash do
         expect(new_hash['forbidden']).to be_nil
       end
 
-      it 'keeps the forbidden_keys on the new hash' do
+      it 'sets the original forbidden_keys on the new hash' do
         new_hash = hash.merge({ 'forbidden' => 'ignored' }, force: false)
         expect { new_hash.merge(forbidden: 'error') }.to raise_error ArgumentError
       end
