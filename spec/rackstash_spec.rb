@@ -41,4 +41,16 @@ describe Rackstash do
       expect(Rackstash.const_get(name)).to be_frozen
     end
   end
+
+  it 'defines UNDEFINED' do
+    expect(Rackstash::UNDEFINED).to be_instance_of Rackstash::UndefinedClass
+    expect(Rackstash::UNDEFINED.to_s).to eql 'undefined'
+
+    expect(Rackstash::UNDEFINED).to equal Rackstash::UNDEFINED
+
+    expect(Rackstash::UNDEFINED).not_to eql nil
+    expect(Rackstash::UNDEFINED).not_to eql false
+    expect(Rackstash::UNDEFINED).not_to eql true
+    expect(Rackstash::UNDEFINED).not_to eql 42
+  end
 end

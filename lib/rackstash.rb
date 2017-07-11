@@ -37,6 +37,29 @@ module Rackstash
 
   PROGNAME = "rackstash/v#{Rackstash::VERSION}".freeze
 
+  # A class for the {UNDEFINED} object. Generally, there will only be exactly
+  # one object of this class.
+  #
+  # The {UNDEFINED} object can be used as the default value for method arguments
+  # to distinguish it from `nil`. See https://holgerjust.de/2016/detecting-default-arguments-in-ruby/#special-default-value
+  # for details.
+  class UndefinedClass
+    # @return [Boolean] `true` iff `other` is the exact same object as `self`
+    def ==(other)
+      self.equal?(other)
+    end
+    alias === ==
+    alias eql? ==
+
+    # @return [String] the string `"undefined"`
+    def to_s
+      'undefined'.freeze
+    end
+    alias inspect to_s
+  end
+
+  UNDEFINED = UndefinedClass.new
+
   EMPTY_STRING = ''.freeze
   EMPTY_SET = Set.new.freeze
 
