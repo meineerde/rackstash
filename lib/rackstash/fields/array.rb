@@ -52,27 +52,104 @@ module Rackstash
         RUBY
       end
 
-      # Retrieve a stored value from a given `index`
+      # Returns the element at `index`, or returns a subarray starting at the
+      # `start` index and continuing for `length` elements, or returns a subarray
+      # specified by `range` of indices.
       #
-      # @param index [Integer] the index in the array where we fetch the value
-      # @return [Object, nil] the current value at `index` or `nil` if no value
-      #   could be found
-      def [](index)
-        @raw[index]
+      # Negative indices count backward from the end of the array (-1 is the
+      # last element). For `start` and `range` cases the starting index is just
+      # before an element. Additionally, an empty array is returned when the
+      # starting index for an element range is at the end of the array.
+      #
+      # Returns `nil` if the index (or starting index) are out of range.
+      # @return [Object, nil]
+      #
+      # @overload [](index)
+      #   Returns the element at `index`
+      #
+      #   @param index [Integer] the index in the array where we fetch the value
+      #   @return [Object, nil] the current value at `index` or `nil` if no
+      #     value could be found
+      #
+      # @overload [](start, length)
+      #   Returns an {Array} starting at the `start` index and continuing for
+      #   `length` elements
+      #
+      #   @param start [Integer] the index in the array where we fetch the
+      #     first value
+      #   @param length [Integer] the number of elements to return
+      #   @return [Array, nil] the current value at `index` or `nil` if `start`
+      #     is out of range
+      #
+      # @overload [](range)
+      #   Returns an {Array} starting at the `start` index and continuing for
+      #   `length` elements
+      #
+      #   @param range [Range] specifies the range of elements to return from
+      #     the array
+      #   @return [Array, nil] the current value at `index` or `nil` if the
+      #     start index is out of range
+      def [](index, length = nil)
+        result = length.nil? ? @raw[index] : @raw[index, length]
+        result = new(result) if ::Concurrent::Array === result
+        result
       end
+      alias slice []
 
-      # Set the value at a given index to the supplied value. The value is
-      # normalized before being set.
+      # Element Assignment - Sets the element at `index`, or replaces a subarray
+      # from the `start` index for `length` elements, or replaces a subarray
+      # specified by the `range` of indices.
       #
-      # You can set nested hashes and arrays here.
+      # All values are normalized before being set. You can set nested hashes
+      # and arrays here.
       #
-      # @param index [Integer] the index in the array where we set the value
-      # @param value [Object, Proc] any value which can be serialized to JSON.
-      #   The value will be normalized before being set so that only JSON-
-      #   compatible objects are added into the array.
-      # @return [void]
-      def []=(index, value)
-        @raw[index] = normalize(value)
+      # If indices are greater than the current capacity of the array, the array
+      # grows automatically. Elements are inserted into the array at start if
+      # length is zero.
+      #
+      # Negative indices will count backward from the end of the array. For
+      # `start` and `range` cases the starting index is just before an element.
+      #
+      # An `IndexError` is raised if a negative index points past the beginning
+      # of the array.
+      #
+      # See also {#push}, and {#unshift}.
+      #
+      # @overload []=(index, value)
+      #   @param index [Integer] the index in the array where we set the value
+      #   @param value [Object, Proc] any value which can be serialized to JSON.
+      #     The value will be normalized before being set so that only JSON-
+      #     compatible objects are added into the array. A given Proc is called
+      #     with its result being used instead.
+      #
+      # @overload []=(range, value)
+      #   Replaces a subarray specified by the range of indices.
+      #
+      #   @param range [Range] the range if values in `self` which are replaced
+      #     by the passed `value`
+      #   @param value [Array, ::Array, #to_ary, Proc] An array contining
+      #     JSON-serializable values. The value will be normalized before being
+      #     set so that only JSON-compatible objects are added into the array. A
+      #     given Proc is called with its result being used instead.
+      #
+      # @overload []=(start, length, value)
+      #   Replaces a subarray from the `start` index for `length` elements with
+      #   the passed `value`.
+      #
+      #   @param index [Integer] the index in the array where we set the value
+      #   @param length [Integer] the index in the array where we set the value
+      #   @param value [Array, ::Array, #to_ary, Proc] An array contining
+      #     JSON-serializable values. The value will be normalized before being
+      #     set so that only JSON-compatible objects are added into the array. A
+      #     given Proc is called with its result being used instead.
+      #
+      # @return [value]
+      def []=(index, value_or_length, value = UNDEFINED)
+        if UNDEFINED.equal?(value)
+          @raw[index] = normalize(value_or_length)
+        else
+          @raw[index, value_or_length] = implicit(normalize(value, wrap: false))
+        end
       end
 
       # Add a given value at the end of the array

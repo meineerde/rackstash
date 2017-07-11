@@ -64,13 +64,39 @@ describe Rackstash::Fields::Array do
   end
 
   describe '#[]' do
-    it 'returns nil if a value was not set' do
-      expect(array[1]).to be_nil
+    before do
+      array[0] = 'value'
+      array[1] = 'foo'
+      array[2] = 'bar'
+      array[3] = 'baz'
     end
 
     it 'returns a set value' do
-      array[0] = 'value'
       expect(array[0]).to eql 'value'
+    end
+
+    it 'returns an array from start, end' do
+      expect(array[1, 3]).to be_a Rackstash::Fields::Array
+      expect(array[1, 3].to_ary).to eql %w[foo bar baz]
+
+      expect(array[2, 0].to_ary).to eql []
+      expect(array[2, 1].to_ary).to eql %w[bar]
+      expect(array[2, 5].to_ary).to eql %w[bar baz]
+    end
+
+    it 'returns an array from a range' do
+      expect(array[1..3]).to be_a Rackstash::Fields::Array
+      expect(array[1..3].to_ary).to eql %w[foo bar baz]
+
+      expect(array[2..4].to_ary).to eql %w[bar baz]
+      expect(array[2..-1].to_ary).to eql %w[bar baz]
+    end
+
+    it 'returns nil if a value was not set' do
+      expect(array[5]).to be_nil
+      expect(array[5, 2]).to be_nil
+      expect(array[2, -1]).to be_nil
+      expect(array[5..9]).to be_nil
     end
   end
 
@@ -80,6 +106,20 @@ describe Rackstash::Fields::Array do
 
       array[0] = 'value'
       expect(array[0]).to eql 'normalized'
+    end
+
+    it 'can set values on a range' do
+      array.concat(%w[hello world with flowers and unicorns])
+
+      array[1..4] = %w[super duper]
+      expect(array.as_json).to eql %w[hello super duper unicorns]
+    end
+
+    it 'can set values from start, length' do
+      array.concat(%w[hello world with flowers and unicorns])
+
+      array[1, 4] = %w[shiny and sparkling]
+      expect(array.as_json).to eql %w[hello shiny and sparkling unicorns]
     end
   end
 
