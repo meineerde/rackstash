@@ -268,6 +268,37 @@ module Rackstash
       end
       alias append push
 
+      # Removes the first element of `self` and returns it, shifting all other
+      # elements down by one. Returns `nil` if the array is empty.
+      #
+      # If a number `n` is given, returns an array of the first `n` elements (or
+      # fewer if the array contains fewer than `n` elements). Afterwards, `self`
+      # only contains the remainder elements, not including what was shifted to
+      # the returned array. See also {#unshift} for the opposite effect.
+      #
+      # @param n [Integer] the number of elements to shift.
+      # @return [Object, ::Array<Object>] the first element or an array of `n` or
+      #   less elements if `n` is given
+      def shift(n = nil)
+        n.nil? ? @raw.shift : new(@raw.shift(n))
+      end
+
+      # Prepends objects to the front of `self`, moving other elements upwards.
+      # See also {#shift} for the opposite effect.
+      #
+      # @param values [::Array] a list of values to prepend to the front of
+      #   `self`
+      # @param scope [Object, nil] if any of the (deeply-nested) values is a
+      #   proc, it will be called in the instance scope of this object (when
+      #   given).
+      # @return [self]
+      def unshift(*values, scope: nil)
+        values.map! { |value| normalize(value, scope: scope) }
+        @raw.unshift *values
+        self
+      end
+      alias prepend unshift
+
       private
 
       def implicit(obj)

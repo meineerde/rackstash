@@ -356,6 +356,43 @@ describe Rackstash::Fields::Array do
     end
   end
 
+  describe '#unshift' do
+    it 'prepends objects' do
+      array[0] = 'first'
+      array.unshift('foo', 'bar')
+
+      expect(array[0]).to eql 'foo'
+      expect(array[1]).to eql 'bar'
+      expect(array[2]).to eql 'first'
+    end
+
+    it 'normalizes values with the scope' do
+      array.unshift -> { self + 3 }, scope: 2
+      expect(array[0]).to eql 5
+    end
+  end
+
+  describe '#shift' do
+    before do
+      array[0] = 'value'
+      array[1] = 'foo'
+      array[2] = 'bar'
+      array[3] = 'baz'
+    end
+
+    it 'shift a single value' do
+      expect(array.shift).to eql 'value'
+      expect(array[0]).to eql 'foo'
+    end
+
+    it 'shift multiple values' do
+      expect(array.shift(3))
+        .to be_instance_of(described_class)
+        .and contain_exactly('value', 'foo', 'bar')
+      expect(array[0]).to eql 'baz'
+    end
+  end
+
   describe 'Converter' do
     it 'creates a new array' do
       raw = [Time.now, 'foo']
