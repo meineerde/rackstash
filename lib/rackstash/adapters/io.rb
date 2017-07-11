@@ -26,14 +26,9 @@ module Rackstash
     # combined `STDOUT` stream of multiple processes can cause interleaved data
     # when writing large log lines (typically > 4 KB). If you are using such a
     # deployment model and expect large log lines, you should consider using a
-    # different adapter to ensure consistent logs.
-    #
-    # Suitable adapters include:
-    #
-    # * {Rackstash::Adapters::File} - When writing to a file, we ensure with
-    #   explicit file locks that all data is written consistently.
-    # * {Rackstash::Adapters::TCP} - With a single TCP connection per adapter
-    #   instance, the receiver can handle the log lines separately.
+    # different adapter to ensure consistent logs. Suitable adapters for this
+    # use-case include {Rackstash::Adapters::File} or
+    # {Rackstash::Adapters::TCP}.
     class IO < Adapter
       register_for ->(o) { o.respond_to?(:write) && o.respond_to?(:close) }
 
