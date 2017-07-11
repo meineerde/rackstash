@@ -49,7 +49,7 @@ module Rackstash
       #   compatible objects are inserted into the Hash.
       #
       # @raise [ArgumentError] if you attempt to set one of the forbidden keys.
-      # @return [void]
+      # @return [value]
       def []=(key, value)
         key = utf8_encode(key)
         raise ArgumentError, "Forbidden field #{key}" if forbidden_key?(key)
@@ -511,8 +511,12 @@ module Rackstash
       end
     end
 
-    def self.Hash(raw, forbidden_keys: EMPTY_SET)
-      Rackstash::Fields::Hash.new(forbidden_keys: forbidden_keys).merge!(raw)
+    # @param hash [::Hash, Hash, #to_hash]
+    # @param forbidden_keys [Set<String>,::Array<String>] a list of strings
+    #   which are not allowed to be used as keys in this hash
+    # @return [Hash]
+    def self.Hash(hash, forbidden_keys: EMPTY_SET)
+      Rackstash::Fields::Hash.new(forbidden_keys: forbidden_keys).merge!(hash)
     end
   end
 end

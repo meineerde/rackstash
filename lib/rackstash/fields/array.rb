@@ -13,7 +13,7 @@ module Rackstash
       end
 
       # @!method +(array)
-      #   Concatenation -- Returns a new {Rackstash::Fields::Array} built by
+      #   Concatenation - Returns a new {Rackstash::Fields::Array} built by
       #   concatenating `self` and  the given `array` together to produce a
       #   third array.
       #
@@ -21,7 +21,7 @@ module Rackstash
       #   @return [Rackstash::Fields::Array]
 
       # @!method -(array)
-      #   Array Difference -- Returns a new {Rackstash::Fields::Array} that is a
+      #   Array Difference - Returns a new {Rackstash::Fields::Array} that is a
       #   copy of `self`, removing any items that also appear in the given
       #   `array`. The order is preserved from `self`.
       #
@@ -29,7 +29,7 @@ module Rackstash
       #   @return [Rackstash::Fields::Array]
 
       # @!method |(array)
-      #   Set Union -- Returns a new {Rackstash::Fields::Array} by joining `self`
+      #   Set Union - Returns a new {Rackstash::Fields::Array} by joining `self`
       #   with the given `array`, excluding any duplicates and preserving the
       #   order from `self`.
       #
@@ -37,7 +37,7 @@ module Rackstash
       #   @return [Rackstash::Fields::Array]
 
       # @!method &(array)
-      #   Set Intersection -- Returns a new {Rackstash::Fields::Array} containing
+      #   Set Intersection - Returns a new {Rackstash::Fields::Array} containing
       #   elements common to `self` and the given `array`, excluding any
       #   duplicates. The order is preserved from `self`.
       #
@@ -205,15 +205,16 @@ module Rackstash
       end
       alias size length
 
-      # Set Union -- Add value from `array` to `self` excluding any duplicates
-      # and preserving the order from `self`.
+      # Set Union - Return a new {Array} containing the union of values in
+      # `self` and `array` excluding any duplicates and preserving the order
+      # from `self`.
       #
       # @param array [Array, ::Array, Proc] an array of values. Each value is
       #   normalized before being added to `self`.
       # @param scope [Object, nil] if `array` or any of its (deeply-nested)
       #   values is a proc, it will be called in the instance scope of this
       #   object (when given).
-      # @return [self]
+      # @return [Array]
       #
       # @see #|
       # @see #merge!
@@ -221,7 +222,7 @@ module Rackstash
         new(@raw | normalize(array, wrap: false, scope: scope))
       end
 
-      # Set Union -- Add value from `array` to `self` excluding any duplicates
+      # Set Union - Add value from `array` to `self` excluding any duplicates
       # and preserving the order from `self`.
       #
       # @param array [Array, ::Array, Proc] an array of values. Each value is
@@ -253,7 +254,7 @@ module Rackstash
         n.nil? ? @raw.pop : @raw.pop(n)
       end
 
-      # Append — Pushes the given object(s) on to the end of this array. All
+      # Append - Pushes the given object(s) on to the end of this array. All
       # values will be normalized before being added. This method returns the
       # array itself, so several appends may be chained together.
       #
@@ -275,6 +276,8 @@ module Rackstash
       end
     end
 
+    # @param array [::Array, Array, #to_ary]
+    # @return [Tags]
     def self.Array(array)
       Rackstash::Fields::Array.new.concat(array)
     end

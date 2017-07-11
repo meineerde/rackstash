@@ -77,7 +77,8 @@ module Rackstash
       end
     end
 
-    # param tags [Set, Array]
+    # @param tags [Set, ::Array, Array #to_a]
+    # @return [Tags]
     def self.Tags(tags)
       Rackstash::Fields::Tags.new.merge!(tags)
     end
