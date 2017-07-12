@@ -133,7 +133,7 @@ describe Rackstash::Adapters::File do
     # http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/
     it 'writes atomic log lines' do
       if Concurrent.on_cruby?
-        worker_processes = workers.times.map { |worker_id|
+        worker_processes = Array.new(workers) { |worker_id|
           Process.fork do
             run_worker worker_id
           end
@@ -142,7 +142,7 @@ describe Rackstash::Adapters::File do
           Process.wait(pid)
         end
       else
-        worker_threads = workers.times.map { |worker_id|
+        worker_threads = Array.new(workers) { |worker_id|
           Thread.new do
             run_worker worker_id
           end
