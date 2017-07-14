@@ -83,6 +83,9 @@ module Rackstash
     # Add a new message to the buffer. This will mark the current buffer as
     # {pending?} and will result in the eventual flush of the logged data.
     #
+    # The buffer's timestamp will be initialized with the time of the first
+    # added message if it wasn't set earlier already.
+    #
     # If the buffer is not {#buffering?}, it will be {#flush}ed and {#clear}ed
     # after each added message. All fields and tags added before the log message
     # will be flushed along with the single message.
