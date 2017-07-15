@@ -16,7 +16,7 @@ module Rackstash
 
       def <<(tag)
         tag = resolve_value(tag)
-        tag = utf8_encode(tag).freeze
+        tag = utf8_encode(tag)
         @raw[tag] = true unless tag.empty?
         self
       end
@@ -72,7 +72,7 @@ module Rackstash
           value.flatten!
           value
         else
-          utf8_encode(value).strip.freeze
+          utf8_encode(value).strip
         end
       end
     end
