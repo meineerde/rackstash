@@ -28,7 +28,9 @@ describe Rackstash do
 
     expect(Rackstash::EMPTY_SET).to eql Set.new
     expect(Rackstash::EMPTY_SET).to be_frozen
+  end
 
+  it 'defines ISO8601_PRECISION' do
     expect(Rackstash::ISO8601_PRECISION).to be_a Integer
   end
 
