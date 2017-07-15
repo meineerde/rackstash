@@ -67,6 +67,8 @@ module Rackstash
           value = value.map { |tag| normalize_tags(tag, scope: scope) }
           value.flatten!
           value
+        elsif value.is_a?(Proc)
+          normalize_tags(value, scope: scope)
         elsif value.respond_to?(:to_ary)
           value = value.to_ary.map { |tag| normalize_tags(tag, scope: scope) }
           value.flatten!

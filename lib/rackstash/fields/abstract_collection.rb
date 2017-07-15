@@ -104,6 +104,8 @@ module Rackstash
       def resolve_value(value, scope: nil)
         return value unless value.is_a?(Proc)
         scope == nil ? value.call : scope.instance_exec(&value)
+      rescue
+        value.inspect
       end
 
       # Note: You should never mutate an array or hash returned by normalize
@@ -157,7 +159,7 @@ module Rackstash
           exception << "\n" << value.backtrace.join("\n") if value.backtrace
           return utf8_encode(exception)
         when ::Proc
-          return utf8_encode(value.inspect)
+          return normalize(value, scope: scope, wrap: wrap)
         when ::BigDecimal
           # A BigDecimal would be naturally represented as a JSON number. Most
           # libraries, however, parse non-integer JSON numbers directly as

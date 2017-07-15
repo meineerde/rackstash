@@ -489,18 +489,29 @@ describe Rackstash::Fields::AbstractCollection do
 
     describe 'with Proc' do
       it 'calls the proc by default and normalizes the result' do
-        proc = proc { :return }
+        proc = -> { :return }
 
         expect(normalize(proc)).to eql 'return'
         expect(normalize(proc).encoding).to eql Encoding::UTF_8
         expect(normalize(proc)).to be_frozen
       end
 
-      it 'inspects a nested proc' do
-        inner = proc { :return }
-        outer = proc { inner }
+      it 'calls a nested proc and normalizes the result' do
+        inner = -> { :return }
+        outer = -> { inner }
 
-        expect(normalize(outer)).to match %r{\A#<Proc:0x[0-9a-f]+@#{__FILE__}:#{__LINE__ - 3}>\z}
+        expect(normalize(outer)).to eql 'return'
+      end
+
+      it 'returns the inspected proc on errors' do
+        error = -> { raise 'Oh, no!' }
+        expected_arguments = ->(arg1, args, arg3) { 'cherio' }
+        ok = -> { :ok }
+        outer = -> { [ok, error, expected_arguments] }
+
+        expect(normalize(outer))
+          .to be_a(Rackstash::Fields::Array)
+          .and contain_exactly('ok', error.inspect, expected_arguments.inspect)
       end
     end
 
