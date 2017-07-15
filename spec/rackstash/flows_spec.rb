@@ -128,9 +128,9 @@ describe Rackstash::Flows do
       expect { |b| flows.each(&b) }.to yield_control.once
     end
 
-    it 'returns an array if a block was provided' do
+    it 'returns the flow if a block was provided' do
       flows << a_flow
-      expect(flows.each {}).to be_instance_of Array
+      expect(flows.each {}).to equal flows
     end
 
     it 'returns an Enumerator if no block was provided' do

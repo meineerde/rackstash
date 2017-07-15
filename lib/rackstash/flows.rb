@@ -61,17 +61,18 @@ module Rackstash
     # a parameter. We only yield non-nil elements. Concurrent changes to `self`
     # do not affect the running enumeration.
     #
-    # An Enumerator is returned if no block is given.
+    # An `Enumerator` is returned if no block is given.
     #
     # @yield [flow] calls the given block once for each flow
     # @yieldparam flow [Flow] the yielded flow
-    # @return [Enumerator, Array<Flow>] Returns an array of the flows if a
-    #   block was given or an `Enumerator` if no block was given.
+    # @return [Enumerator, self] `self` if a block was given or an `Enumerator`
+    #   if no block was given.
     def each
       return enum_for(__method__) unless block_given?
       to_a.each do |flow|
         yield flow
       end
+      self
     end
 
     # @return [Boolean] `true` if `self` contains no elements, `false` otherwise
