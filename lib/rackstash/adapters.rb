@@ -43,7 +43,7 @@ module Rackstash
       # @return [Class] the `adapter_class`
       def register(adapter_class, *matchers)
         unless adapter_class.is_a?(Class) && adapter_class < Adapters::Adapter
-          raise TypeError, 'adapter_class must be a class and inherit from ' +
+          raise TypeError, 'adapter_class must be a class and inherit from ' \
             'Rackstash::Adapters::Adapter'
         end
 

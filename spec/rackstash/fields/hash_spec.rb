@@ -354,7 +354,7 @@ describe Rackstash::Fields::Hash do
 
     it 'resolves conflicting values with the passed block' do
       hash['key'] = 'value'
-      hash.deep_merge!('key' => 'new') { |key, old_val, new_val| [old_val, new_val] }
+      hash.deep_merge!('key' => 'new') { |_key, old_val, new_val| [old_val, new_val] }
 
       expect(hash['key'].as_json).to eql ['value', 'new']
     end
@@ -363,7 +363,7 @@ describe Rackstash::Fields::Hash do
       hash['key'] = { 'deep' => 'value' }
       hash.deep_merge!(
         'key' => { 'deep' => 'stuff', 'new' => 'things' }
-      ) { |key, old_val, new_val| old_val + new_val }
+      ) { |_key, old_val, new_val| old_val + new_val }
 
       expect(hash['key'].as_json).to eql 'deep' => 'valuestuff', 'new' => 'things'
     end
@@ -372,14 +372,14 @@ describe Rackstash::Fields::Hash do
       hash['key'] = { 'deep' => 'value', 'array' => ['v1'] }
       hash.deep_merge!(
         'key' => { 'deep' => 'stuff', 'array' => ['v2'] }
-      ) { |key, old_val, new_val| old_val + new_val }
+      ) { |_key, old_val, new_val| old_val + new_val }
 
       expect(hash['key'].as_json).to eql 'deep' => 'valuestuff', 'array' => ['v1', 'v2']
     end
 
     it 'uses the scope to resolve values returned by the block' do
       hash['key'] = 'value'
-      hash.deep_merge!({'key' => 'new'}, scope: 123) { |_key, _old, _new| -> { self } }
+      hash.deep_merge!({ 'key' => 'new' }, scope: 123) { |_key, _old, _new| -> { self } }
 
       expect(hash['key']).to eql 123
     end

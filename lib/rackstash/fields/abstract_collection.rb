@@ -69,13 +69,13 @@ module Rackstash
 
       def initialize_dup(source)
         super
-        self.raw = source.raw == nil ? nil : source.raw.dup
+        self.raw = source.raw.nil? ? nil : source.raw.dup
         self
       end
 
       def initialize_clone(source)
         super
-        self.raw = source.raw == nil ? nil : source.raw.clone
+        self.raw = source.raw.nil? ? nil : source.raw.clone
         self
       end
 
@@ -103,7 +103,7 @@ module Rackstash
 
       def resolve_value(value, scope: nil)
         return value unless value.is_a?(Proc)
-        scope == nil ? value.call : scope.instance_exec(&value)
+        scope.nil? ? value.call : scope.instance_exec(&value)
       rescue
         value.inspect
       end

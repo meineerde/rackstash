@@ -13,7 +13,7 @@ describe Rackstash::Adapters::Callable do
 
   describe '#initialize' do
     it 'accepts a callable' do
-      expect { Rackstash::Adapters::Callable.new(->{}) }.not_to raise_error
+      expect { Rackstash::Adapters::Callable.new(-> {}) }.not_to raise_error
       expect { Rackstash::Adapters::Callable.new(proc {}) }.not_to raise_error
       expect { Rackstash::Adapters::Callable.new(Struct.new(:call).new) }.not_to raise_error
 

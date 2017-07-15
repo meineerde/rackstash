@@ -464,7 +464,7 @@ module Rackstash
         key = utf8_encode(key)
 
         return if forbidden_key?(key)
-        return unless @raw[key] == nil
+        return unless @raw[key].nil?
 
         @raw[key] = normalize(yield(key))
       end

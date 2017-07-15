@@ -294,7 +294,7 @@ module Rackstash
       # @return [self]
       def unshift(*values, scope: nil)
         values.map! { |value| normalize(value, scope: scope) }
-        @raw.unshift *values
+        @raw.unshift(*values)
         self
       end
       alias prepend unshift
