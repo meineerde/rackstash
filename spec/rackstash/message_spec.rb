@@ -107,7 +107,7 @@ describe Rackstash::Message do
     end
   end
 
-  describe 'progname' do
+  describe '#progname' do
     it 'dups the progname' do
       progname = 'a message'
       message = Rackstash::Message.new('', progname: progname)
@@ -122,7 +122,28 @@ describe Rackstash::Message do
     end
   end
 
-  describe 'time' do
+  describe '#length' do
+    it 'returns the size if the message' do
+      message = Rackstash::Message.new('hello world')
+      expect(message.length).to eql 11
+    end
+
+    it 'can use the #size alias' do
+      message = Rackstash::Message.new('hello world')
+      expect(message.size).to eql 11
+    end
+  end
+
+  describe '#severity_label' do
+    it 'returns the severity label' do
+      expect(Rackstash).to receive(:severity_label).exactly(3).times.and_call_original
+      expect(Rackstash::Message.new('', severity: 0).severity_label).to eql 'DEBUG'
+      expect(Rackstash::Message.new('', severity: 2).severity_label).to eql 'WARN'
+      expect(Rackstash::Message.new('', severity: 5).severity_label).to eql 'ANY'
+    end
+  end
+
+  describe '#time' do
     it 'dups the time' do
       time = Time.now
       message = Rackstash::Message.new('', time: time)

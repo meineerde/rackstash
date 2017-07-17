@@ -29,6 +29,18 @@ module Rackstash
       @message = cleanup(message)
     end
 
+    # @return [String] the guman readable label for the {#severity}.
+    # @see {Rackstash.severity_label}
+    def severity_label
+      Rackstash.severity_label(@severity)
+    end
+
+    # @return [Integer] the character length of {#message}.
+    def length
+      @message.length
+    end
+    alias size length
+
     def to_json
       as_json.to_json
     end
