@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright 2017 Holger Just
 #
 # This software may be modified and distributed under the terms
@@ -97,10 +99,11 @@ module Rackstash
       # that ends in a newline character by mutating the object is required.
       #
       # @param line [#to_s] a log line
-      # @return [String] a string with a trailing newline character (`"\n"`)
+      # @return [String] `line` with a trailing newline character (`"\n"`)
+      #   appended if necessary
       def normalize_line(line)
         line = line.to_s
-        line << "\n".freeze unless line.end_with?("\n".freeze)
+        line = "#{line}\n" unless line.end_with?("\n".freeze)
         line
       end
     end

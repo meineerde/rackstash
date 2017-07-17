@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright 2017 Holger Just
 #
 # This software may be modified and distributed under the terms
@@ -108,8 +110,8 @@ describe Rackstash::Message do
   end
 
   describe '#progname' do
-    it 'dups the progname' do
-      progname = 'a message'
+    it 'dup-freezes a mutable progname' do
+      progname = String.new('a message')
       message = Rackstash::Message.new('', progname: progname)
 
       expect(message.progname).to eql progname

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright 2017 Holger Just
 #
 # This software may be modified and distributed under the terms
@@ -156,7 +158,7 @@ module Rackstash
           return utf8_encode(value)
         when Exception
           exception = "#{value.message} (#{value.class})"
-          exception << "\n" << value.backtrace.join("\n") if value.backtrace
+          exception = [exception, *value.backtrace].join("\n") if value.backtrace
           return utf8_encode(exception)
         when ::Proc
           return normalize(value, scope: scope, wrap: wrap)

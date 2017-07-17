@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright 2017 Holger Just
 #
 # This software may be modified and distributed under the terms
@@ -21,7 +23,7 @@ module Rackstash
       # @param event [Hash] a log event as produced by the {Flow}
       # @return [String] the event as a single-line JSON string
       def encode(event)
-        event[FIELD_MESSAGE].strip!
+        event[FIELD_MESSAGE] = event[FIELD_MESSAGE].strip
         ::JSON.dump(event)
       end
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright 2017 Holger Just
 #
 # This software may be modified and distributed under the terms
@@ -63,7 +65,7 @@ describe Rackstash::Fields::AbstractCollection do
 
   describe '#clone' do
     it 'clones the raw value' do
-      raw = 'hello'
+      raw = []
       collection.send(:raw=, raw)
       expect(collection.send(:raw)).to equal raw
 
@@ -71,14 +73,14 @@ describe Rackstash::Fields::AbstractCollection do
       cloned = collection.clone
 
       expect(cloned).not_to equal collection
-      expect(cloned.send(:raw)).to eql 'hello'
+      expect(cloned.send(:raw)).to eql raw
       expect(cloned.send(:raw)).not_to equal raw
     end
   end
 
   describe '#dup' do
     it 'dups the raw value' do
-      raw = 'hello'
+      raw = []
       collection.send(:raw=, raw)
       expect(collection.send(:raw)).to equal raw
 
@@ -86,7 +88,7 @@ describe Rackstash::Fields::AbstractCollection do
       duped = collection.dup
 
       expect(duped).not_to equal collection
-      expect(duped.send(:raw)).to eql 'hello'
+      expect(duped.send(:raw)).to eql raw
       expect(duped.send(:raw)).not_to equal raw
     end
   end
