@@ -100,6 +100,9 @@ describe Rackstash::Fields::Tags do
 
       tags.merge! [-> { self }], scope: :foo
       expect(tags.to_a).to eql ['123', 'foo']
+
+      tags.merge! [-> { -> { self } }], scope: :foo
+      expect(tags.to_a).to eql ['123', 'foo']
     end
 
     it 'flattens arguments' do
