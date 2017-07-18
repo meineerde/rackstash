@@ -131,20 +131,36 @@ describe Rackstash::Adapters::File do
       line = filler * line_length
 
       adapter = described_class.new(logfile.path)
+
+      # Wait until the parent releases the exclusive lock
+      logfile.flock(File::LOCK_SH)
+
       lines_per_worker.times do
         adapter.write(line)
+
+        # Sleep a bit to ensure more reliable concurrency
+        # Yes, testing oncurrent things is messy...
+        sleep Random.rand(0.01)
       end
     end
 
     # This test was adapted from
     # http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/
     it 'writes atomic log lines' do
+      # First, create an exclusive lock on the logfile to ensure all workers
+      # start at about the same time
+      logfile.flock(File::LOCK_EX)
+
       if Concurrent.on_cruby?
         worker_processes = Array.new(workers) { |worker_id|
           Process.fork do
             run_worker worker_id
           end
         }
+
+        # Workers will only start writing once we have released the lock
+        logfile.flock(File::LOCK_UN)
+
         worker_processes.each do |pid|
           Process.wait(pid)
         end
@@ -154,6 +170,10 @@ describe Rackstash::Adapters::File do
             run_worker worker_id
           end
         }
+
+        # Worker threads will only start writing once we have released the lock
+        logfile.flock(File::LOCK_UN)
+
         worker_threads.each do |thread|
           thread.join
         end
