@@ -96,6 +96,8 @@ describe Rackstash::Adapters::File do
       let(:adapter_args) { { auto_reopen: true } }
 
       it 'reopens the file if moved' do
+        expect(adapter.auto_reopen?).to be true
+
         adapter.write('line1')
         File.rename(logfile.path, "#{logfile.path}.orig")
 
@@ -110,6 +112,8 @@ describe Rackstash::Adapters::File do
       let(:adapter_args) { { auto_reopen: false } }
 
       it 'does not reopen the logfile automatically' do
+        expect(adapter.auto_reopen?).to be false
+
         adapter.write('line1')
         File.rename(logfile.path, "#{logfile.path}.orig")
 
