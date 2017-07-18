@@ -169,7 +169,7 @@ describe Rackstash::Adapters::File do
       # Ensure that not all lines are written sequentially by the same worker,
       # i.e. there were concurrent writes by multiple workers.
       expect(
-        File.new(logfile.path).each_line.each_cons(2).count { |l1, l2| l1.to_s[0] == l2.to_s[0] }
+        File.new(logfile.path).each_line.each_cons(2).count { |l1, l2| l1.to_s[0] != l2.to_s[0] }
       ).to be > workers
     end
   end
