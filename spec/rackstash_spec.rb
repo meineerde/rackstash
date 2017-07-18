@@ -57,4 +57,30 @@ describe Rackstash do
     expect(Rackstash::UNDEFINED).not_to eql true
     expect(Rackstash::UNDEFINED).not_to eql 42
   end
+
+  describe '.severity_label' do
+    it 'returns the label for an integer severity' do
+      expect(described_class.severity_label(0)).to eql 'DEBUG'
+      expect(described_class.severity_label(4)).to eql 'FATAL'
+      expect(described_class.severity_label(5)).to eql 'ANY'
+    end
+
+    it 'returns ANY for out-of-range severities' do
+      expect(described_class.severity_label(-3)).to eql 'ANY'
+      expect(described_class.severity_label(42)).to eql 'ANY'
+    end
+
+    it 'returns the label for a named severity' do
+      expect(described_class.severity_label('DeBuG')).to eql 'DEBUG'
+      expect(described_class.severity_label('warn')).to eql 'WARN'
+      expect(described_class.severity_label(:error)).to eql 'ERROR'
+      expect(described_class.severity_label('UnknoWn')).to eql 'ANY'
+    end
+
+    it 'returns ANY for unknown severity names' do
+      expect(described_class.severity_label('foo')).to eql 'ANY'
+      expect(described_class.severity_label(:test)).to eql 'ANY'
+      expect(described_class.severity_label(nil)).to eql 'ANY'
+    end
+  end
 end

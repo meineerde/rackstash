@@ -75,6 +75,7 @@ module Rackstash
 
   def self.severity_label(severity)
     if severity.is_a?(Integer)
+      return SEVERITY_LABELS.last if severity < 0
       SEVERITY_LABELS[severity] || SEVERITY_LABELS.last
     else
       severity = SEVERITY_NAMES.fetch(severity.to_s.downcase, UNKNOWN)
