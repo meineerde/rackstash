@@ -23,9 +23,10 @@ module Rackstash
     # Logging formatter, a `Proc`-like object which take four arguments and
     # returns the formatted message. The arguments are:
     #
-    # * `severity` - The Severity of the log message.
+    # * `severity` - The severity of the log message as a String.
     # * `time` - A Time instance representing when the message was logged.
-    # * `progname` - The progname configured passed to the logger method.
+    # * `progname` - The progname passed to the logger method (or the default
+    #   {#progname}).
     # * `msg` - The `Object` the user passed to the log message; not necessarily
     #   a String.
     #
@@ -35,8 +36,9 @@ module Rackstash
     # @return [#call] the log formatter for each individual buffered line
     attr_accessor :formatter
 
-    # @return [Integer] a numeric log level, normally you'd use one of the
-    #   `SEVERITIES` constants, i.e. an integer between 0 and 5.
+    # @return [Integer] a numeric log level. Normally you'd use one of the
+    #   `SEVERITIES` constants, i.e., an integer between 0 and 5. We will only
+    #   log messages with a severity above the configured level.
     attr_reader :level
 
     # @return [String] the logger's progname, used as the default for log
