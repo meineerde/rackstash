@@ -5,6 +5,7 @@
 
 language: ruby
 sudo: false
+dist: trusty
 
 cache: bundler
 
