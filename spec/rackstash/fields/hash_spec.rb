@@ -727,14 +727,21 @@ describe Rackstash::Fields::Hash do
       raw = { :time => Time.now, 'string' => 'foo' }
       hash = Rackstash::Fields::Hash(raw)
 
-      expect(hash).to be_instance_of Rackstash::Fields::Hash
+      expect(hash).to be_instance_of described_class
       expect(hash['time']).to be_a String
       expect(hash['string']).to eql 'foo'
     end
 
     it 'can specify forbidden_keys' do
+      raw = { foo: :bar }
+      hash = Rackstash::Fields::Hash(raw, forbidden_keys: ['forbidden'])
+
+      expect { hash['forbidden'] = 'wut?' }.to raise_error ArgumentError
+    end
+
+    it 'applies forbidden_keys on first assignment' do
       raw = { foo: :bar, forbidden: 'ignored' }
-      expect { Rackstash::Fields::Hash(raw, forbidden_fields: ['forbidden']) }
+      expect { Rackstash::Fields::Hash(raw, forbidden_keys: ['forbidden']) }
         .to raise_error ArgumentError
     end
   end
