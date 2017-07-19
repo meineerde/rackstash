@@ -138,8 +138,7 @@ describe Rackstash::Logger do
 
     let(:buffer) {
       double('Rackstash::Buffer').tap do |buffer|
-        expect(buffer).to receive(:add_message) { |message| messages << message }
-          .at_least(:once)
+        allow(buffer).to receive(:add_message) { |message| messages << message }
       end
     }
 
@@ -153,12 +152,9 @@ describe Rackstash::Logger do
 
     before do
       class_double('Rackstash::Message').as_stubbed_const.tap do |klass|
-        expect(klass).to receive(:new) { |msg, **kwargs| { message: msg, **kwargs } }
-          .at_least(:once)
+        allow(klass).to receive(:new) { |msg, **kwargs| { message: msg, **kwargs } }
       end
-      expect(logger).to receive(:buffer_stack)
-        .at_least(:once)
-        .and_return(buffer_stack)
+      allow(logger).to receive(:buffer_stack).and_return(buffer_stack)
     end
 
     it 'sets the current time as UTC to the message' do
@@ -286,6 +282,16 @@ describe Rackstash::Logger do
       expect(messages.last).to include(
         message: "nil\n", severity: 0, progname: 'prog'
       )
+    end
+
+    it 'merges fields if message is a Hash' do
+      fields = instance_double('Rackstash::Fields::Hash')
+      expect(buffer).to receive(:fields).and_return(fields)
+      expect(fields).to receive(:deep_merge!).with(foo: 'bar')
+
+      expect(buffer).not_to receive(:add_message)
+
+      expect(logger.add(0, { foo: 'bar' })).to eql(foo: 'bar')
     end
 
     it 'can use debug shortcut' do

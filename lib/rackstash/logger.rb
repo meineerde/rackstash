@@ -222,14 +222,16 @@ module Rackstash
     #
     # @param severity [Integer] The log severity. One of the {SEVERITIES}
     #   consants.
-    # @param msg [#to_s, Exception, nil] The log message. A `String` or
-    #   `Exception`. If unset, we try to use the return value of the optional
-    #   block.
+    # @param msg [#to_s, ::Hash, Exception, nil] The log message. If unset, we
+    #   try, to use the return value of the optional block. If we get a `String`
+    #   or `Exception`, we log a new {Message}. If it's a Hash, we deep_merge it
+    #   into the current buffer's fields instead.
     # @param progname [String, nil] The program name. Can be omitted. It's
     #   treated as a message if no `msg` and `block` are given.
     # @yield If `message` is `nil`, we yield to the block to get a message
     #   string.
-    # @return [String] The resolved unformatted message string
+    # @return [Message, ::Hash, nil] The merged Hash, or the resolved {Message}
+    #   or `nil` if nothing was logged
     def add(severity, msg = nil, progname = nil)
       severity = severity ? Integer(severity) : UNKNOWN
       return if @level > severity
@@ -244,21 +246,19 @@ module Rackstash
         end
       end
 
-      time = Time.now.utc.freeze
-      formatted_msg = formatter.call(
-        severity_label(severity),
-        time,
-        progname,
+      case msg
+      when Hash, Rackstash::Fields::Hash
+        buffer.fields.deep_merge!(msg)
         msg
-      )
-      buffer.add_message Message.new(
-        formatted_msg,
-        time: time,
-        progname: progname,
-        severity: severity
-      )
-
-      formatted_msg
+      else
+        time = Time.now.utc.freeze
+        buffer.add_message Message.new(
+          formatter.call(Rackstash.severity_label(severity), time, progname, msg),
+          time: time,
+          progname: progname,
+          severity: severity
+        )
+      end
     end
     alias log add
 
@@ -289,10 +289,6 @@ module Rackstash
 
     def buffer
       buffer_stack.current
-    end
-
-    def severity_label(severity)
-      SEVERITY_LABELS[severity] || SEVERITY_LABELS.last
     end
   end
 end
