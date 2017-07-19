@@ -304,7 +304,7 @@ describe Rackstash::Buffer do
       now = Time.parse('2016-10-17 13:37:00 +03:00')
 
       expect(Time).to receive(:now).once.and_return(now)
-      expect(now).to receive(:utc).once.and_return(now.utc)
+      expect(now).to receive(:getutc).once.and_return(now.getutc)
 
       expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000Z'
       expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000Z'

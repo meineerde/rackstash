@@ -217,7 +217,7 @@ module Rackstash
     def timestamp(time = nil)
       @timestamp ||= begin
         time ||= Time.now
-        time.utc.iso8601(ISO8601_PRECISION).freeze
+        time.getutc.iso8601(ISO8601_PRECISION).freeze
       end
     end
   end
