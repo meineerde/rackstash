@@ -100,16 +100,16 @@ module Rackstash
       buffer.tags
     end
 
-    # Log a `message` at the DEBUG log level.
+    # Log a message at the DEBUG log level.
     #
-    # @param message (see #add)
+    # @param msg (see #add)
     # @yield (see #add)
     # @return (see #add)
-    def debug(message = nil)
+    def debug(msg = nil)
       if block_given?
-        add(DEBUG, message) { yield }
+        add(DEBUG, msg) { yield }
       else
-        add(DEBUG, message)
+        add(DEBUG, msg)
       end
     end
 
@@ -118,16 +118,16 @@ module Rackstash
       @level <= DEBUG
     end
 
-    # Log a `message` at the INFO log level.
+    # Log a message at the INFO log level.
     #
-    # @param message (see #add)
+    # @param msg (see #add)
     # @yield (see #add)
     # @return (see #add)
-    def info(message = nil)
+    def info(msg = nil)
       if block_given?
-        add(INFO, message) { yield }
+        add(INFO, msg) { yield }
       else
-        add(INFO, message)
+        add(INFO, msg)
       end
     end
 
@@ -136,16 +136,16 @@ module Rackstash
       @level <= INFO
     end
 
-    # Log a `message` at the WARN log level.
+    # Log a message at the WARN log level.
     #
-    # @param message (see #add)
+    # @param msg (see #add)
     # @yield (see #add)
     # @return (see #add)
-    def warn(message = nil)
+    def warn(msg = nil)
       if block_given?
-        add(WARN, message) { yield }
+        add(WARN, msg) { yield }
       else
-        add(WARN, message)
+        add(WARN, msg)
       end
     end
 
@@ -154,16 +154,16 @@ module Rackstash
       @level <= WARN
     end
 
-    # Log a `message` at the ERROR log level.
+    # Log a message at the ERROR log level.
     #
-    # @param message (see #add)
+    # @param msg (see #add)
     # @yield (see #add)
     # @return (see #add)
-    def error(message = nil)
+    def error(msg = nil)
       if block_given?
-        add(ERROR, message) { yield }
+        add(ERROR, msg) { yield }
       else
-        add(ERROR, message)
+        add(ERROR, msg)
       end
     end
 
@@ -172,16 +172,16 @@ module Rackstash
       @level <= ERROR
     end
 
-    # Log a `message` at the FATAL log level.
+    # Log a message at the FATAL log level.
     #
-    # @param message (see #add)
+    # @param msg (see #add)
     # @yield (see #add)
     # @return (see #add)
-    def fatal(message = nil)
+    def fatal(msg = nil)
       if block_given?
-        add(FATAL, message) { yield }
+        add(FATAL, msg) { yield }
       else
-        add(FATAL, message)
+        add(FATAL, msg)
       end
     end
 
@@ -190,16 +190,16 @@ module Rackstash
       @level <= FATAL
     end
 
-    # Log a `message` at the UNKNOWN log level.
+    # Log a message at the UNKNOWN log level.
     #
-    # @param message (see #add)
+    # @param msg (see #add)
     # @yield (see #add)
     # @return (see #add)
-    def unknown(message = nil)
+    def unknown(msg = nil)
       if block_given?
-        add(UNKNOWN, message) { yield }
+        add(UNKNOWN, msg) { yield }
       else
-        add(UNKNOWN, message)
+        add(UNKNOWN, msg)
       end
     end
 
