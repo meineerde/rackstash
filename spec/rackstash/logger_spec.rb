@@ -388,7 +388,7 @@ describe Rackstash::Logger do
     end
 
     it 'buffers multiple messages' do
-      expect(logger.sink).to receive(:flush).once
+      expect(logger.sink).to receive(:write).once
 
       logger.with_buffer do
         logger.add 1, 'Hello World'

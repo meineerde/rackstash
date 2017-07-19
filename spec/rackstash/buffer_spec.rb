@@ -148,11 +148,11 @@ describe Rackstash::Buffer do
         buffer.add_message double(message: 'Hello World!', time: Time.now)
 
         # We might call Buffer#flush during the following tests
-        allow(sink).to receive(:flush).with(buffer).once
+        allow(sink).to receive(:write).with(buffer).once
       end
 
       it 'flushes the buffer to the sink' do
-        expect(sink).to receive(:flush).with(buffer).once
+        expect(sink).to receive(:write).with(buffer).once
         buffer.flush
       end
 
@@ -169,7 +169,7 @@ describe Rackstash::Buffer do
 
     context 'when not pending?' do
       it 'does not flushes the buffer to the sink' do
-        expect(sink).not_to receive(:flush)
+        expect(sink).not_to receive(:write)
         buffer.flush
       end
 

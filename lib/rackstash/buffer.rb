@@ -152,7 +152,7 @@ module Rackstash
     def flush
       return unless pending?
 
-      @sink.flush(self)
+      @sink.write(self)
       self
     end
 
