@@ -13,19 +13,19 @@ require 'rackstash/adapters/io'
 
 describe Rackstash::Adapters::IO do
   let(:io) { StringIO.new }
-  let(:adapter) { Rackstash::Adapters::IO.new(io) }
+  let(:adapter) { described_class.new(io) }
 
   describe '#initialize' do
     it 'accepts an IO object' do
-      expect { Rackstash::Adapters::IO.new($stdout) }.not_to raise_error
-      expect { Rackstash::Adapters::IO.new(StringIO.new) }.not_to raise_error
-      expect { Rackstash::Adapters::IO.new(Tempfile.new('foo')) }.not_to raise_error
+      expect { described_class.new($stdout) }.not_to raise_error
+      expect { described_class.new(StringIO.new) }.not_to raise_error
+      expect { described_class.new(Tempfile.new('foo')) }.not_to raise_error
     end
 
     it 'rejects non-IO objects' do
-      expect { Rackstash::Adapters::IO.new(nil) }.to raise_error TypeError
-      expect { Rackstash::Adapters::IO.new('hello') }.to raise_error TypeError
-      expect { Rackstash::Adapters::IO.new(Object.new) }.to raise_error TypeError
+      expect { described_class.new(nil) }.to raise_error TypeError
+      expect { described_class.new('hello') }.to raise_error TypeError
+      expect { described_class.new(Object.new) }.to raise_error TypeError
     end
   end
 

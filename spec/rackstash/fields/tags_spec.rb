@@ -10,7 +10,7 @@ require 'spec_helper'
 require 'rackstash/fields/tags'
 
 describe Rackstash::Fields::Tags do
-  let(:tags) { Rackstash::Fields::Tags.new }
+  let(:tags) { described_class.new }
 
   describe '#<<' do
     it 'adds a single tag' do
@@ -74,7 +74,7 @@ describe Rackstash::Fields::Tags do
     it 'returns a new object' do
       new_tags = tags.merge ['hello']
 
-      expect(new_tags).to be_a Rackstash::Fields::Tags
+      expect(new_tags).to be_a described_class
       expect(new_tags.tagged?('hello')).to be true
       expect(new_tags).not_to equal tags
 
@@ -111,7 +111,7 @@ describe Rackstash::Fields::Tags do
     end
 
     it 'accepts tags' do
-      new_tags = Rackstash::Fields::Tags.new
+      new_tags = described_class.new
       new_tags << 'foo'
 
       tags.merge! [new_tags]
@@ -158,7 +158,7 @@ describe Rackstash::Fields::Tags do
       raw = [Time.now, 'foo']
       tags = Rackstash::Fields::Tags(raw)
 
-      expect(tags).to be_a Rackstash::Fields::Tags
+      expect(tags).to be_a described_class
       expect(tags.to_a).to match [String, 'foo']
     end
   end

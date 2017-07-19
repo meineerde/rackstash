@@ -11,7 +11,7 @@ require 'rackstash/buffer_stack'
 
 describe Rackstash::BufferStack do
   let(:sink) { instance_double(Rackstash::Sink) }
-  let(:stack) { Rackstash::BufferStack.new(sink) }
+  let(:stack) { described_class.new(sink) }
 
   describe '#current' do
     it 'initializes a buffer' do

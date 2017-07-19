@@ -10,7 +10,7 @@ require 'spec_helper'
 require 'rackstash/encoders/json'
 
 describe Rackstash::Encoders::JSON do
-  let(:encoder) { Rackstash::Encoders::JSON.new }
+  let(:encoder) { described_class.new }
 
   describe '#encode' do
     it 'formats the passed event hash as a JSON string' do

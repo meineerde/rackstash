@@ -11,23 +11,23 @@ require 'rackstash/adapters/callable'
 
 describe Rackstash::Adapters::Callable do
   let(:callable) { ->(log) { log } }
-  let(:adapter) { Rackstash::Adapters::Callable.new(callable) }
+  let(:adapter) { described_class.new(callable) }
 
   describe '#initialize' do
     it 'accepts a callable' do
-      expect { Rackstash::Adapters::Callable.new(-> {}) }.not_to raise_error
-      expect { Rackstash::Adapters::Callable.new(proc {}) }.not_to raise_error
-      expect { Rackstash::Adapters::Callable.new(Struct.new(:call).new) }.not_to raise_error
+      expect { described_class.new(-> {}) }.not_to raise_error
+      expect { described_class.new(proc {}) }.not_to raise_error
+      expect { described_class.new(Struct.new(:call).new) }.not_to raise_error
 
-      expect { Rackstash::Adapters::Callable.new { |log| log } }.not_to raise_error
+      expect { described_class.new { |log| log } }.not_to raise_error
     end
 
-    it 'rejects non-IO objects' do
-      expect { Rackstash::Adapters::Callable.new(nil) }.to raise_error TypeError
-      expect { Rackstash::Adapters::Callable.new('hello') }.to raise_error TypeError
-      expect { Rackstash::Adapters::Callable.new(Object.new) }.to raise_error TypeError
-      expect { Rackstash::Adapters::Callable.new([]) }.to raise_error TypeError
-      expect { Rackstash::Adapters::Callable.new(Struct.new(:foo).new) }.to raise_error TypeError
+    it 'rejects non-callable objects' do
+      expect { described_class.new(nil) }.to raise_error TypeError
+      expect { described_class.new('hello') }.to raise_error TypeError
+      expect { described_class.new(Object.new) }.to raise_error TypeError
+      expect { described_class.new([]) }.to raise_error TypeError
+      expect { described_class.new(Struct.new(:foo).new) }.to raise_error TypeError
     end
   end
 

@@ -11,7 +11,7 @@ require 'rackstash/flows'
 require 'rackstash/flow'
 
 describe Rackstash::Flows do
-  let(:flows) { Rackstash::Flows.new }
+  let(:flows) { described_class.new }
 
   def a_flow
     flow = instance_double('Rackstash::Flow')
@@ -21,17 +21,17 @@ describe Rackstash::Flows do
 
   describe '#initialize' do
     it 'accepts a single flow' do
-      list = Rackstash::Flows.new(a_flow)
+      list = described_class.new(a_flow)
       expect(list.size).to eql 1
     end
 
     it 'accepts a list of flows' do
       raw_flows = Array.new(3) { a_flow }
 
-      list_with_array = Rackstash::Flows.new(raw_flows)
+      list_with_array = described_class.new(raw_flows)
       expect(list_with_array.size).to eql 3
 
-      list_with_splat = Rackstash::Flows.new(*raw_flows)
+      list_with_splat = described_class.new(*raw_flows)
       expect(list_with_splat.size).to eql 3
     end
 
@@ -39,7 +39,7 @@ describe Rackstash::Flows do
       flow_class = class_double('Rackstash::Flow').as_stubbed_const
       expect(flow_class).to receive(:new).with(:dummy).and_return(a_flow)
 
-      Rackstash::Flows.new(:dummy)
+      described_class.new(:dummy)
     end
   end
 

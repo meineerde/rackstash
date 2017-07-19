@@ -10,13 +10,13 @@ require 'spec_helper'
 require 'rackstash/adapters/adapter'
 
 describe Rackstash::Adapters::Adapter do
-  let(:adapter) { Rackstash::Adapters::Adapter.new }
+  let(:adapter) { described_class.new }
 
   describe '#initialize' do
     it 'accepts any arguments' do
-      Rackstash::Adapters::Adapter.new
-      Rackstash::Adapters::Adapter.new(:foo)
-      Rackstash::Adapters::Adapter.new(123, [:foo])
+      described_class.new
+      described_class.new(:foo)
+      described_class.new(123, [:foo])
     end
   end
 

@@ -10,7 +10,7 @@ require 'spec_helper'
 require 'rackstash/encoders/message'
 
 describe Rackstash::Encoders::Message do
-  let(:encoder) { Rackstash::Encoders::Message.new }
+  let(:encoder) { described_class.new }
 
   describe '#encode' do
     it 'gets the message from the event hash' do

@@ -12,7 +12,7 @@ require 'rackstash/fields/array'
 require 'rackstash/fields/hash'
 
 describe Rackstash::Fields::AbstractCollection do
-  let(:collection) { Rackstash::Fields::AbstractCollection.new }
+  let(:collection) { described_class.new }
 
   def normalize(*args)
     collection.send(:normalize, *args)
@@ -42,7 +42,7 @@ describe Rackstash::Fields::AbstractCollection do
       expect(collection).to receive(:eql?).twice.and_call_original
       expect(collection).to receive(:==).twice.and_call_original
 
-      other = Rackstash::Fields::AbstractCollection.new
+      other = described_class.new
       expect(collection).to eql other
       expect(collection).to eq other
 
@@ -97,7 +97,7 @@ describe Rackstash::Fields::AbstractCollection do
     it 'returns the same hash for the same raw content' do
       collection.send(:raw=, [123, 'foo'])
 
-      collection2 = Rackstash::Fields::AbstractCollection.new
+      collection2 = described_class.new
       collection2.send(:raw=, [123, 'foo'])
 
       expect(collection.send(:raw)).not_to equal collection2.send(:raw)

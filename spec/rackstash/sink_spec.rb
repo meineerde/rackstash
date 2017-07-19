@@ -11,7 +11,7 @@ require 'rackstash/sink'
 
 describe Rackstash::Sink do
   let(:targets) { [] }
-  let(:sink) { Rackstash::Sink.new(targets) }
+  let(:sink) { described_class.new(targets) }
 
   describe '#initialize' do
     it 'accepts an array with targets' do
@@ -21,7 +21,7 @@ describe Rackstash::Sink do
 
     it 'wraps a single target into an array' do
       target = Object.new
-      expect(Rackstash::Sink.new(target).targets).to eql [target]
+      expect(described_class.new(target).targets).to eql [target]
     end
   end
 

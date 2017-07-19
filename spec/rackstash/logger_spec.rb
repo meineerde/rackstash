@@ -10,8 +10,8 @@ require 'spec_helper'
 require 'rackstash/logger'
 
 describe Rackstash::Logger do
-  let(:targets) { double('targets') }
-  let(:logger) { Rackstash::Logger.new(targets) }
+  let(:target) { StringIO.new }
+  let(:logger) { described_class.new(target) }
 
   describe '#formatter' do
     it 'defaults to a Rackstash::Formatter' do

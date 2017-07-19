@@ -10,7 +10,7 @@ require 'spec_helper'
 require 'rackstash/encoders/raw'
 
 describe Rackstash::Encoders::Raw do
-  let(:encoder) { Rackstash::Encoders::Raw.new }
+  let(:encoder) { described_class.new }
 
   describe '#encode' do
     it 'passes the raw event through' do

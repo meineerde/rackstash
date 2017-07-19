@@ -10,18 +10,18 @@ require 'spec_helper'
 require 'rackstash/fields/array'
 
 describe Rackstash::Fields::Array do
-  let(:array) { Rackstash::Fields::Array.new }
+  let(:array) { described_class.new }
 
   describe '#+' do
     it 'returns the addition of elements' do
       array[0] = 'existing'
       expect(array + ['existing', -> { 'new' }, [:nested]])
         .to contain_exactly('existing', 'existing', 'new', ['nested'])
-        .and be_a(Rackstash::Fields::Array)
+        .and be_a(described_class)
     end
 
     it 'returns a new Array' do
-      expect(array + [:foo]).to be_a(Rackstash::Fields::Array)
+      expect(array + [:foo]).to be_a(described_class)
       expect(array + [:foo]).not_to equal array
     end
   end
@@ -34,7 +34,7 @@ describe Rackstash::Fields::Array do
     end
 
     it 'returns a new Array' do
-      expect(array - [:foo]).to be_a(Rackstash::Fields::Array).and be_empty
+      expect(array - [:foo]).to be_a(described_class).and be_empty
       expect(array - [:foo]).not_to equal array
     end
   end
@@ -47,7 +47,7 @@ describe Rackstash::Fields::Array do
     end
 
     it 'returns a new Array' do
-      expect(array | [:foo]).to be_a(Rackstash::Fields::Array)
+      expect(array | [:foo]).to be_a(described_class)
       expect(array | [:foo]).not_to equal array
     end
   end
@@ -60,7 +60,7 @@ describe Rackstash::Fields::Array do
     end
 
     it 'returns a new Array' do
-      expect(array & [:foo]).to be_a(Rackstash::Fields::Array).and be_empty
+      expect(array & [:foo]).to be_a(described_class).and be_empty
       expect(array & [:foo]).not_to equal array
     end
   end
@@ -78,7 +78,7 @@ describe Rackstash::Fields::Array do
     end
 
     it 'returns an array from start, end' do
-      expect(array[1, 3]).to be_a Rackstash::Fields::Array
+      expect(array[1, 3]).to be_a described_class
       expect(array[1, 3].to_ary).to eql %w[foo bar baz]
 
       expect(array[2, 0].to_ary).to eql []
@@ -87,7 +87,7 @@ describe Rackstash::Fields::Array do
     end
 
     it 'returns an array from a range' do
-      expect(array[1..3]).to be_a Rackstash::Fields::Array
+      expect(array[1..3]).to be_a described_class
       expect(array[1..3].to_ary).to eql %w[foo bar baz]
 
       expect(array[2..4].to_ary).to eql %w[bar baz]
@@ -167,7 +167,7 @@ describe Rackstash::Fields::Array do
     end
 
     it 'returns a nested array' do
-      expect(array[2]).to be_a Rackstash::Fields::Array
+      expect(array[2]).to be_a described_class
 
       expect(array.as_json[2]).to be_instance_of ::Array
       expect(array.as_json[2]).to eql %w[v1 v2]
@@ -283,11 +283,11 @@ describe Rackstash::Fields::Array do
       array[0] = 'existing'
       expect(array.merge(['new', :existing, -> { 123 }]))
         .to contain_exactly('existing', 'new', 123)
-        .and be_a(Rackstash::Fields::Array)
+        .and be_a(described_class)
     end
 
     it 'returns a new Array' do
-      expect(array.merge([:foo])).to be_a(Rackstash::Fields::Array)
+      expect(array.merge([:foo])).to be_a(described_class)
       expect(array.merge([:foo])).not_to equal array
     end
 
@@ -348,7 +348,7 @@ describe Rackstash::Fields::Array do
       value = ['hello']
       array.push value
 
-      expect(array[0]).to be_a Rackstash::Fields::Array
+      expect(array[0]).to be_a described_class
       expect(array[0].to_a).to eql value
     end
 
@@ -400,7 +400,7 @@ describe Rackstash::Fields::Array do
       raw = [Time.now, 'foo']
       array = Rackstash::Fields::Array(raw)
 
-      expect(array).to be_a Rackstash::Fields::Array
+      expect(array).to be_a described_class
       expect(array[0]).to be_a String
       expect(array[1]).to eql 'foo'
     end

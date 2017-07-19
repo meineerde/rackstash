@@ -11,7 +11,7 @@ require 'time'
 require 'rackstash/formatter'
 
 describe Rackstash::Formatter do
-  let(:formatter) { Rackstash::Formatter.new }
+  let(:formatter) { described_class.new }
 
   it 'formats plain strings' do
     expect(formatter.call('ERROR', Time.now, 'progname', 'Hello')).to eql "Hello\n"
@@ -50,7 +50,7 @@ describe Rackstash::Formatter do
 end
 
 describe Rackstash::RawFormatter do
-  let(:formatter) { Rackstash::RawFormatter.new }
+  let(:formatter) { described_class.new }
 
   it 'returns the message' do
     msg = 'my message'

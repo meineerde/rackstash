@@ -128,7 +128,7 @@ describe Rackstash::Fields::Hash do
     end
 
     it 'returns a nested hash' do
-      expect(hash['hash']).to be_instance_of Rackstash::Fields::Hash
+      expect(hash['hash']).to be_instance_of described_class
 
       expect(hash.as_json['hash']).to be_instance_of Hash
       expect(hash.as_json['hash']).to eql 'key' => 'nested value', 'number' => 42
@@ -200,7 +200,7 @@ describe Rackstash::Fields::Hash do
       hash['foo'] = ['bar']
 
       new_hash = hash.deep_merge('beep' => :boop, 'foo' => [123])
-      expect(new_hash).to be_a Rackstash::Fields::Hash
+      expect(new_hash).to be_a described_class
 
       expect(hash).not_to have_key 'beep'
       expect(hash['foo']).to contain_exactly 'bar'
@@ -283,7 +283,7 @@ describe Rackstash::Fields::Hash do
       it 'allows to merge forbidden fields in nested hashes' do
         hash.deep_merge!({ top: { 'forbidden' => 'value' } }, force: true)
         expect(hash['top'])
-          .to be_a(Rackstash::Fields::Hash)
+          .to be_a(described_class)
           .and have_key 'forbidden'
       end
     end
@@ -311,12 +311,12 @@ describe Rackstash::Fields::Hash do
 
         hash.deep_merge!({ 'key' => [:foo, 'baz'] }, force: false)
         expect(hash['key'])
-          .to be_a(Rackstash::Fields::Hash)
+          .to be_a(described_class)
           .and have_key 'nested_key'
 
         hash.deep_merge!({ 'key' => 123 }, force: false)
         expect(hash['key'])
-          .to be_a(Rackstash::Fields::Hash)
+          .to be_a(described_class)
           .and have_key 'nested_key'
       end
 
@@ -325,7 +325,7 @@ describe Rackstash::Fields::Hash do
         expect(hash).to have_key 'key'
 
         hash.deep_merge!({ 'key' => { nested: 'value' } }, force: false)
-        expect(hash['key']).to be_a Rackstash::Fields::Hash
+        expect(hash['key']).to be_a described_class
       end
 
       it 'ignores forbidden fields' do
@@ -339,7 +339,7 @@ describe Rackstash::Fields::Hash do
       it 'allows to merge forbidden fields in nested hashes' do
         hash.deep_merge!({ top: { 'forbidden' => 'value' } }, force: false)
         expect(hash['top'])
-          .to be_a(Rackstash::Fields::Hash)
+          .to be_a(described_class)
           .and have_key 'forbidden'
       end
     end
@@ -473,10 +473,10 @@ describe Rackstash::Fields::Hash do
     end
 
     it 'merges an empty hash with compatible arguments' do
-      empty_hash = Rackstash::Fields::Hash.new
+      empty_hash = described_class.new
 
       expect(hash.merge!({})).to eql empty_hash
-      expect(hash.merge!(Rackstash::Fields::Hash.new)).to eql empty_hash
+      expect(hash.merge!(described_class.new)).to eql empty_hash
     end
 
     it 'merges a normalized hash' do
@@ -572,7 +572,7 @@ describe Rackstash::Fields::Hash do
     it 'returns a new object' do
       new_hash = hash.merge(foo: :bar)
 
-      expect(new_hash).to be_instance_of Rackstash::Fields::Hash
+      expect(new_hash).to be_instance_of described_class
       expect(new_hash).not_to equal hash
 
       # The origiginal hash is not changed
