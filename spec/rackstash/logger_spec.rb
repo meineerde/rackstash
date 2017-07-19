@@ -13,6 +13,31 @@ describe Rackstash::Logger do
   let(:target) { StringIO.new }
   let(:logger) { described_class.new(target) }
 
+  describe '#initialize' do
+    it 'requires flows' do
+      expect(Rackstash::Sink).to receive(:new).with('output.log')
+      logger = described_class.new('output.log')
+    end
+
+    it 'allows to set #level' do
+      logger = described_class.new('output.log', level: 'ERROR')
+      expect(logger.level).to eql 3
+
+      logger = described_class.new('output.log', level: 2)
+      expect(logger.level).to eql 2
+    end
+
+    it 'allows to set #progname' do
+      logger = described_class.new('output.log', progname: 'myapp')
+      expect(logger.progname).to eql 'myapp'
+    end
+
+    it 'allows to set #formatter' do
+      logger = described_class.new('output.log', formatter: ->{})
+      expect(logger.formatter).to be_a Proc
+    end
+  end
+
   describe '#formatter' do
     it 'defaults to a Rackstash::Formatter' do
       expect(logger.formatter).to be_a Rackstash::Formatter

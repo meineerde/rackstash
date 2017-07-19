@@ -37,7 +37,7 @@ module Rackstash
     attr_accessor :formatter
 
     # @return [Integer] a numeric log level. Normally you'd use one of the
-    #   `SEVERITIES` constants, i.e., an integer between 0 and 5. We will only
+    #   {SEVERITIES} constants, i.e., an integer between 0 and 5. We will only
     #   log messages with a severity above the configured level.
     attr_reader :level
 
@@ -50,14 +50,24 @@ module Rackstash
     #   external log targets like a file, a socket, ...
     attr_reader :sink
 
-    def initialize(targets)
-      @sink = Sink.new(targets)
-
-      @level = DEBUG
-      @progname = PROGNAME
-      @formatter = Formatter.new
-
+    # @param flows [Array<Flow, Object>, Flow, Adapters::Adapter, Object]
+    #   an array of {Flow}s or a single {Flow}, respectivly object which can be
+    #   used as a {Flow}'s adapter. See {Flow#initialize}.
+    # @param level [Integer] a numeric log level. Normally you'd use one of the
+    #   {SEVERITIES} constants, i.e., an integer between 0 and 5. We will only
+    #   log messages with a severity above the configured level.
+    # @param progname [String] the logger's progname, used as the default for
+    #   log messages if none is passed to {#add} and passed to the {#formatter}.
+    #   By default we use {PROGNAME}.
+    # @param formatter [#call] the log formatter for each individual buffered
+    #   line. See {#formatter} for details.
+    def initialize(flows, level: DEBUG, progname: PROGNAME, formatter: Formatter.new)
       @buffer_stack = Concurrent::ThreadLocalVar.new
+
+      @sink = Rackstash::Sink.new(flows)
+      self.level = level
+      self.progname = progname
+      self.formatter = formatter
     end
 
     # Add a message to the current buffer without any further formatting. If
