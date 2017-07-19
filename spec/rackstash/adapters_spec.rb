@@ -90,6 +90,16 @@ describe Rackstash::Adapters do
       expect { described_class.register Class.new, :foo }
         .to raise_error(TypeError)
     end
+
+    it 'rejects invalid matchers' do
+      matcher = Object.new
+      matcher.instance_eval do
+        undef :===
+      end
+
+      expect { described_class.register(adapter, matcher) }
+        .to raise_error(TypeError)
+    end
   end
 
   describe '#[]' do
