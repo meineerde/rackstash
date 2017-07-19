@@ -35,7 +35,7 @@ module Rackstash
       # filter does not change the `event` hash in any way on its own.
       #
       # @param event [Hash] an event hash
-      # return [Hash, false] the given `event` or `false` if the `skip_if`
+      # @return [Hash, false] the given `event` or `false` if the `skip_if`
       #   condition was evaluated
       def call(event)
         return false if @skip_if.call(event)
