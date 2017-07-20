@@ -73,6 +73,10 @@ module Rackstash
   FIELD_TIMESTAMP = '@timestamp'.freeze
   FIELD_VERSION = '@version'.freeze
 
+  FIELD_ERROR = 'error'.freeze
+  FIELD_ERROR_MESSAGE = 'error_message'.freeze
+  FIELD_ERROR_TRACE = 'error_trace'.freeze
+
   def self.severity_label(severity)
     if severity.is_a?(Integer)
       return SEVERITY_LABELS.last if severity < 0

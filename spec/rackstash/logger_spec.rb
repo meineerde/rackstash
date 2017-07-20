@@ -401,6 +401,72 @@ describe Rackstash::Logger do
     end
   end
 
+  describe '#add_exception' do
+    let(:fields) { Rackstash::Fields::Hash.new }
+
+    before(:each) do
+      buffer = instance_double('Rackstash::Buffer')
+      allow(buffer).to receive(:fields).and_return(fields)
+      allow(logger).to receive(:buffer).and_return(buffer)
+    end
+
+    it 'adds the exception fields' do
+      begin
+        raise 'My Error'
+      rescue => e
+        logger.add_exception(e)
+      end
+
+      expect(fields['error']).to eql 'RuntimeError'
+      expect(fields['error_message']).to eql 'My Error'
+      expect(fields['error_trace']).to match %r{\A#{__FILE__}:#{__LINE__ - 7}:in}
+    end
+
+    it 'does not require a backtrace' do
+      logger.add_exception(StandardError.new('Error'))
+
+      expect(fields['error']).to eql 'StandardError'
+      expect(fields['error_message']).to eql 'Error'
+      expect(fields['error_trace']).to eql ''
+    end
+
+    context 'with force: true' do
+      it 'overwrites exceptions' do
+        begin
+          raise 'Error'
+        rescue => first
+          logger.add_exception(first, force: true)
+        end
+
+        begin
+          raise TypeError, 'Another Error'
+        rescue => second
+          logger.add_exception(second, force: true)
+        end
+
+        expect(fields['error']).to eql 'TypeError'
+        expect(fields['error_message']).to eql 'Another Error'
+        expect(fields['error_trace']).to match %r{\A#{__FILE__}:#{__LINE__ - 7}:in}
+      end
+    end
+
+    context 'with force: false' do
+      it 'does not overwrite exceptions' do
+        fields['error'] = 'Something is wrong'
+
+        begin
+          raise TypeError, 'Error'
+        rescue => second
+          logger.add_exception(second, force: false)
+        end
+
+        expect(fields['error']).to eql 'Something is wrong'
+        expect(fields['error_message']).to be_nil
+        expect(fields['error_trace']).to be_nil
+      end
+    end
+  end
+
   describe '#with_buffer' do
     it 'requires a block' do
       expect { logger.with_buffer }.to raise_error ArgumentError
