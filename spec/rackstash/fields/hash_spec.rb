@@ -92,10 +92,10 @@ describe Rackstash::Fields::Hash do
       expect(hash['key']).to eql 'value'
     end
 
-    context 'with forbidden fields' do
+    context 'with forbidden_keys' do
       let(:forbidden_keys) { ['forbidden', :foo, 42] }
 
-      it 'denies setting a forbidden field' do
+      it 'denies setting a forbidden key' do
         expect { hash[:forbidden] = 'value' }.to raise_error ArgumentError
         expect { hash['forbidden'] = 'value' }.to raise_error ArgumentError
 
@@ -106,7 +106,7 @@ describe Rackstash::Fields::Hash do
         expect { hash[:'42'] = 'value' }.to raise_error ArgumentError
       end
 
-      it 'returns nil when accessing forbidden fields' do
+      it 'returns nil when accessing forbidden keys' do
         expect(hash['forbidden']).to be_nil
 
         expect(hash[:foo]).to be_nil
@@ -683,27 +683,50 @@ describe Rackstash::Fields::Hash do
       expect(hash['symbol']).to eql 'value'
     end
 
-    it 'ignores forbidden keys' do
-      forbidden_keys << 'forbidden'
+    context 'with force: false' do
+      it 'ignores forbidden keys' do
+        forbidden_keys << 'forbidden'
 
-      expect { |b| hash.set(:forbidden, &b) }.not_to yield_control
-      expect { |b| hash.set('forbidden', &b) }.not_to yield_control
+        expect { |b| hash.set(:forbidden, force: false, &b) }.not_to yield_control
+        expect { |b| hash.set('forbidden', force: false, &b) }.not_to yield_control
 
-      expect(hash['forbidden']).to be_nil
+        expect(hash['forbidden']).to be_nil
+      end
+
+      it 'ignores existing keys' do
+        hash['key'] = 'value'
+
+        expect { |b| hash.set(:key, force: false, &b) }.not_to yield_control
+        expect { |b| hash.set('key', force: false, &b) }.not_to yield_control
+
+        expect(hash['key']).to eql 'value'
+      end
+
+      it 'overwrites nil value' do
+        hash['nil'] = nil
+        expect { |b| hash.set('nil', force: false, &b) }.to yield_control
+      end
     end
 
-    it 'ignores existing keys' do
-      hash['key'] = 'value'
+    context 'with force: true' do
+      it 'denies setting a forbidden key' do
+        forbidden_keys << 'forbidden'
 
-      expect { |b| hash.set(:key, &b) }.not_to yield_control
-      expect { |b| hash.set('key', &b) }.not_to yield_control
+        expect { hash.set(:forbidden, force: true) { 'value' } }.to raise_error ArgumentError
+        expect { hash.set('forbidden', force: true) { 'value' } }.to raise_error ArgumentError
 
-      expect(hash['key']).to eql 'value'
-    end
+        expect(hash['forbidden']).to be_nil
+      end
 
-    it 'overwrites nil value' do
-      hash['nil'] = nil
-      expect { |b| hash.set('nil', &b) }.to yield_control
+      it 'overwrites existing keys' do
+        hash['key'] = 'value'
+
+        expect(hash.set(:key, force: true) { 'new_symbol' }).to eql 'new_symbol'
+        expect(hash['key']).to eql 'new_symbol'
+
+        expect(hash.set('key', force: true) { 'new_string' }).to eql 'new_string'
+        expect(hash['key']).to eql 'new_string'
+      end
     end
   end
 

@@ -451,6 +451,10 @@ module Rackstash
       #
       # @param key [#to_s] the field name. When setting the field, this name
       #   will be normalized as a frozen UTF-8 string.
+      # @param force [Boolean] if `true`, we overwrite existing values for
+      #   conflicting keys but raise an `ArgumentError` when trying to set a
+      #   forbidden key. If `false`, we silently ignore values for existing or
+      #   forbidden keys.
       #
       # @yield [key] if the key doesn't exist yet, we call the block and use its
       #    return value as the value to insert at `key`
@@ -462,11 +466,15 @@ module Rackstash
       # @return [Object, nil] The return value of the block or `nil` if no
       #   insertion happened. Note that `nil` is also a valid value to insert
       #   into the hash.
-      def set(key)
+      def set(key, force: true)
         key = utf8_encode(key)
 
-        return if forbidden_key?(key)
-        return unless @raw[key].nil?
+        if force
+          raise ArgumentError, "Forbidden field #{key}" if forbidden_key?(key)
+        else
+          return if forbidden_key?(key)
+          return unless @raw[key].nil?
+        end
 
         @raw[key] = normalize(yield(key))
       end
