@@ -16,7 +16,7 @@ describe Rackstash::Logger do
   describe '#initialize' do
     it 'requires flows' do
       expect(Rackstash::Sink).to receive(:new).with('output.log')
-      logger = described_class.new('output.log')
+      described_class.new('output.log')
     end
 
     it 'allows to set #level' do
