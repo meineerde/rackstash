@@ -42,7 +42,7 @@ describe Rackstash::Message do
     end
 
     it 'dups and freezes all messages' do
-      str = 'hello'
+      str = String.new('hello')
       expect(str.encoding).to eql Encoding::UTF_8
 
       message = described_class.new(str)

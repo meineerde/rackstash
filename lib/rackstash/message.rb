@@ -5,9 +5,13 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/helpers'
+
 module Rackstash
   # This class and all its data are immutable after initialization
   class Message
+    include Rackstash::Helpers::UTF8
+
     attr_reader :message
 
     alias as_json message
@@ -52,20 +56,11 @@ module Rackstash
     # Sanitize a single mesage to be added to the buffer, can be a single or
     # multi line string
     #
-    # @param msg [#to_s] a message to be added to the buffer
+    # @param msg [String, #inspect] a message to be added to the buffer
     # @return [String] the sanitized frozen message
     def cleanup(msg)
       msg = msg.inspect unless msg.is_a?(String)
-      msg = utf8_encode(msg)
-      msg.freeze
-    end
-
-    def utf8_encode(str)
-      str.to_s.encode(
-        Encoding::UTF_8,
-        invalid: :replace,
-        undef: :replace
-      )
+      utf8_encode(msg)
     end
 
     def dup_freeze(obj)
