@@ -116,47 +116,14 @@ describe Rackstash::Fields::AbstractCollection do
   end
 
   describe '#normalize' do
-    describe 'with String' do
-      it 'transforms encoding to UTF-8' do
-        utf8_str = 'Dönerstraße'
-        latin_str = utf8_str.encode(Encoding::ISO8859_9)
-        expect(latin_str.encoding).to eql Encoding::ISO8859_9
+    it 'encodes Strings to UTF-8' do
+      utf8_str = 'Dönerstraße'
+      latin_str = utf8_str.encode(Encoding::ISO8859_9)
+      expect(latin_str.encoding).to eql Encoding::ISO8859_9
 
-        expect(normalize(latin_str)).to eql utf8_str
-        expect(normalize(latin_str).encoding).to eql Encoding::UTF_8
-        expect(normalize(latin_str)).to be_frozen
-      end
-
-      it 'replaces invalid characters in correctly encoded strings' do
-        binary = Digest::SHA256.digest('string')
-
-        expect(normalize(binary)).to include '�'
-        expect(normalize(binary).encoding).to eql Encoding::UTF_8
-        expect(normalize(binary)).to be_frozen
-      end
-
-      it 'replaces invalid characters in incorrectly encoded strings' do
-        strange = Digest::SHA256.digest('string').force_encoding(Encoding::UTF_8)
-
-        expect(normalize(strange)).to include '�'
-        expect(normalize(strange).encoding).to eql Encoding::UTF_8
-        expect(normalize(strange)).to be_frozen
-      end
-
-      it 'dups and freezes valid strings' do
-        valid = String.new('Dönerstraße')
-        expect(valid).to_not be_frozen
-
-        expect(normalize(valid)).to eql(valid)
-        # Not object-equal since the string was dup'ed
-        expect(normalize(valid)).not_to equal valid
-        expect(normalize(valid)).to be_frozen
-      end
-
-      it 'does not alter valid frozen strings' do
-        valid = 'Dönerstraße'.freeze
-        expect(normalize(valid)).to equal(valid)
-      end
+      expect(normalize(latin_str)).to eql utf8_str
+      expect(normalize(latin_str).encoding).to eql Encoding::UTF_8
+      expect(normalize(latin_str)).to be_frozen
     end
 
     it 'transforms Symbol to String' do

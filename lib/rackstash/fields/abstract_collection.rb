@@ -11,9 +11,13 @@ require 'uri'
 
 require 'concurrent'
 
+require 'rackstash/helpers'
+
 module Rackstash
   module Fields
     class AbstractCollection
+      include Rackstash::Helpers::UTF8
+
       # Equality -- Two collections are equal if they are of exactly the same
       # class and contain the same raw data according to `Object#==`.
       #
@@ -84,22 +88,6 @@ module Rackstash
       def new(raw)
         self.class.new.tap do |new_object|
           new_object.raw = raw
-        end
-      end
-
-      # Encode the given String in UTF-8. If the given `str` is already
-      # correctly encoded and frozen, we just return it unchanged. In all other
-      # cases we return a UTF-8 encoded and frozen copy of the string.
-      #
-      # @param str [String, #to_s]
-      # @return [String]
-      def utf8_encode(str)
-        if str.instance_of?(String) && str.encoding == Encoding::UTF_8 && str.valid_encoding?
-          str.frozen? ? str : str.dup.freeze
-        else
-          str = str.to_s
-          str = str.encode(Encoding::UTF_8, invalid: :replace, undef: :replace)
-          str.freeze
         end
       end
 
@@ -189,7 +177,7 @@ module Rackstash
           return normalize(value, scope: scope, wrap: wrap)
         end
 
-        utf8_encode(value.inspect)
+        utf8_encode(value.inspect.freeze)
       end
     end
   end
