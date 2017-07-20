@@ -13,22 +13,6 @@ require 'rackstash/message'
 
 describe Rackstash::Message do
   describe '#initialize' do
-    it 'cleans the message' do
-      messages = [
-        ["First\r\nSecond",         "First\nSecond"],
-        ["First\r\nSecond\n\r",     "First\nSecond\n\n"],
-        ["Foo\r\n\rBar",            "Foo\n\nBar"],
-        ["\r \tWord\n\nPhrase\n",   "\n \tWord\n\nPhrase\n"],
-        ["\e[31mRED TEXT\e[0m",     'RED TEXT']
-      ]
-
-      messages.each do |msg, clean|
-        message = described_class.new(msg)
-        expect(message.message).to eql clean
-        expect(message.message).to be_frozen
-      end
-    end
-
     it 'encodes the message as UTF-8' do
       utf8_str = 'Dönerstraße'
       latin_str = utf8_str.encode(Encoding::ISO8859_9)

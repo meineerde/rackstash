@@ -57,8 +57,6 @@ module Rackstash
     def cleanup(msg)
       msg = msg.inspect unless msg.is_a?(String)
       msg = utf8_encode(msg)
-      # remove useless ANSI color codes
-      msg.gsub!(/\e\[[0-9;]*m/, EMPTY_STRING)
       msg.freeze
     end
 
@@ -66,8 +64,7 @@ module Rackstash
       str.to_s.encode(
         Encoding::UTF_8,
         invalid: :replace,
-        undef: :replace,
-        universal_newline: true
+        undef: :replace
       )
     end
 
