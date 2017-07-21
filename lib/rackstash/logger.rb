@@ -150,6 +150,11 @@ module Rackstash
       buffer.tags
     end
 
+    # (see Buffer#timestamp)
+    def timestamp(time = nil)
+      buffer.timestamp(time)
+    end
+
     # Log a message at the DEBUG log level.
     #
     # @param msg (see #add)

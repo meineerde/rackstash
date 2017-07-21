@@ -222,6 +222,21 @@ describe Rackstash::Logger do
     end
   end
 
+  describe '#timestamp' do
+    it 'forwards to the Buffer' do
+      buffer = instance_double('Rackstash::Buffer')
+      expect(logger).to receive(:buffer).and_return(buffer)
+      expect(buffer).to receive(:timestamp)
+
+      logger.timestamp
+    end
+
+    it 'implements the same method signature as the Buffer' do
+      expect(Rackstash::Buffer.instance_method(:timestamp).parameters)
+        .to eql logger.method(:timestamp).parameters
+    end
+  end
+
   describe '#add' do
     let(:messages) { [] }
 
