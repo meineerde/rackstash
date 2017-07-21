@@ -102,9 +102,35 @@ module Rackstash
       end
     end
 
+    # (see Sink#default_fields)
+    def default_fields
+      @sink.default_fields
+    end
+
+    # (see Sink#default_fields=)
+    def default_fields=(fields)
+      @sink.default_fields = fields
+    end
+
+    # (see Sink#default_tags)
+    def default_tags
+      @sink.default_tags
+    end
+
+    # (see Sink#default_tags=)
+    def default_tags=(tags)
+      @sink.default_tags = tags
+    end
+
     # (see Buffer#fields)
     def fields
       buffer.fields
+    end
+
+    # (see Sink#flows)
+    # @!attribute [r] flows
+    def flows
+      @sink.flows
     end
 
     # (see Buffer#tags)

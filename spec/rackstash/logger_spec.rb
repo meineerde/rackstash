@@ -38,6 +38,42 @@ describe Rackstash::Logger do
     end
   end
 
+  describe '#default_fields' do
+    it 'forwards to the sink' do
+      expect(logger.sink).to receive(:default_fields)
+      logger.default_fields
+    end
+  end
+
+  describe '#default_fields=' do
+    it 'forwards to the sink' do
+      expect(logger.sink).to receive(:default_fields=).with({ 'key' => 'value' })
+      logger.default_fields = { 'key' => 'value' }
+    end
+  end
+
+  describe '#default_tags' do
+    it 'forwards to the sink' do
+      expect(logger.sink).to receive(:default_tags)
+      logger.default_tags
+    end
+  end
+
+  describe '#default_tags=' do
+    it 'forwards to the sink' do
+      expect(logger.sink).to receive(:default_tags=).with(['tag'])
+      logger.default_tags = ['tag']
+    end
+  end
+
+  describe '#flows' do
+    it 'forwards to the sink' do
+      expect(logger.sink).to receive(:flows)
+      logger.flows
+    end
+  end
+
+
   describe '#formatter' do
     it 'defaults to a Rackstash::Formatter' do
       expect(logger.formatter).to be_a Rackstash::Formatter
