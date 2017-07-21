@@ -9,17 +9,8 @@ require 'rackstash/flows'
 
 module Rackstash
   class Sink
-    # @return [Hash, Proc] the default fields which get merged into each buffer
-    #   on {#write}.
-    attr_reader :default_fields
-
-    # @return [Array<#to_s, Proc>, Proc] the default tags which get merged into
-    #   each buffer on flush. It can either be a Array of String keys or a Proc
-    #   which returns an Array. Each element of the array can also be a Proc
-    #   which gets resolved on {#write}.
-    attr_reader :default_tags
-
-    # @return [Flows] The {Flows} defined for this sink
+    # @return [Flows] the defined {Flows} which are responsible for
+    #   transforming, encoding, and persisting an event Hash.
     attr_reader :flows
 
     # @param flows [Array<Flow, Object>, Flow, Adapters::Adapter, Object]
@@ -32,31 +23,30 @@ module Rackstash
       @default_tags = []
     end
 
-    # Set the default fields to the given value.
+    # @return [Hash, Proc] the default fields which get deep merged into the
+    #   created event Hash when flushing a {Buffer}.
+    def default_fields
+      @default_fields
+    end
+
+    # The default fields get deep merged into the created event hash when
+    # flushing a {Buffer}. They can be given either as a `Hash` or a `Proc`
+    # which in turn returns a `Hash` on `call`. The `Hash` can be nested
+    # arbitrarily deep.
     #
-    # These fields get merged into each buffer on {#write}. It can either be a
-    # `Hash` or a `Proc` which in turn returns a `Hash` on call. The `Hash` can
-    # be nested arbitrarily deep.
+    # Each Hash value can again optionally be a Proc which in turn is expected
+    # to return a field value on `call`. You can set nested Hashes or Arrays and
+    # define nested Procs which in turn are called recursively when flushing a
+    # {Buffer}. That way, you can set lazy-evaluated values.
     #
-    # Each value can also be an Proc which gets evaluated on {#write}. That way,
-    # you can set lazy-evaluated values.
-    #
-    # @example The following calls show equivalent results
-    #
+    # @example
+    #   # All three values set the same default fields
     #   sink.default_fields = {'beep' => 'boop'}
+    #   sink.default_fields = -> { { 'beep' => 'boop' } }
+    #   sink.default_fields = { 'beep' => -> { 'boop' } }
     #
-    #   sink.default_fields = lambda {
-    #     {
-    #       'beep' => 'boop'
-    #     }
-    #   }
-    #
-    #   sink.default_fields = {
-    #     'beep' => -> { 'boop' }
-    #   }
-    #
-    # @param fields [#to_hash, Proc] The default fields to be merged into each
-    #   buffer on {#write}
+    # @param fields [#to_hash, Proc] The default fields to be merged into the
+    #   event Hash when flushing a {Buffer}.
     # @raise [TypeError] if `fields` is neither a Proc nor can be converted to a
     #   Hash
     # @return [Hash, Proc] the given `fields`
@@ -69,28 +59,32 @@ module Rackstash
       @default_fields = fields
     end
 
-    # Set the default tags to the given value.
+    # @return [Array<#to_s, Proc>, Proc] the default tags are added to the
+    #   `"@tags"` field of the created event Hash when flushing a {Buffer}. They
+    #   can be given either as an `Array` of `String`s or a `Proc` which in turn
+    #   returns an `Array` of `String`s on `call`.
+    def default_tags
+      @default_tags
+    end
+
+    # The default tags are added to the `"@tags"` field of the created event
+    # Hash when flushing a {Buffer}. They can be given either as an `Array` of
+    # `String`s or a `Proc` which in turn returns an `Array` of `String`s on
+    # `call`.
     #
-    # These tags get merged into each buffer on {#write}. It can either be an
-    # `Array` of strings or a `Proc` which in turn returns an `Array` of strings
-    # on call. The array's values can also be procs which should return a String
-    # on call. All procs are evaluated on {#write}. That way,  you can set
+    # Each value of the Array can again optionally be a Proc which in turn is
+    # expected to return a String on `call`. All the (potentially nested) procs
+    # are called recursively when flushing a {Buffer}. That way, you can set
     # lazy-evaluated values.
     #
-    # @example The following calls show equivalent results
-    #
+    # @example
+    #   # All three values set the same default tags
     #   sink.default_tags = ['important', 'request']
+    #   sink.default_tags = -> { ['important', 'request'] }
+    #   sink.default_tags = [ 'important', -> { 'request' } }
     #
-    #   sink.default_tags = lambda {
-    #     ['important', 'request']
-    #   }
-    #
-    #   sink.default_tags = [
-    #     'important', -> { 'request' }
-    #   }
-    #
-    # @param tags [#to_ary, Proc] The default tags to be merged into each
-    #   buffer on {#write}
+    # @param tags [#to_ary, Proc] The default tags to be merged into the event
+    #   Hash's `"@tags"` field when flushing a {Buffer}
     # @raise [TypeError] if `tags` is neither a Proc nor can be converted to an
     #   Array
     # @return [Array, Proc] the given `tags`
