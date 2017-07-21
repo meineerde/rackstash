@@ -193,6 +193,21 @@ describe Rackstash::Logger do
     end
   end
 
+  describe '#tag' do
+    it 'forwards to the buffer' do
+      buffer = instance_double('Rackstash::Buffer')
+      expect(logger).to receive(:buffer).and_return(buffer)
+      expect(buffer).to receive(:tag)
+
+      logger.tag('foo')
+    end
+
+    it 'implements the same method signature as the Buffer' do
+      expect(Rackstash::Buffer.instance_method(:tag).arity)
+        .to eql logger.method(:tag).arity
+    end
+  end
+
   describe '#tags' do
     it 'gets the current buffer\'s tags' do
       buffer = instance_double('Rackstash::Buffer')

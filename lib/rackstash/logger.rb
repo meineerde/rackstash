@@ -143,6 +143,11 @@ module Rackstash
       @sink.reopen
     end
 
+    # (see Buffer#tag)
+    def tag(*tags, scope: nil)
+      buffer.tag(*tags, scope: scope)
+    end
+
     # (see Buffer#tags)
     def tags
       buffer.tags
