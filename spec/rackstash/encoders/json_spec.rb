@@ -23,7 +23,7 @@ describe Rackstash::Encoders::JSON do
       expect(encoder.encode(event)).to eql '{"message":"text\nwith\nnewlines"}'
     end
 
-    it 'strips the message from all surpunding whitespace' do
+    it 'strips the message from all surrounding whitespace' do
       event = { 'message' => "\n\t \nline1\nline2\n  \n\t\n" }
       expect(encoder.encode(event)).to eql '{"message":"line1\nline2"}'
     end
