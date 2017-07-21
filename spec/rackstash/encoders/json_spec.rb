@@ -27,5 +27,10 @@ describe Rackstash::Encoders::JSON do
       event = { 'message' => "\n\t \nline1\nline2\n  \n\t\n" }
       expect(encoder.encode(event)).to eql '{"message":"line1\nline2"}'
     end
+
+    it 'removes any ANSI color codes from the message' do
+      event = { 'message' => "Important\n\e[31mRED TEXT\e[0m\nOK" }
+      expect(encoder.encode(event)).to eql '{"message":"Important\nRED TEXT\nOK"}'
+    end
   end
 end

@@ -11,7 +11,8 @@ module Rackstash
   module Encoders
     # The JSON encoder formats the log event as a single-line JSON string. The
     # resulting JSON string contains all data exposed by the buffer. Leading
-    # and trailing whitespace on the `"message"` field will be removed.
+    # and trailing whitespace as well as any ANSI color codes in the `"message"`
+    # field will be removed.
     #
     # The resulting string is in the JSON format native to Logstash. You can
     # thus ship your logs directly to Logstash without further processing by
@@ -23,7 +24,10 @@ module Rackstash
       # @param event [Hash] a log event as produced by the {Flow}
       # @return [String] the event as a single-line JSON string
       def encode(event)
-        event[FIELD_MESSAGE] = event[FIELD_MESSAGE].strip
+        event[FIELD_MESSAGE] = event[FIELD_MESSAGE]
+          .gsub(/\e\[[0-9;]*m/, EMPTY_STRING)
+          .strip
+
         ::JSON.dump(event)
       end
     end
