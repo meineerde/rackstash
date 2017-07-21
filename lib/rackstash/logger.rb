@@ -6,7 +6,6 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'concurrent'
-require 'forwardable'
 
 require 'rackstash/buffer_stack'
 require 'rackstash/formatter'
@@ -18,8 +17,6 @@ module Rackstash
   # very similar to the Logger class in Ruby's Stamdard Library but extends it
   # with facilities for structured logging.
   class Logger
-    extend Forwardable
-
     # Logging formatter, a `Proc`-like object which take four arguments and
     # returns the formatted message. The arguments are:
     #
