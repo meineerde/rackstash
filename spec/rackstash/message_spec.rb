@@ -50,6 +50,10 @@ describe Rackstash::Message do
       expect(message.message).not_to equal str
       expect(message.message).to eql str
     end
+
+    it 'freezes the Message' do
+      expect(described_class.new('message')).to be_frozen
+    end
   end
 
   describe '#message' do

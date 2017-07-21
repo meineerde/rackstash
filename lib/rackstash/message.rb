@@ -53,6 +53,8 @@ module Rackstash
       @progname = dup_freeze(progname)
 
       @message = cleanup(message)
+
+      freeze
     end
 
     # @return [String] the guman readable label for the {#severity}.
