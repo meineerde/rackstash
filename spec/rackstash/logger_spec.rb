@@ -38,6 +38,13 @@ describe Rackstash::Logger do
     end
   end
 
+  describe '#close' do
+    it 'forwards to the sink' do
+      expect(logger.sink).to receive(:close)
+      logger.close
+    end
+  end
+
   describe '#default_fields' do
     it 'forwards to the sink' do
       expect(logger.sink).to receive(:default_fields)
@@ -72,7 +79,6 @@ describe Rackstash::Logger do
       logger.flows
     end
   end
-
 
   describe '#formatter' do
     it 'defaults to a Rackstash::Formatter' do
@@ -157,6 +163,13 @@ describe Rackstash::Logger do
     it 'can be set to a custom value' do
       logger.progname = 'my app'
       expect(logger.progname).to eql 'my app'
+    end
+  end
+
+  describe '#reopen' do
+    it 'forwards to the sink' do
+      expect(logger.sink).to receive(:reopen)
+      logger.reopen
     end
   end
 

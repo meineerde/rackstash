@@ -102,6 +102,11 @@ module Rackstash
       end
     end
 
+    # (see Sink#close)
+    def close
+      @sink.close
+    end
+
     # (see Sink#default_fields)
     def default_fields
       @sink.default_fields
@@ -131,6 +136,11 @@ module Rackstash
     # @!attribute [r] flows
     def flows
       @sink.flows
+    end
+
+    # (see Sink#reopen)
+    def reopen
+      @sink.reopen
     end
 
     # (see Buffer#tags)
