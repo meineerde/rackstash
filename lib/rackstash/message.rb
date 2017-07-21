@@ -52,7 +52,8 @@ module Rackstash
       @time = dup_freeze(time)
       @progname = dup_freeze(progname)
 
-      @message = cleanup(message)
+      message = message.inspect unless String === message
+      @message = utf8_encode(message)
 
       freeze
     end
@@ -75,16 +76,6 @@ module Rackstash
     end
 
     private
-
-    # Cleanup the message.
-    #
-    # @param msg [String, #inspect] A message string. If anything else than
-    #   a `String`, we will inspect it.
-    # @return [String] the sanitized frozen message
-    def cleanup(msg)
-      msg = msg.inspect unless msg.is_a?(String)
-      utf8_encode(msg)
-    end
 
     def dup_freeze(obj)
       if obj.frozen?
