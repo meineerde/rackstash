@@ -203,8 +203,8 @@ describe Rackstash::Logger do
     end
 
     it 'implements the same method signature as the Buffer' do
-      expect(Rackstash::Buffer.instance_method(:tag).arity)
-        .to eql logger.method(:tag).arity
+      expect(Rackstash::Buffer.instance_method(:tag).parameters)
+        .to eql logger.method(:tag).parameters
     end
   end
 
