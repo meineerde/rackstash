@@ -57,7 +57,7 @@ module Rackstash
       freeze
     end
 
-    # @return [String] the guman readable label for the {#severity}.
+    # @return [String] the human readable label for the {#severity}.
     # @see Rackstash.severity_label
     def severity_label
       Rackstash.severity_label(@severity)
