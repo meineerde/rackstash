@@ -83,6 +83,28 @@ module Rackstash
       msg
     end
 
+    # Retrieve a stored value from a given `key` in the current Buffer's fields.
+    # This is strictly equivalent to calling `logger.fields[key]`.
+    #
+    # @param (see Fields::Hash#[])
+    # @return (see Fields::Hash#[])
+    def [](key)
+      buffer.fields[key]
+    end
+
+    # Set the value of a key in the current Buffer's fields to the supplied
+    # value. You can set nested hashes and arrays here. The hash keys will be
+    # normalized as strings.
+    # This is strictly equivalent to calling `logger.fields[key] = value`.
+    #
+    # @param (see Fields::Hash#[]=)
+    # @raise [ArgumentError] if you attempt to set one of the forbidden fields,
+    #   namely any of {Buffer::FORBIDDEN_FIELDS}
+    # @return (see Fields::Hash#[]=)
+    def []=(key, value)
+      buffer.fields[key] = value
+    end
+
     # Set the base log level as either one of the {SEVERITIES} or a
     # String/Symbol describing the level. When logging a message, it will only
     # be added if its log level is at or above the base level defined here

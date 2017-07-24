@@ -38,6 +38,32 @@ describe Rackstash::Logger do
     end
   end
 
+  describe 'subscript accessors' do
+    it 'gets a fields from the current Buffer' do
+      logger['key'] = 'value'
+      expect(logger['key']).to eql 'value'
+    end
+
+    it 'normalizes keys when setting values' do
+      logger[:foo] = 'foo value'
+      expect(logger['foo']).to eql 'foo value'
+
+      logger[42] = '42 value'
+      expect(logger['42']).to eql '42 value'
+    end
+
+    it 'returns nil if a value was not set' do
+      expect(logger['missing']).to be_nil
+    end
+
+    it 'can\'t set forbidden values' do
+      expect { logger['message'] = 'nope' }.to raise_error ArgumentError
+      expect { logger['tags'] = 'nope' }.to raise_error ArgumentError
+      expect { logger['@timestamp'] = 'nope' }.to raise_error ArgumentError
+      expect { logger['@version'] = 'nope' }.to raise_error ArgumentError
+    end
+  end
+
   describe '#close' do
     it 'forwards to the sink' do
       expect(logger.sink).to receive(:close)
