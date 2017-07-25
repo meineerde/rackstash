@@ -376,10 +376,10 @@ module Rackstash
     # @param buffer_args [Hash<Symbol => Object>] optional arguments for the new
     #   {Buffer}. See {Buffer#initialize} for allowed values.
     # @return [Object] the return value of the block
-    def with_buffer(**buffer_args)
+    def with_buffer(buffer_args = {})
       raise ArgumentError, 'block required' unless block_given?
 
-      buffer_stack.push(**buffer_args)
+      buffer_stack.push(buffer_args)
       begin
         yield
       ensure

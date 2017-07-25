@@ -47,8 +47,8 @@ module Rackstash
     # @param buffer_args [Hash<Symbol => Object>] optional arguments for the new
     #   {Buffer}. See {Buffer#initialize} for allowed values.
     # @return [Buffer] the newly created buffer
-    def push(**buffer_args)
-      buffer = Buffer.new(sink, **buffer_args)
+    def push(buffer_args = {})
+      buffer = Buffer.new(sink, buffer_args)
       @stack_mutex.synchronize do
         @stack.push buffer
       end
