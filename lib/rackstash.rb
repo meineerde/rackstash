@@ -66,7 +66,7 @@ module Rackstash
   EMPTY_SET = Set.new.freeze
 
   # How many decimal places to render on ISO 8601 timestamps
-  ISO8601_PRECISION = 3
+  ISO8601_PRECISION = 6
 
   FIELD_MESSAGE = 'message'.freeze
   FIELD_TAGS = 'tags'.freeze

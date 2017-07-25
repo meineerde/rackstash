@@ -356,7 +356,7 @@ describe Rackstash::Fields::AbstractCollection do
     it 'formats Time as an ISO 8601 UTC timestamp' do
       time = Time.parse('2016-10-17 16:37:42 +03:00')
 
-      expect(normalize(time)).to eql '2016-10-17T13:37:42.000Z'
+      expect(normalize(time)).to eql '2016-10-17T13:37:42.000000Z'
       expect(normalize(time).encoding).to eql Encoding::UTF_8
       expect(normalize(time)).to be_frozen
     end
@@ -364,7 +364,7 @@ describe Rackstash::Fields::AbstractCollection do
     it 'formats DateTime as an ISO 8601 UTC timestamp' do
       datetime = DateTime.parse('2016-10-17 15:37:42 CEST') # UTC +02:00
 
-      expect(normalize(datetime)).to eql '2016-10-17T13:37:42.000Z'
+      expect(normalize(datetime)).to eql '2016-10-17T13:37:42.000000Z'
       expect(normalize(datetime).encoding).to eql Encoding::UTF_8
       expect(normalize(datetime)).to be_frozen
     end
