@@ -597,6 +597,10 @@ describe Rackstash::Logger do
         logger.add 0, 'I feel great'
       end
     end
+
+    it 'returns the yielded value' do
+      expect(logger.with_buffer { :hello }).to eql :hello
+    end
   end
 
   context 'with multiple threads' do

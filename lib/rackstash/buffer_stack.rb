@@ -54,11 +54,12 @@ module Rackstash
     # If there was a buffer on the stack and it has pending data, it is flushed
     # to the {#sink} before it is returned.
     #
-    # @return [nil]
+    # @return [Buffer, nil] the removed {Buffer} or `nil` if there was no
+    #   {Buffer} to remove
     def flush_and_pop
-      buffer = @stack_mutex.synchronize { @stack.pop }
+      buffer = @stack.pop
       buffer.flush if buffer
-      nil
+      buffer
     end
   end
 end

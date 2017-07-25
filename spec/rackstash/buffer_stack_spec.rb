@@ -70,9 +70,9 @@ describe Rackstash::BufferStack do
         .not_to change { stack.instance_variable_get(:@stack) }
     end
 
-    it 'always returns nil' do
+    it 'returns the pop\'ed Buffer' do
       stack.push
-      expect(stack.flush_and_pop).to be nil
+      expect(stack.flush_and_pop).to be_a Rackstash::Buffer
       expect(stack.flush_and_pop).to be nil
     end
 
