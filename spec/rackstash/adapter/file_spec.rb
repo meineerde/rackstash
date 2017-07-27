@@ -83,6 +83,10 @@ RSpec.describe Rackstash::Adapter::File do
         expect(adapter.base_path).to eql File.join(base, 'dir', 'sub', 'test.log')
         expect(File.directory?(File.join(base, 'dir'))).to be true
         expect(File.file?(File.join(base, 'dir', 'sub', 'test.log'))).to be true
+
+        # cleanup
+        adapter.close
+        FileUtils.rm_rf Dir[File.join(base, '*')]
       end
     end
 
