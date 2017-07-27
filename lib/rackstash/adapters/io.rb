@@ -32,6 +32,34 @@ module Rackstash
     # use-case include {Rackstash::Adapters::File} or
     # {Rackstash::Adapters::TCP}.
     class IO < Adapter
+      # This module is by default included into all objects passed to
+      # {Adapters::IO#initialize}. It allows to synchronize all write accesses
+      # against this object, even when writing to the same object from multiple
+      # adapters concurrently.
+      #
+      # This e.g. allows multiple Loggers in the same process to write to
+      # `STDERR` concurrently without risking any overlapping log lines.
+      module RackstashLock
+        # Initialize the Mutex to synchronize any accesses of a Rackstash
+        # adapter to the extended IO object. This method needs to be called at
+        # least once on an IO object after {RackstashLock} was included into it.
+        #
+        # @return [nil]
+        def init_for_rackstash
+          @lock_for_rackstash ||= Mutex.new
+          nil
+        end
+
+        # @yield Obtains a lock on the IO object, runs the block, and releases
+        #   the lock when the block completes.
+        # @return [Object] the return value of the block
+        def synchronize_for_rackstash
+          @lock_for_rackstash.synchronize do
+            yield
+          end
+        end
+      end
+
       register_for ->(o) { o.respond_to?(:write) && o.respond_to?(:close) }
 
       # @return [Boolean] `true` to ensure that the IO device is flushed after
@@ -48,10 +76,10 @@ module Rackstash
           raise TypeError, "#{io.inspect} does not look like an IO object"
         end
 
+        io.extend(RackstashLock) unless io.respond_to?(:synchronize_for_rackstash)
+        io.init_for_rackstash if io.respond_to?(:init_for_rackstash)
         @io = io
         @flush_immediately = !!flush_immediately
-
-        @mutex = Mutex.new
       end
 
       # Write a single log line with a trailing newline character to the IO
@@ -60,7 +88,7 @@ module Rackstash
       # @param log [#to_s] the encoded log event
       # @return [nil]
       def write_single(log)
-        @mutex.synchronize do
+        @io.synchronize_for_rackstash do
           @io.write normalize_line(log)
           @io.flush if @flush_immediately
         end
@@ -74,7 +102,7 @@ module Rackstash
       #
       # @return [nil]
       def close
-        @mutex.synchronize do
+        @io.synchronize_for_rackstash do
           @io.close
         end
         nil
