@@ -76,10 +76,16 @@ module Rackstash
     # @yieldparam flow [self] if the given block accepts an argument, we yield
     #   `self` as a parameter, else, the block is directly executed in the
     #   context of `self`.
-    def initialize(adapter, encoder: nil, filters: [], &block)
+    def initialize(adapter, encoder: nil, filters: [], error_flow: nil, &block)
       @adapter = Rackstash::Adapters[adapter]
       self.encoder(encoder || @adapter.default_encoder)
       @filter_chain = Rackstash::FilterChain.new(filters)
+
+      if error_flow.nil?
+        @error_flow = nil
+      else
+        self.error_flow(error_flow)
+      end
 
       if block_given?
         if block.arity == 0
@@ -124,6 +130,15 @@ module Rackstash
 
       raise TypeError, 'must provide an encoder' unless encoder.respond_to?(:encode)
       @encoder = encoder
+    end
+
+    def error_flow(flow = nil)
+      if flow.nil?
+        @error_flow || Rackstash.error_flow
+      else
+        flow = Flow.new(flow) unless flow.is_a?(Rackstash::Flow)
+        @error_flow = flow
+      end
     end
 
     # (see FilterChain#insert_after)
@@ -236,9 +251,25 @@ module Rackstash
 
     private
 
-    # TODO: use a fallback flow and send formatted logs there
     def log_error(message, exception)
-      warn("#{message}: #{exception}")
+      error_event = {
+        FIELD_ERROR => exception.class.name,
+        FIELD_ERROR_MESSAGE => exception.message,
+        FIELD_ERROR_TRACE => (exception.backtrace || []).join("\n"),
+
+        FIELD_TAGS => [],
+        FIELD_MESSAGE => message,
+        FIELD_TIMESTAMP => Time.now.utc.iso8601(ISO8601_PRECISION).freeze,
+        FIELD_VERSION => '1'.freeze
+      }
+      error_flow.write!(error_event)
+    rescue
+      # At this place, writing to the error log has also failed. This is a bad
+      # place to be in and there is very little we can sensibly do now.
+      #
+      # To aid in availability of the app using Rackstash, we swallow any
+      # StandardErrors here and just continue, hoping that things will turn out
+      # to be okay in the end.
     end
   end
 end

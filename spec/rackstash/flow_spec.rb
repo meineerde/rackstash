@@ -75,9 +75,26 @@ describe Rackstash::Flow do
     end
 
     it 'rescues any exception thrown by the adapter' do
+      error_flow = instance_double(described_class)
+      expect(error_flow).to receive(:write!)
+        .with hash_including(
+          'message' => /^close failed for adapter/,
+          'error' => 'RuntimeError',
+          'error_message' => 'ERROR'
+        )
+      expect(flow).to receive(:error_flow).and_return(error_flow)
+
       expect(flow).to receive(:close!).and_raise('ERROR')
-      expect(flow).to receive(:warn).with(/^close failed for adapter/)
-      flow.close
+      expect(flow.close).to be nil
+    end
+
+    it 'rescues errors thrown by the error_flow' do
+      error_flow = instance_double(described_class)
+      expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+      expect(flow).to receive(:error_flow).and_return(error_flow)
+
+      expect(flow).to receive(:close!).and_raise('ERROR')
+      expect(flow.close).to be nil
     end
   end
 
@@ -192,9 +209,26 @@ describe Rackstash::Flow do
     end
 
     it 'rescues any exception thrown by the adapter' do
+      error_flow = instance_double(described_class)
+      expect(error_flow).to receive(:write!)
+        .with hash_including(
+          'message' => /^reopen failed for adapter/,
+          'error' => 'RuntimeError',
+          'error_message' => 'ERROR'
+        )
+      expect(flow).to receive(:error_flow).and_return(error_flow)
+
       expect(flow).to receive(:reopen!).and_raise('ERROR')
-      expect(flow).to receive(:warn).with(/^reopen failed for adapter/)
-      flow.reopen
+      expect(flow.reopen).to be nil
+    end
+
+    it 'rescues errors thrown by the error_flow' do
+      error_flow = instance_double(described_class)
+      expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+      expect(flow).to receive(:error_flow).and_return(error_flow)
+
+      expect(flow).to receive(:reopen!).and_raise('ERROR')
+      expect(flow.reopen).to be nil
     end
   end
 
@@ -263,9 +297,26 @@ describe Rackstash::Flow do
     end
 
     it 'rescues any exception thrown by the adapter' do
+      error_flow = instance_double(described_class)
+      expect(error_flow).to receive(:write!)
+        .with hash_including(
+          'message' => /^write failed for adapter/,
+          'error' => 'RuntimeError',
+          'error_message' => 'ERROR'
+        )
+      expect(flow).to receive(:error_flow).and_return(error_flow)
+
       expect(flow).to receive(:write!).and_raise('ERROR')
-      expect(flow).to receive(:warn).with(/^write failed for adapter/)
-      flow.write(event)
+      expect(flow.write(event)).to be false
+    end
+
+    it 'rescues errors thrown by the error_flow' do
+      error_flow = instance_double(described_class)
+      expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+      expect(flow).to receive(:error_flow).and_return(error_flow)
+
+      expect(flow).to receive(:write!).and_raise('ERROR')
+      expect(flow.write(event)).to be false
     end
   end
 end

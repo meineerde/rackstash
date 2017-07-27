@@ -86,6 +86,35 @@ module Rackstash
       SEVERITY_LABELS[severity]
     end
   end
+
+  # Returns a {Flow} which is used by the normal logger {Flow}s to write details
+  # about any unexpected errors during interaction with their {Adapters}.
+  #
+  # By default, this Flow logs JSON-formatted messages to `STDERR`
+  #
+  # @return [Rackstash::Flow] the default error flow
+  def self.error_flow
+    @error_flow ||= Rackstash::Flow.new(STDERR)
+  end
+
+  # Set a {Flow} which is used bythe normal logger {Flow}s to write details
+  # of any unexpected errors during interaction with their {Adapters}.
+  #
+  # You can set a different `error_flow` for each {Flow} if required. You can
+  # also change this flow to match your desired fallback format and log adapter.
+  #
+  # To still work in the face of unexpected availability issues like a full
+  # filesystem, an unavailable network, broken external loggers, or any other
+  # external issues, it is usually desireable to chose a local and mostly
+  # relibable log target.
+  #
+  # @param flow [Flow, Adapters::Adapter, Object] a single {Flow} or an object
+  #   which can be used as a {Flow}'s adapter. See {Flow#initialize}.
+  # @return [Rackstash::Flow] the given `flow`
+  def self.error_flow=(flow)
+    flow = Flow.new(flow) unless flow.is_a?(Rackstash::Flow)
+    @error_flow = flow
+  end
 end
 
 require 'rackstash/logger'

@@ -83,4 +83,38 @@ describe Rackstash do
       expect(described_class.severity_label(nil)).to eql 'ANY'
     end
   end
+
+  describe '.error_flow' do
+    it 'returns a default Flow' do
+      expect(described_class.error_flow).to be_instance_of Rackstash::Flow
+
+      expect(described_class.error_flow.encoder).to be_instance_of Rackstash::Encoders::JSON
+      expect(described_class.error_flow.adapter).to be_instance_of Rackstash::Adapters::IO
+    end
+
+    it 'caches the flow' do
+      expect(described_class.error_flow).to equal described_class.error_flow
+    end
+  end
+
+  describe '.error_flow=' do
+    let(:flow) {
+      flow = instance_double('Rackstash::Flow')
+      allow(flow).to receive(:is_a?).with(Rackstash::Flow).and_return(true)
+      flow
+    }
+
+    it 'can set a new flow' do
+      described_class.error_flow = flow
+      expect(described_class.error_flow).to equal flow
+    end
+
+    it 'wraps a non-flow' do
+      adapter = 'spec.log'
+      expect(Rackstash::Flow).to receive(:new).with(adapter).and_return(flow)
+
+      described_class.error_flow = adapter
+      expect(described_class.error_flow).to equal flow
+    end
+  end
 end
