@@ -146,6 +146,11 @@ RSpec.describe Rackstash::Adapter::File do
     context 'with auto_reopen: true' do
       let(:adapter_args) { { auto_reopen: true } }
 
+      before(:each) do
+        logfile.close
+        GC.start
+      end
+
       it 'reopens the file if moved' do
         expect(adapter.auto_reopen?).to eql true
 
@@ -161,6 +166,11 @@ RSpec.describe Rackstash::Adapter::File do
 
     context 'with auto_reopen: false' do
       let(:adapter_args) { { auto_reopen: false } }
+
+      before(:each) do
+        logfile.close
+        GC.start
+      end
 
       it 'does not reopen the logfile automatically' do
         expect(adapter.auto_reopen?).to eql false
