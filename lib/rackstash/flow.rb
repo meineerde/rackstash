@@ -94,9 +94,18 @@ module Rackstash
     # does not support closing. This method is called by the logger's {Sink}.
     #
     # @return [nil]
-    def close
+    def close!
       @adapter.close
       nil
+    end
+
+    # (see #close!)
+    #
+    # Any error raised by the adapter when closing it is written to the
+    # {#error_flow} and then swallowed. Only grave exceptions (i.e. all those
+    # which do not derive from `StandardError`) are re-raised.
+    def close
+      close!
     rescue Exception => exception
       log_error("close failed for adapter #{adapter.inspect}", exception)
       raise unless exception.is_a?(StandardError)
@@ -152,9 +161,18 @@ module Rackstash
     # does not support reopening. This method is called by the logger's {Sink}.
     #
     # @return [nil]
-    def reopen
+    def reopen!
       @adapter.reopen
       nil
+    end
+
+    # (see #reopen!)
+    #
+    # Any error raised by the adapter when reopening it is written to the
+    # {#error_flow} and then swallowed. Only grave exceptions (i.e. all those
+    # which do not derive from `StandardError`) are re-raised.
+    def reopen
+      reopen!
     rescue Exception => exception
       log_error("reopen failed for adapter #{adapter.inspect}", exception)
       raise unless exception.is_a?(StandardError)
@@ -185,7 +203,7 @@ module Rackstash
     # @return [Boolean] `true` if the event was written to the adapter, `false`
     #   otherwise
     # @see Sink#write
-    def write(event)
+    def write!(event)
       # Silently abort writing if any filter (and thus the while filter chain)
       # returns `false`.
       return false unless @filter_chain.call(event)
@@ -202,6 +220,15 @@ module Rackstash
 
       @adapter.write @encoder.encode(event)
       true
+    end
+
+    # (see #write!)
+    #
+    # Any error raised by the adapter when writing to it is written to the
+    # {#error_flow} and then swallowed. Only grave exceptions (i.e. all those
+    # which do not derive from `StandardError`) are re-raised.
+    def write(event)
+      write!(event)
     rescue Exception => exception
       log_error("write failed for adapter #{adapter.inspect}", exception)
       exception.is_a?(StandardError) ? false : raise

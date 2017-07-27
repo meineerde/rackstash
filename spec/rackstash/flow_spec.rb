@@ -12,6 +12,7 @@ require 'rackstash/flow'
 describe Rackstash::Flow do
   let(:adapter) { Rackstash::Adapters::Null.new }
   let(:flow) { described_class.new(adapter) }
+  let(:event) { {} }
 
   describe '#initialize' do
     it 'creates an adapter' do
@@ -60,17 +61,23 @@ describe Rackstash::Flow do
     end
   end
 
-  describe '#close' do
+  describe '#close!' do
     it 'calls adapter#close' do
       expect(adapter).to receive(:close).and_return(true)
       expect(flow.close).to be nil
     end
+  end
+
+  describe '#close' do
+    it 'calls #close!' do
+      expect(flow).to receive(:close!)
+      flow.close
+    end
 
     it 'rescues any exception thrown by the adapter' do
-      expect(adapter).to receive(:close).and_raise('ERROR')
+      expect(flow).to receive(:close!).and_raise('ERROR')
       expect(flow).to receive(:warn).with(/^close failed for adapter/)
-
-      expect(flow.close).to be nil
+      flow.close
     end
   end
 
@@ -176,21 +183,25 @@ describe Rackstash::Flow do
       expect(adapter).to receive(:reopen).and_return(true)
       expect(flow.reopen).to be nil
     end
+  end
+
+  describe '#reopen' do
+    it 'calls #reopen!' do
+      expect(flow).to receive(:reopen!)
+      flow.reopen
+    end
 
     it 'rescues any exception thrown by the adapter' do
-      expect(adapter).to receive(:reopen).and_raise('ERROR')
+      expect(flow).to receive(:reopen!).and_raise('ERROR')
       expect(flow).to receive(:warn).with(/^reopen failed for adapter/)
-
-      expect(flow.reopen).to be nil
+      flow.reopen
     end
   end
 
-  describe '#write' do
-    let(:event) { {} }
-
+  describe '#write!' do
     it 'calls the filter_chain' do
       expect(flow.filter_chain).to receive(:call)
-      flow.write(event)
+      flow.write!(event)
     end
 
     it 'aborts if the filter_chain returns false' do
@@ -198,21 +209,21 @@ describe Rackstash::Flow do
 
       expect(flow.encoder).not_to receive(:encode)
       expect(flow.adapter).not_to receive(:write)
-      flow.write(event)
+      flow.write!(event)
     end
 
     it 'concatenates message array before encoding' do
       event['message'] = ["a\n", "b\n"]
 
       expect(flow.encoder).to receive(:encode).with('message' => "a\nb\n")
-      flow.write(event)
+      flow.write!(event)
     end
 
     it 'sets message to an emoty string if deleted' do
       event['message'] = nil
 
       expect(flow.encoder).to receive(:encode).with('message' => '')
-      flow.write(event)
+      flow.write!(event)
     end
 
     it 'enforces to_s on other messages' do
@@ -222,33 +233,39 @@ describe Rackstash::Flow do
       expect(foo).to receive(:to_s).and_call_original
       expect(flow.encoder).to receive(:encode).with('message' => 'foo')
 
-      flow.write(event)
+      flow.write!(event)
     end
 
     it 'encodes the event' do
       expect(flow.encoder).to receive(:encode).with(event)
+      flow.write!(event)
+    end
+
+    it 'writes the encoded event to the adapter' do
+      expect(flow.encoder).to receive(:encode).and_return 'encoded'
+      expect(flow.adapter).to receive(:write).with('encoded').and_call_original
+
+      expect(flow.write!(event)).to be true
+    end
+
+    it 'writes the encoded event to the adapter' do
+      expect(flow.encoder).to receive(:encode).and_return 'encoded'
+      expect(flow.adapter).to receive(:write).with('encoded').and_call_original
+
+      expect(flow.write!(event)).to be true
+    end
+  end
+
+  describe '#write' do
+    it 'calls #write!' do
+      expect(flow).to receive(:write!).with(event)
       flow.write(event)
     end
 
-    it 'writes the encoded event to the adapter' do
-      expect(flow.encoder).to receive(:encode).and_return 'encoded'
-      expect(flow.adapter).to receive(:write).with('encoded').and_call_original
-
-      expect(flow.write(event)).to be true
-    end
-
-    it 'writes the encoded event to the adapter' do
-      expect(flow.encoder).to receive(:encode).and_return 'encoded'
-      expect(flow.adapter).to receive(:write).with('encoded').and_call_original
-
-      expect(flow.write(event)).to be true
-    end
-
     it 'rescues any exception thrown by the adapter' do
-      expect(flow.adapter).to receive(:write).and_raise('ERROR')
+      expect(flow).to receive(:write!).and_raise('ERROR')
       expect(flow).to receive(:warn).with(/^write failed for adapter/)
-
-      expect(flow.write(event)).to be false
+      flow.write(event)
     end
   end
 end
