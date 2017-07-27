@@ -1,0 +1,31 @@
+version: 1.0.{build}-{branch}
+
+environment:
+  matrix:
+    - RUBY_VERSION: "26"
+    - RUBY_VERSION: "25"
+    - RUBY_VERSION: "24"
+    - RUBY_VERSION: "23"
+    - RUBY_VERSION: "22"
+    - RUBY_VERSION: "21"
+
+install:
+  - set PATH=C:\Ruby%RUBY_VERSION%\bin;%PATH%
+
+  - ruby -v
+  - gem -v
+  - bundle -v
+
+  - bundle config --local path vendor/bundle
+  - bundle install
+
+  - mkdir tmp
+  - icacls tmp /inheritance:r /grant Everyone:F
+  - set TMPDIR=tmp
+
+clone_depth: 10
+build: off
+deploy: off
+
+test_script:
+  - bundle exec rspec
