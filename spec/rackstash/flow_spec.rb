@@ -46,6 +46,13 @@ describe Rackstash::Flow do
       expect(flow.filter_chain[0]).to equal filter
     end
 
+    it 'accepts an error_flow' do
+      error_flow = described_class.new(nil)
+
+      flow = described_class.new(adapter, error_flow: error_flow)
+      expect(flow.error_flow).to equal error_flow
+    end
+
     it 'yields the adapter if block given' do
       expect { |b| described_class.new(adapter, &b) }
         .to yield_with_args(instance_of(described_class))
@@ -118,6 +125,32 @@ describe Rackstash::Flow do
       expect { flow.encoder true }.to raise_error TypeError
       expect { flow.encoder false }.to raise_error TypeError
       expect { flow.encoder ->{} }.to raise_error TypeError
+    end
+  end
+
+  describe '#error_flow' do
+    it 'returns the global error_flow by default' do
+      expect(Rackstash).to receive(:error_flow).and_call_original
+      expect(flow.error_flow).to be_instance_of described_class
+    end
+
+    it 'can set a custom error_flow' do
+      error_flow = described_class.new(adapter)
+      expect(flow.error_flow(error_flow)).to equal error_flow
+
+      # The error_flow is persisted and is returned afterwards
+      expect(flow.error_flow).to equal error_flow
+    end
+
+    it 'creates a flow object when setting a value' do
+      # load the flow helper so that the receive test below counts correctly
+      flow = self.flow
+
+      expect(described_class).to receive(:new).with(adapter).and_call_original
+      new_flow = flow.error_flow(adapter)
+
+      expect(flow.error_flow).to be_instance_of described_class
+      expect(flow.error_flow).to equal new_flow
     end
   end
 
