@@ -20,6 +20,64 @@ describe Rackstash::Buffer do
     end
   end
 
+  describe '#add_exception' do
+    it 'adds the exception fields' do
+      begin
+        raise 'My Error'
+      rescue => e
+        buffer.add_exception(e)
+      end
+
+      expect(buffer.fields['error']).to eql 'RuntimeError'
+      expect(buffer.fields['error_message']).to eql 'My Error'
+      expect(buffer.fields['error_trace']).to match %r{\A#{__FILE__}:#{__LINE__ - 7}:in}
+    end
+
+    it 'does not require a backtrace' do
+      buffer.add_exception(StandardError.new('Error'))
+
+      expect(buffer.fields['error']).to eql 'StandardError'
+      expect(buffer.fields['error_message']).to eql 'Error'
+      expect(buffer.fields['error_trace']).to eql ''
+    end
+
+    context 'with force: true' do
+      it 'overwrites exceptions' do
+        begin
+          raise 'Error'
+        rescue => first
+          buffer.add_exception(first, force: true)
+        end
+
+        begin
+          raise TypeError, 'Another Error'
+        rescue => second
+          buffer.add_exception(second, force: true)
+        end
+
+        expect(buffer.fields['error']).to eql 'TypeError'
+        expect(buffer.fields['error_message']).to eql 'Another Error'
+        expect(buffer.fields['error_trace']).to match %r{\A#{__FILE__}:#{__LINE__ - 7}:in}
+      end
+    end
+
+    context 'with force: false' do
+      it 'does not overwrite exceptions' do
+        buffer.fields['error'] = 'Something is wrong'
+
+        begin
+          raise TypeError, 'Error'
+        rescue => second
+          buffer.add_exception(second, force: false)
+        end
+
+        expect(buffer.fields['error']).to eql 'Something is wrong'
+        expect(buffer.fields['error_message']).to be_nil
+        expect(buffer.fields['error_trace']).to be_nil
+      end
+    end
+  end
+
   describe '#add_message' do
     it 'adds a message to the buffer' do
       msg = double(message: 'Hello World', time: Time.now)

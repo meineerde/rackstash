@@ -337,35 +337,9 @@ module Rackstash
     end
     alias log add
 
-    # Extract useful data from an exception and add it to fields of the buffer
-    # for structured logging. The following fields will be set:
-    #
-    #  * `error` - The class name of the exception
-    #  * `error_message` - The exception's message
-    #  * `error_trace` - The backtrace of the exception, one frame per line
-    #
-    # The exception will not be added to the buffer's `message` field.
-    # Log it manually with {#add} if desired.
-    #
-    # By default, the details of subsequent exceptions will overwrite those of
-    # older exceptions in the current buffer. Only by the `force` argument to
-    # `false`, we will preserve existing exceptions.
-    #
-    # @param exception [Exception] an Exception object as catched by `rescue`
-    # @param force [Boolean] set to `false` to preserve the details of an
-    #   existing exception in the current buffer's fields, set to `true` to
-    #   overwrite them.
-    # @return [Exception] the passed `exception`
+    # (see Buffer#add_exception)
     def add_exception(exception, force: true)
-      return exception if !force && buffer.fields[FIELD_ERROR]
-
-      exception_fields = {
-        FIELD_ERROR => exception.class.name,
-        FIELD_ERROR_MESSAGE => exception.message,
-        FIELD_ERROR_TRACE => (exception.backtrace || []).join("\n")
-      }
-      buffer.fields.merge!(exception_fields)
-      exception
+      buffer.add_exception(exception, force: force)
     end
 
     # Create a new buffering {Buffer} and puts in on the {BufferStack} for the
