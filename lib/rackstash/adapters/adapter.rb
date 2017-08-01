@@ -82,15 +82,16 @@ module Rackstash
 
       # Write a single log line to the log device.
       #
-      # This method needs to be overwritten in child classes to write the
-      # encoded log event to the adapter's device. By default, this method
-      # raises a `NotImplementedError`.
+      # This method needs to be overwritten in adapter sub classes to write the
+      # encoded log event to the adapter's device. When not overwritten, this
+      # method raises a {NotImplementedHereError}.
       #
       # @param log [Object] the encoded log event
       # @return [void]
-      # @raise NotImplementedError
+      # @raise NotImplementedHereError
       def write_single(log)
-        raise NotImplementedError, 'write needs to be implemented in a sub class'
+        raise NotImplementedHereError, 'write_single needs to be implemented ' +
+          'in the actual adapter subclass'
       end
 
       private

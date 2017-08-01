@@ -10,6 +10,14 @@ require 'set'
 require 'rackstash/version'
 
 module Rackstash
+  # A custom error which is raised by methods which need to be implemented
+  # elsewhere, usually in a subclass. Please refer to the documentation of the
+  # method which raised this error for details.
+  #
+  # Note that this error is not a `StandardError` and will not be rescued
+  # unless it or any of its ancestors, e.g. `Exception` is specified explicitly.
+  class NotImplementedHereError < ScriptError; end
+
   SEVERITIES = [
     DEBUG = 0,
     INFO = 1,

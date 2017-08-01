@@ -47,7 +47,8 @@ describe Rackstash::Adapters::Adapter do
 
   describe '#write_single' do
     it 'is not implemented in the abstract base class' do
-      expect { adapter.write('something') }.to raise_error(NotImplementedError)
+      expect { adapter.write('something') }
+        .to raise_error(Rackstash::NotImplementedHereError)
     end
   end
 end

@@ -8,6 +8,12 @@
 require 'spec_helper'
 
 describe Rackstash do
+  describe Rackstash::NotImplementedHereError do
+    it 'inherits from ScriptError' do
+      expect(described_class.superclass).to equal ScriptError
+    end
+  end
+
   it 'defines PROGRAME with the correct version' do
     expect(Rackstash::PROGNAME).to match %r{\Arackstash/v\d+(\..+)*\z}
     expect(Rackstash::PROGNAME).to be_frozen
