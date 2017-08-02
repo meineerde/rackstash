@@ -225,6 +225,16 @@ describe Rackstash::FilterChain do
     end
   end
 
+  describe '#dup' do
+    it 'duplicates the filters array' do
+      filter_chain << a_filter
+      dupped = filter_chain.dup
+
+      expect(filter_chain.length).to eql dupped.length
+      expect { filter_chain << a_filter }.not_to change { dupped.length }
+    end
+  end
+
   describe '#each' do
     it 'yields each filter' do
       filter_chain << -> {}

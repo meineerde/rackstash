@@ -273,6 +273,15 @@ module Rackstash
 
     private
 
+    def initialize_copy(orig)
+      super
+
+      mon_initialize
+      synchronize do
+        @filters = orig.to_a
+      end
+    end
+
     def index_at(index)
       case index
       when Integer, ->(o) { o.respond_to?(:to_int) }
