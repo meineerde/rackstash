@@ -24,7 +24,7 @@ if ENV['COVERAGE']
   end
 end
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'rackstash'
 
 RSpec.configure do |config|
