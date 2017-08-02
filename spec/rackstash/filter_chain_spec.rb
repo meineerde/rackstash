@@ -383,7 +383,9 @@ describe Rackstash::FilterChain do
 
   describe '#inspect' do
     it 'formats the object' do
-      expect(filter_chain).to receive(:to_s).and_return('["<filter>"]')
+      filter_chain << filter
+
+      expect(filter).to receive(:inspect).and_return('"<filter>"')
       expect(filter_chain.inspect).to(
         match %r{\A#<Rackstash::FilterChain:0x[a-f0-9]+ \["<filter>"\]>\z}
       )
