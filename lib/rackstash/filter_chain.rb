@@ -227,8 +227,10 @@ module Rackstash
 
     # @return [String] a string representation of `self`
     def inspect
-      id_str = Object.instance_method(:to_s).bind(self).call[2..-2]
-      "#<#{id_str} #{self}>"
+      synchronize do
+        id_str = Object.instance_method(:to_s).bind(self).call[2..-2]
+        "#<#{id_str} #{self}>"
+      end
     end
 
     # @return [Integer] the number of elements in `self`. May be zero.
@@ -259,7 +261,7 @@ module Rackstash
 
     # @return [String] an Array-compatible string representation of `self`
     def to_s
-      @filters.to_s
+     synchronize { @filters.to_s }
     end
 
     private
