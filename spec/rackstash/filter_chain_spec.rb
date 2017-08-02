@@ -435,11 +435,28 @@ describe Rackstash::FilterChain do
     end
   end
 
+  describe '#to_a' do
+    it 'returns the array representation' do
+      filter_chain << filter
+
+      expect(filter_chain.to_a)
+        .to be_instance_of(Array)
+        .and all be_equal(filter)
+    end
+
+    it 'returns a duplicate' do
+      filter_chain << a_filter
+      array = filter_chain.to_a
+
+      expect { array << a_filter }.not_to change { filter_chain.length }
+    end
+  end
+
   describe '#to_s' do
     it 'returns the array representation' do
       filter_chain << -> {}
 
-      expect(filter_chain.to_s).to eql filter_chain.each.to_a.to_s
+      expect(filter_chain.to_s).to eql filter_chain.to_a.to_s
     end
   end
 end

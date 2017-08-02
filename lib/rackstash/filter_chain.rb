@@ -259,6 +259,13 @@ module Rackstash
       self
     end
 
+    # Returns an Array representation of the filter chain.
+    #
+    # @return [Array<#call>] an array of filters
+    def to_a
+      synchronize { @filters.dup }
+    end
+
     # @return [String] an Array-compatible string representation of `self`
     def to_s
      synchronize { @filters.to_s }
