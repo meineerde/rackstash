@@ -268,7 +268,7 @@ module Rackstash
 
     # @return [String] an Array-compatible string representation of `self`
     def to_s
-     synchronize { @filters.to_s }
+      synchronize { @filters.to_s }
     end
 
     private
