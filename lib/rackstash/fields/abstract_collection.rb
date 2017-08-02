@@ -143,11 +143,11 @@ module Rackstash
         when ::Date
           return value.iso8601.encode!(Encoding::UTF_8).freeze
         when ::Regexp, ::Range, ::URI::Generic, ::Pathname
-          return utf8_encode(value)
+          return utf8_encode(value.to_s.freeze)
         when Exception
           exception = "#{value.message} (#{value.class})"
           exception = [exception, *value.backtrace].join("\n") if value.backtrace
-          return utf8_encode(exception)
+          return utf8_encode(exception.freeze)
         when ::Proc
           return normalize(value, scope: scope, wrap: wrap)
         when ::BigDecimal

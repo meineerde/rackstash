@@ -76,7 +76,7 @@ module Rackstash
           value.flatten!
           value
         else
-          utf8_encode(value).strip.freeze
+          utf8_encode(value.to_s.strip.freeze)
         end
       end
     end
