@@ -11,7 +11,7 @@ module Rackstash
   module Fields
     class Array < AbstractCollection
       def initialize
-        @raw = Concurrent::Array.new
+        @raw = []
       end
 
       # @!method +(array)
@@ -93,7 +93,7 @@ module Rackstash
       #     start index is out of range
       def [](index, length = nil)
         result = length.nil? ? @raw[index] : @raw[index, length]
-        result = new(result) if ::Concurrent::Array === result
+        result = new(result) if ::Array === result
         result
       end
       alias slice []
@@ -167,7 +167,7 @@ module Rackstash
 
       # @return [::Array] deep-transforms the array into a plain Ruby Array
       def as_json(*)
-        @raw.to_a.map! { |value|
+        @raw.map { |value|
           value.is_a?(AbstractCollection) ? value.as_json : value
         }
       end

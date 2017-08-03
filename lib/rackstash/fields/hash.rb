@@ -17,7 +17,7 @@ module Rackstash
       # @param forbidden_keys [Set<String>,::Array<String>] a list of strings
       #   which are not allowed to be used as keys in this hash
       def initialize(forbidden_keys: EMPTY_SET)
-        @raw = Concurrent::Hash.new
+        @raw = {}
 
         unless forbidden_keys.is_a?(Set) &&
                forbidden_keys.frozen? &&
@@ -62,7 +62,7 @@ module Rackstash
 
       # @return [::Hash] deep-transforms the hash into a plain Ruby Hash
       def as_json(*)
-        hash = @raw.to_h
+        hash = @raw.dup
         hash.each_pair do |key, value|
           hash[key] = value.as_json if value.is_a?(AbstractCollection)
         end

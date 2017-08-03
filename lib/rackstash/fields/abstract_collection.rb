@@ -115,7 +115,7 @@ module Rackstash
         when Rackstash::Fields::Hash, Rackstash::Fields::Array
           return wrap ? value : value.raw
         when ::Hash
-          hash = Concurrent::Hash.new
+          hash = {}
           value.each_pair do |k, v|
             hash[utf8_encode(k)] = normalize(v, scope: scope)
           end
@@ -126,10 +126,7 @@ module Rackstash
           end
           return hash
         when ::Array, ::Set, ::Enumerator
-          array = Concurrent::Array.new
-          value.each do |e|
-            array << normalize(e, scope: scope)
-          end
+          array = value.map { |e| normalize(e, scope: scope) }
           if wrap
             array = Rackstash::Fields::Array.new.tap do |array_field|
               array_field.raw = array

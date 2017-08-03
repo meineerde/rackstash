@@ -13,7 +13,7 @@ module Rackstash
   module Fields
     class Tags < AbstractCollection
       def initialize
-        @raw = Concurrent::Hash.new
+        @raw = {}
       end
 
       def <<(tag)
