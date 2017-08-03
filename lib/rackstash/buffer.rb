@@ -258,5 +258,64 @@ module Rackstash
         time.getutc.iso8601(ISO8601_PRECISION).freeze
       end
     end
+
+    # Create an event hash from `self`.
+    #
+    # * We take the buffer's existing fields and deep-merge the provided
+    #   `fields` into them. Existing fields on the buffer will always have
+    #   precedence here.
+    # * We add the given additional `tags` to the buffer's tags and add them as
+    #   a raw array of strings to the `event['tags']` field.
+    # * We add the buffer's array of messages to `event['message']`. This field
+    #   now contains an array of {Message} objects.
+    # * We add the buffer's timestamp to the `event['@timestamp]` field as an
+    #   ISO 8601 formatted string. The timestamp is always in UTC.
+    # * We add the version of the logstash event format as
+    #   `event[@version] = 1`.
+    #
+    # The typical event emitted here looks like this:
+    #
+    #     {
+    #       "beep" => "boop",
+    #       "foo" => ["bar", "baz"],
+    #       "tags" => ["request", "controller#action"],
+    #       "message" => [
+    #         #<Rackstash::Message:0x007f908b4414c0 ...>,
+    #         #<Rackstash::Message:0x007f908d14aee0 ...>
+    #       ],
+    #       "@timestamp" => "2016-10-17T13:37:42.000Z",
+    #       "@version" => "1"
+    #     }
+    #
+    #
+    # Note that the resulting hash still contains an Array of {Message}s in the
+    # `"message"` field. This allows the {Flow}'s' {Filters} to reject or adapt
+    # some messages based on their original attributes, e.g., their severity or
+    # timestamp.
+    #
+    # @param fields [Hash<String => Object>, Proc] additional fields which are
+    #   merged with this Buffer's fields in the returned event Hash
+    # @param tags [Array<String>, Proc] additional tags which are merged
+    #   added to Buffer's tags in the returned event Hash
+    # @return [Hash] the event expected by the event {Filters}.
+    def to_event(fields: {}, tags: [])
+      if (@fields.nil? || @fields.empty?) && ::Hash === fields && fields.empty?
+        event = {}
+      else
+        event = self.fields.deep_merge(fields, force: false).to_h
+      end
+
+      if (@tags.nil? || @tags.empty?) && ::Array === tags && tags.empty?
+        event[FIELD_TAGS] = []
+      else
+        event[FIELD_TAGS] = self.tags.merge(tags).to_a
+      end
+
+      event[FIELD_MESSAGE] = messages
+      event[FIELD_TIMESTAMP] = timestamp
+      event[FIELD_VERSION] = '1'.freeze
+
+      event
+    end
   end
 end

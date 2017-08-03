@@ -390,4 +390,49 @@ describe Rackstash::Buffer do
       expect(buffer.timestamp).to eql '2016-10-17T07:10:10.000000Z'
     end
   end
+
+  describe '#to_event' do
+    it 'does not merge field and tags if empty' do
+      expect(buffer).not_to receive(:fields)
+      expect(buffer).not_to receive(:tags)
+
+      buffer.to_event(fields: {}, tags: [])
+    end
+
+    it 'merges fields and tags as values' do
+      fields = {foo: :bar}
+      tags = ['default_tag']
+
+      expect(buffer.fields).to receive(:deep_merge).with(fields, force: false)
+      expect(buffer.tags).to receive(:merge).with(tags)
+
+      buffer.to_event(fields: fields, tags: tags)
+    end
+
+    it 'merges fields and tags as Procs' do
+      fields = ->{}
+      tags = ->{}
+
+      expect(buffer.fields).to receive(:deep_merge).with(fields, force: false)
+      expect(buffer.tags).to receive(:merge).with(tags)
+
+      buffer.to_event(fields: fields, tags: tags)
+    end
+
+    it 'creates an event hash' do
+      message = double(message: 'Hello World', time: Time.now)
+      allow(message)
+      buffer.add_message(message)
+      buffer.fields[:foo] = 'bar'
+      buffer.tags << 'some_tag'
+
+      expect(buffer.to_event).to match(
+        'foo' => 'bar',
+        'message' => [message],
+        'tags' => ['some_tag'],
+        '@timestamp' => instance_of(String),
+        '@version' => '1'
+      )
+    end
+  end
 end

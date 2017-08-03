@@ -139,9 +139,7 @@ describe Rackstash::Sink do
     let(:buffer) { Rackstash::Buffer.new(sink) }
 
     it 'merges default_fields and default_tags' do
-      expect(buffer.fields).to receive(:deep_merge).once
-      expect(buffer.tags).to receive(:merge).once
-
+      expect(buffer).to receive(:to_event).with(fields: {}, tags: [])
       sink.write(buffer)
     end
 
@@ -155,7 +153,9 @@ describe Rackstash::Sink do
 
       # only the first event is duplicated
       expect(sink).to receive(:deep_dup_event).with(event_spec).and_call_original.ordered
-      expect(sink).to receive(:deep_dup_event).with(anything).exactly(4).times.and_call_original
+      event_spec.each_value do |arg|
+        expect(sink).to receive(:deep_dup_event).with(arg).and_call_original.ordered
+      end
 
       # During flush, we create a single event, duplicate it and write each to
       # each of the flows.
