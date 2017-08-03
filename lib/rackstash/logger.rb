@@ -163,8 +163,8 @@ module Rackstash
     end
 
     # (see Buffer#tag)
-    def tag(*tags, scope: nil)
-      buffer.tag(*tags, scope: scope)
+    def tag(*new_tags, scope: nil)
+      buffer.tag(*new_tags, scope: scope)
     end
 
     # (see Buffer#tags)

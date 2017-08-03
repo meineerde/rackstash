@@ -55,13 +55,19 @@ module Rackstash
       FIELD_VERSION,    # the version of the schema. Currently "1"
     ].freeze
 
-    # @return [Fields::Hash] the defined fields of the current buffer in a
-    #   hash-like structure
-    attr_reader :fields
+    # @!attribute [r] fields
+    #   @return [Fields::Hash] the defined fields of the current buffer in a
+    #     hash-like structure
+    def fields
+      @fields ||= Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
+    end
 
-    # @return [Fields::Tags] a tags list containing the defined tags for the
-    #   current buffer. It contains frozen strings only.
-    attr_reader :tags
+    # @!attribute [r] tags
+    #   @return [Fields::Tags] a tags list containing the defined tags for the
+    #     current buffer. It contains frozen strings only.
+    def tags
+      @tags ||= Rackstash::Fields::Tags.new
+    end
 
     # @return [Sink] the log {Sink} where the buffer is eventually flushed to
     attr_reader :sink
@@ -104,9 +110,9 @@ module Rackstash
     #   overwrite them.
     # @return [Exception] the passed `exception`
     def add_exception(exception, force: true)
-      return exception unless force || @fields[FIELD_ERROR].nil?
+      return exception unless force || fields[FIELD_ERROR].nil?
 
-      @fields.merge!(
+      fields.merge!(
         FIELD_ERROR => exception.class.name,
         FIELD_ERROR_MESSAGE => exception.message,
         FIELD_ERROR_TRACE => (exception.backtrace || []).join("\n")
@@ -165,9 +171,9 @@ module Rackstash
     #
     # @return [self]
     def clear
-      @messages = Concurrent::Array.new
-      @fields = Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
-      @tags = Rackstash::Fields::Tags.new
+      @messages = []
+      @fields = nil
+      @tags = nil
       @timestamp = nil
 
       self
@@ -209,8 +215,8 @@ module Rackstash
     def pending?
       return true if @messages.any?
       if allow_empty?
-        return true unless @fields.empty?
-        return true unless @tags.empty?
+        return true unless @fields.nil? || @fields.empty?
+        return true unless @tags.nil? || @tags.empty?
       end
       false
     end
@@ -223,7 +229,7 @@ module Rackstash
     # as it is set on the buffer. If you pass the optional `scope` value, the
     # Procs will be evaluated in the context of this scope.
     #
-    # @param tags [Array<#to_s, #call>] Strings to add as tags to the buffer.
+    # @param new_tags [Array<#to_s, #call>] Strings to add as tags to the buffer.
     #   You can either give (arrays of) strings here or procs which return
     #   a string or an array of strings when called.
     # @param scope [nil, Object] If anything other then `nil` is given here, we
@@ -232,8 +238,8 @@ module Rackstash
     #   in the context where they were created.
     # @return [Fields::Tags] the resolved tags which are set on the buffer.
     #   All strings are frozen.
-    def tag(*tags, scope: nil)
-      @tags.merge!(tags, scope: scope)
+    def tag(*new_tags, scope: nil)
+      tags.merge!(new_tags, scope: scope)
     end
 
     # Returns the time of the current buffer as an ISO 8601 formatted string.

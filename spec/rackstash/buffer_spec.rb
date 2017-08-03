@@ -265,7 +265,7 @@ describe Rackstash::Buffer do
       expect(buffer.pending?).to be true
     end
 
-    context 'allow_empty == true' do
+    context 'with allow_empty: true' do
       before do
         buffer_options[:allow_empty] = true
         expect(buffer.allow_empty?).to be true
@@ -286,7 +286,7 @@ describe Rackstash::Buffer do
       end
     end
 
-    context 'allow_empty == false' do
+    context 'with allow_empty: false' do
       before do
         buffer_options[:allow_empty] = false
         expect(buffer.allow_empty?).to be false
