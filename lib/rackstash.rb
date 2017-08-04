@@ -45,6 +45,13 @@ module Rackstash
     'ANY'.freeze
   ].freeze
 
+  # Gets the label for a given severity. You can specify the severity either by
+  # its numeric value or its name in most variations (`Symbol`, `String`,
+  # different cases).
+  #
+  # @param severity [Integer, #to_s] A numeric value of one of the {SEVERITIES}
+  #   or a {SEVERITY_NAMES} key
+  # @return [String] one of the {SEVERITY_LABELS}
   def self.severity_label(severity)
     if severity.is_a?(Integer)
       return SEVERITY_LABELS.last if severity < 0
