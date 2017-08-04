@@ -45,6 +45,16 @@ module Rackstash
     'ANY'.freeze
   ].freeze
 
+  def self.severity_label(severity)
+    if severity.is_a?(Integer)
+      return SEVERITY_LABELS.last if severity < 0
+      SEVERITY_LABELS[severity] || SEVERITY_LABELS.last
+    else
+      severity = SEVERITY_NAMES.fetch(severity.to_s.downcase, UNKNOWN)
+      SEVERITY_LABELS[severity]
+    end
+  end
+
   PROGNAME = "rackstash/v#{Rackstash::VERSION}".freeze
 
   # A class for the {UNDEFINED} object. Generally, there will only be exactly
@@ -84,16 +94,6 @@ module Rackstash
   FIELD_ERROR = 'error'.freeze
   FIELD_ERROR_MESSAGE = 'error_message'.freeze
   FIELD_ERROR_TRACE = 'error_trace'.freeze
-
-  def self.severity_label(severity)
-    if severity.is_a?(Integer)
-      return SEVERITY_LABELS.last if severity < 0
-      SEVERITY_LABELS[severity] || SEVERITY_LABELS.last
-    else
-      severity = SEVERITY_NAMES.fetch(severity.to_s.downcase, UNKNOWN)
-      SEVERITY_LABELS[severity]
-    end
-  end
 
   # Returns a {Flow} which is used by the normal logger {Flow}s to write details
   # about any unexpected errors during interaction with their {Adapters}.
