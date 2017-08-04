@@ -521,6 +521,30 @@ describe Rackstash::Logger do
     end
   end
 
+  describe '#push_buffer' do
+    it 'pushes a new buffer on the BufferStack' do
+      expect(logger.send(:buffer_stack)).to receive(:push).and_call_original
+      buffer = logger.push_buffer
+      expect(buffer).to be_instance_of Rackstash::Buffer
+
+      expect(buffer).to receive(:add_message)
+      logger.info('ping')
+    end
+  end
+
+  describe '#pop_buffer' do
+    it 'pops a buffer from the BufferStack' do
+      pushed_buffer = logger.push_buffer
+
+      expect(logger.send(:buffer_stack)).to receive(:pop).and_call_original
+      expect(logger.pop_buffer).to equal pushed_buffer
+    end
+
+    it 'returns nil of no Buffer can be poped' do
+      expect(logger.pop_buffer).to be_nil
+    end
+  end
+
   describe '#with_buffer' do
     it 'requires a block' do
       expect { logger.with_buffer }.to raise_error ArgumentError

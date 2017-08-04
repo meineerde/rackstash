@@ -342,6 +342,72 @@ module Rackstash
       buffer.add_exception(exception, force: force)
     end
 
+    # Create a new {Buffer} and put it on the {BufferStack} for the current
+    # Thread. Until it is poped again with {#pop_buffer}, all newly logged
+    # messages and any access to fields or tags will be sent to this new Buffer.
+    # Previous Buffers will only be visible after it was poped. You should make
+    # sure that the Buffer is only ever used by the calling Thread to retain the
+    # thread-safety guarantees of Rackstash.
+    #
+    # Most of the time, you should use {#with_buffer} instead to ensure that the
+    # Buffer is reliably removed again when the execution leaves the block.
+    # The only sensible use of the manual buffer management is when you need
+    # to flush the Buffer outside of its active scope after it was poped.
+    #
+    # When using this method, it is crucial that you manually pop and flush the
+    # buffer in all cases. This can look like this:
+    #
+    #     logger.push_buffer(buffering: true)
+    #     begin
+    #       logger.fields['key'] = 'value'
+    #       logger.info 'performing some work...'
+    #     ensure
+    #       buffer = logger.pop_buffer
+    #       buffer.flush if buffer
+    #     end
+    #
+    # By using the `begin ... ensure` block, you can enfore that the buffer is
+    # actually poped and flushed afte the execution leaves your environment,
+    # even in an Exception is raised. If you omit to pop the Buffer from the
+    # stack, weird things can happen and your logs will probably end up not
+    # being consistent or even flushed.
+    #
+    # @see #pop_buffer
+    #
+    # @param buffer_args [Hash<Symbol => Object>] optional arguments for the new
+    #   {Buffer}. See {Buffer#initialize} for allowed values.
+    # @return [Buffer] the newly pushed {Buffer} instance
+    def push_buffer(buffer_args = {})
+      buffer_stack.push(buffer_args)
+    end
+
+    # Remove a previously pushed {Buffer} from the {BufferStack} for the current
+    # Thread.
+    #
+    # You should only call this method after having called {#push_buffer} before
+    # in the very same Thread and only exactly as many times as you have called
+    # {#push_buffer} in that Thread. If you call this method too many times or
+    # without first calling {#push_buffer}, it will destroy the consistency of
+    # BufferStack causing undefined (i.e. weird) behavior.
+    #
+    # Since the Buffer is not flushed before returning, it is possible to still
+    # modify the buffer before eventually flushing it on your own.
+    #
+    # Should it happen that there is no Buffer on the {BufferStack} (which can
+    # only happen if the code execution was non-linear and stepped outside the
+    # block scope), we return `nil` and not change the BufferStack.
+    #
+    # @note In contrast to {#with_buffer}, the poped Buffer is not flushed
+    #   automatically. You *MUST* call `buffer.flush` yourself to write the
+    #   buffered log data to the log adapter(s).
+    # @see #push_buffer
+    #
+    # @return [Buffer, nil] the removed {Buffer} from the current Thread's
+    #   {BufferStack} or `nil` if no {Buffer} could be found on the stack.
+    def pop_buffer
+      buffer_stack.pop
+    end
+
     # Create a new buffering {Buffer} and put in on the {BufferStack} for the
     # current Thread. For the duration of the block, all new logged messages
     # and any access to fields and tags will be sent to this new buffer.
