@@ -20,24 +20,24 @@ module Rackstash
     # versions like beta or RC releases.
     PRERELEASE = 'dev'.freeze
 
+    # The Rackstash version as a semver-compliant string
+    # @see http://semver.org/
+    STRING = begin
+      base_version = [MAJOR, MINOR, PATCH].compact.join('.')
+      release = [base_version, PRERELEASE].compact.join('-')
+      release.freeze
+    end
+
     # @return [Gem::Version] the version of the currently loaded Rackstash as
     #   a `Gem::Version`
     def self.gem_version
-      Gem::Version.new to_s
+      Gem::Version.new STRING
     end
 
     # @return [String] the Rackstash version as a semver-compliant string
-    # @see http://semver.org/
     def self.to_s
-      @version ||= begin
-        base_version = [MAJOR, MINOR, PATCH].compact.join('.')
-        release = [base_version, PRERELEASE].compact.join('-')
-        release.freeze
-      end
+      STRING
     end
-
-    # A standard string representation of the version parts
-    STRING = to_s
   end
 
   # The Rackstash version as a semver-compliant string
