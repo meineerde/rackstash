@@ -342,13 +342,20 @@ module Rackstash
       buffer.add_exception(exception, force: force)
     end
 
-    # Create a new buffering {Buffer} and puts in on the {BufferStack} for the
+    # Create a new buffering {Buffer} and put in on the {BufferStack} for the
     # current Thread. For the duration of the block, all new logged messages
     # and any access to fields and tags will be sent to this new buffer.
-    # Previous buffers will only be visible after the execition left the block.
+    # Previous buffers will only be visible after the execution left the block.
+    #
+    # Note that the created {Buffer} is only valid for the current Thread. In
+    # other Threads, it will neither be used not visible.
     #
     # @param buffer_args [Hash<Symbol => Object>] optional arguments for the new
     #   {Buffer}. See {Buffer#initialize} for allowed values.
+    # @yield During the duration of the block, all logged messages, fields and
+    #   tags are set on the new buffer. After the block returns, the {Buffer} is
+    #   removed from the {BufferStack} again and is always flushed
+    #   automatically.
     # @return [Object] the return value of the block
     def with_buffer(buffer_args = {})
       raise ArgumentError, 'block required' unless block_given?
