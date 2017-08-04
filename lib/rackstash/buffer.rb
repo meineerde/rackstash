@@ -98,7 +98,7 @@ module Rackstash
     #  * `error_trace` - The backtrace of the exception, one frame per line
     #
     # The exception will not be added to the buffer's `message` field.
-    # Log it manually with {#add} if desired.
+    # Log it manually as a message if this is desired.
     #
     # By default, the details of subsequent exceptions will overwrite those of
     # older exceptions in the current buffer. Only by the `force` argument to
