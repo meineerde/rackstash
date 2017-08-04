@@ -49,13 +49,18 @@ module Rackstash
       buffer
     end
 
-    # Remove the top-most Buffer from the internal stack.
+    # Remove the top-most {Buffer} from the internal stack without flushing it.
     #
-    # If there was a buffer on the stack and it has pending data, it is flushed
-    # to the {#sink} before it is returned.
+    # @return [Buffer, nil] the poped {Buffer} or `nil` if there was no {Buffer}
+    #   to remove.
+    def pop
+      @stack.pop
+    end
+
+    # Flush and remove the top-most {Buffer} from the internal stack.
     #
-    # @return [Buffer, nil] the removed {Buffer} or `nil` if there was no
-    #   {Buffer} to remove
+    # @return [Buffer, nil] the poped and flushed {Buffer} or `nil` if there was
+    #   no {Buffer} to remove
     def flush_and_pop
       buffer = @stack.pop
       buffer.flush if buffer

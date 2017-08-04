@@ -85,4 +85,30 @@ describe Rackstash::BufferStack do
       stack.flush_and_pop # no further buffer, thus `#flush` is not called again
     end
   end
+
+  describe '#pop' do
+    it 'removes a buffer from the stack' do
+      stack.push
+      expect { stack.pop }
+        .to change { stack.instance_variable_get(:@stack).count }.from(1).to(0)
+    end
+
+    it 'does nothing if there is no buffer' do
+      expect(stack.instance_variable_get(:@stack).count).to eql 0
+      expect(stack.pop).to be_nil
+    end
+
+    it 'returns the pop\'ed Buffer' do
+      stack.push
+      expect(stack.pop).to be_a Rackstash::Buffer
+      expect(stack.pop).to be nil
+    end
+
+    it 'does not flushes the buffer' do
+      new_buffer = stack.push
+
+      expect(new_buffer).not_to receive(:flush)
+      stack.pop
+    end
+  end
 end
