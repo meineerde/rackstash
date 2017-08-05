@@ -51,6 +51,12 @@ Style/Copyright:
 Style/CaseEquality:
   Enabled: false
 
+# Both styles (i.e. assigning the return falue of a conditional once or
+# assigning explicitly inside the conditional) have their place, dependent on
+# the complexity. Enforcing a single style doesn't make the code any clearer.
+Style/ConditionalAssignment:
+  Enabled: false
+
 # Double negation is fine to reliably produce a Boolean from any value.
 Style/DoubleNegation:
   Enabled: false
