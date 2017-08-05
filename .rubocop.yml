@@ -60,11 +60,6 @@ Style/DoubleNegation:
 Style/MultilineOperationIndentation:
   Enabled: false
 
-# We generally use `obj == nil` instead of `obj.nil?` because the former is
-# faster.
-Style/NilComparison:
-  Enabled: false
-
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:
     '%w': '[]'
