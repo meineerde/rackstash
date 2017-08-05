@@ -213,18 +213,18 @@ describe Rackstash::Flow do
     end
   end
 
-  describe '#filter_prepend' do
+  describe '#filter_unshift' do
     it 'calls FilterChain#unshift' do
       expect(flow.filter_chain).to receive(:unshift).twice.and_call_original
 
-      expect(flow.filter_prepend ->(event) { event }).to equal flow
-      expect(flow.filter_prepend { |event| event }).to equal flow
+      expect(flow.filter_unshift ->(event) { event }).to equal flow
+      expect(flow.filter_unshift { |event| event }).to equal flow
 
       expect(flow.filter_chain.size).to eql 2
     end
 
-    it 'can use the #filter_unshift alias' do
-      expect(flow.method(:filter_unshift)).to eql flow.method(:filter_prepend)
+    it 'can use the #filter_prepend alias' do
+      expect(flow.method(:filter_prepend)).to eql flow.method(:filter_unshift)
     end
   end
 

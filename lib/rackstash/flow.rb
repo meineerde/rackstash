@@ -166,11 +166,11 @@ module Rackstash
     end
 
     # (see FilterChain#unshift)
-    def filter_prepend(*filter, &block)
+    def filter_unshift(*filter, &block)
       @filter_chain.unshift(*filter, &block)
       self
     end
-    alias filter_unshift filter_prepend
+    alias filter_prepend filter_unshift
 
     # Re-open the log adapter if supported. This might be a no-op if the adapter
     # does not support reopening. This method is called by the logger's {Sink}.
