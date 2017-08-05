@@ -61,6 +61,9 @@ Style/ConditionalAssignment:
 Style/DoubleNegation:
   Enabled: false
 
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
 # Multiline indentation is always tricky. Format it as deemed useful in the
 # local method, but try to avoid it at all wherever possible
 Style/MultilineOperationIndentation:
