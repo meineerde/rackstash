@@ -142,14 +142,14 @@ module Rackstash
     end
 
     # (see FilterChain#insert_after)
-    def filter_after(index, filter = nil, &block)
-      @filter_chain.insert_after(index, filter, &block)
+    def filter_after(index, *filter, &block)
+      @filter_chain.insert_after(index, *filter, &block)
       self
     end
 
     # (see FilterChain#append)
-    def filter_append(filter = nil, &block)
-      @filter_chain.append(filter, &block)
+    def filter_append(*filter, &block)
+      @filter_chain.append(*filter, &block)
       self
     end
     alias filter filter_append
@@ -160,14 +160,14 @@ module Rackstash
     end
 
     # (see FilterChain#insert_before)
-    def filter_before(index, filter = nil, &block)
-      @filter_chain.insert_before(index, filter, &block)
+    def filter_before(index, *filter, &block)
+      @filter_chain.insert_before(index, *filter, &block)
       self
     end
 
     # (see FilterChain#unshift)
-    def filter_prepend(filter = nil, &block)
-      @filter_chain.unshift(filter, &block)
+    def filter_prepend(*filter, &block)
+      @filter_chain.unshift(*filter, &block)
       self
     end
     alias filter_unshift filter_prepend

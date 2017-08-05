@@ -117,7 +117,7 @@ describe Rackstash::FilterChain do
       expect { filter_chain[34] = new_filter }.to raise_error ArgumentError
     end
 
-    it 'raises a TypeError if the object is not a filter' do
+    it 'raises an error if the object is not a filter' do
       expect { filter_chain[0] = :foo }.to raise_error TypeError
       expect { filter_chain[0] = nil }.to raise_error TypeError
       expect { filter_chain[0] = false }.to raise_error TypeError
@@ -137,12 +137,15 @@ describe Rackstash::FilterChain do
       expect(filter_chain[0]).to be_instance_of(Proc)
     end
 
-    it 'raises a TypeError if the object is not a filter' do
-      expect { filter_chain.append(:foo) }.to raise_error TypeError
+    it 'raises an error if the object is not a filter' do
       expect { filter_chain.append(nil) }.to raise_error TypeError
       expect { filter_chain.append(false) }.to raise_error TypeError
       expect { filter_chain.append(42) }.to raise_error TypeError
-      expect { filter_chain.append('Foo') }.to raise_error TypeError
+
+      expect { filter_chain.append(:foo) }.to raise_error NameError
+      expect { filter_chain.append('Foo') }.to raise_error NameError
+
+      expect { filter_chain.append }.to raise_error ArgumentError
     end
 
     it 'can use #<< alias' do
@@ -329,11 +332,14 @@ describe Rackstash::FilterChain do
     end
 
     it 'raises a TypeError if the object is not a filter' do
-      expect { filter_chain.insert_before(1, :foo) }.to raise_error TypeError
       expect { filter_chain.insert_before(1, nil) }.to raise_error TypeError
       expect { filter_chain.insert_before(1, false) }.to raise_error TypeError
       expect { filter_chain.insert_before(1, 42) }.to raise_error TypeError
-      expect { filter_chain.insert_before(1, 'Foo') }.to raise_error TypeError
+
+      expect { filter_chain.insert_before(1, :foo) }.to raise_error NameError
+      expect { filter_chain.insert_before(1, 'Foo') }.to raise_error NameError
+
+      expect { filter_chain.insert_before(1) }.to raise_error ArgumentError
     end
   end
 
@@ -382,12 +388,15 @@ describe Rackstash::FilterChain do
       expect { filter_chain.insert_after(Class.new, inserted) }.to raise_error ArgumentError
     end
 
-    it 'raises a TypeError if the object is not a filter' do
-      expect { filter_chain.insert_after(1, :foo) }.to raise_error TypeError
+    it 'raises an error if the object is not a filter' do
       expect { filter_chain.insert_after(1, nil) }.to raise_error TypeError
       expect { filter_chain.insert_after(1, false) }.to raise_error TypeError
       expect { filter_chain.insert_after(1, 42) }.to raise_error TypeError
-      expect { filter_chain.insert_after(1, 'Foo') }.to raise_error TypeError
+
+      expect { filter_chain.insert_after(1, :foo) }.to raise_error NameError
+      expect { filter_chain.insert_after(1, 'Foo') }.to raise_error NameError
+
+      expect { filter_chain.insert_after(1) }.to raise_error ArgumentError
     end
   end
 
@@ -436,12 +445,15 @@ describe Rackstash::FilterChain do
       expect(filter_chain.size).to eql 2
     end
 
-    it 'raises a TypeError if the object is not a filter' do
-      expect { filter_chain.unshift(:foo) }.to raise_error TypeError
+    it 'raises an error if the object is not a filter' do
       expect { filter_chain.unshift(nil) }.to raise_error TypeError
       expect { filter_chain.unshift(false) }.to raise_error TypeError
       expect { filter_chain.unshift(42) }.to raise_error TypeError
-      expect { filter_chain.unshift('Foo') }.to raise_error TypeError
+
+      expect { filter_chain.unshift(:foo) }.to raise_error NameError
+      expect { filter_chain.unshift('Foo') }.to raise_error NameError
+
+      expect { filter_chain.unshift }.to raise_error ArgumentError
     end
   end
 

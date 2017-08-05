@@ -63,7 +63,7 @@ module Rackstash
     # @param filter [#call, nil] the filter to set at `index`
     # @return [#call] the given `filter`
     def []=(index, filter)
-      filter = build_filter(filter)
+      raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
 
       synchronize do
         id = index_at(index)
@@ -85,8 +85,8 @@ module Rackstash
     #   which we will then take as the filter.
     # @raise [TypeError] if the given filter is not callable
     # @return [self]
-    def append(filter = nil, &block)
-      filter = build_filter(filter || block)
+    def append(*filter_spec, &block)
+      filter = build_filter(filter_spec, &block)
 
       synchronize do
         @filters.push filter
@@ -178,8 +178,8 @@ module Rackstash
     # @raise [TypeError] if the given filter is not callable
     # @raise [ArgumentError] if the existing filter could not be found
     # @return [self]
-    def insert_after(index, filter = nil, &block)
-      filter = build_filter(filter || block)
+    def insert_after(index, *filter_spec, &block)
+      filter = build_filter(filter_spec, &block)
 
       synchronize do
         id = index_at(index)
@@ -207,8 +207,8 @@ module Rackstash
     # @raise [TypeError] if the given filter is not callable
     # @raise [ArgumentError] if the existing filter could not be found
     # @return [self]
-    def insert_before(index, filter = nil, &block)
-      filter = build_filter(filter || block)
+    def insert_before(index, *filter_spec, &block)
+      filter = build_filter(filter_spec, &block)
 
       synchronize do
         id = index_at(index)
@@ -246,8 +246,8 @@ module Rackstash
     #   which we will then take as the filter.
     # @raise [TypeError] if the given filter is not callable
     # @return [self]
-    def unshift(filter = nil, &block)
-      filter = build_filter(filter || block)
+    def unshift(*filter_spec, &block)
+      filter = build_filter(filter_spec, &block)
 
       synchronize do
         @filters.unshift filter
@@ -284,18 +284,23 @@ module Rackstash
         index.to_int
       when Class
         @filters.index { |filter| filter.is_a?(index) }
-      when String, ->(o) { o.respond_to?(:to_str) }
-        index = index.to_str
+      when Symbol, String
+        index = index.to_s
         @filters.index { |filter| filter.class.ancestors.map(&:name).include?(index) }
       else
         @filters.index { |filter| filter == index }
       end
     end
 
-    def build_filter(filter)
-      raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
-
-      filter
+    def build_filter(filter_spec, &block)
+      if filter_spec.empty?
+        return block if block_given?
+        raise ArgumentError, 'Need to specify a filter'
+      elsif filter_spec.length == 1 && filter_spec.first.respond_to?(:call)
+        filter_spec.first
+      else
+        Rackstash::Filters.build(*filter_spec, &block)
+      end
     end
   end
 end
