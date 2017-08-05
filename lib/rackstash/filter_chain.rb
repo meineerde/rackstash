@@ -63,7 +63,7 @@ module Rackstash
     # @param filter [#call, nil] the filter to set at `index`
     # @return [#call] the given `filter`
     def []=(index, filter)
-      raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
+      filter = build_filter(filter)
 
       synchronize do
         id = index_at(index)
@@ -86,8 +86,7 @@ module Rackstash
     # @raise [TypeError] if the given filter is not callable
     # @return [self]
     def append(filter = nil, &block)
-      filter ||= block
-      raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
+      filter = build_filter(filter || block)
 
       synchronize do
         @filters.push filter
@@ -180,8 +179,7 @@ module Rackstash
     # @raise [ArgumentError] if the existing filter could not be found
     # @return [self]
     def insert_after(index, filter = nil, &block)
-      filter ||= block
-      raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
+      filter = build_filter(filter || block)
 
       synchronize do
         id = index_at(index)
@@ -210,8 +208,7 @@ module Rackstash
     # @raise [ArgumentError] if the existing filter could not be found
     # @return [self]
     def insert_before(index, filter = nil, &block)
-      filter ||= block
-      raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
+      filter = build_filter(filter || block)
 
       synchronize do
         id = index_at(index)
@@ -250,8 +247,7 @@ module Rackstash
     # @raise [TypeError] if the given filter is not callable
     # @return [self]
     def unshift(filter = nil, &block)
-      filter ||= block
-      raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
+      filter = build_filter(filter || block)
 
       synchronize do
         @filters.unshift filter
@@ -294,6 +290,12 @@ module Rackstash
       else
         @filters.index { |filter| filter == index }
       end
+    end
+
+    def build_filter(filter)
+      raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
+
+      filter
     end
   end
 end
