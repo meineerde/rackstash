@@ -339,7 +339,7 @@ describe Rackstash::Fields::Array do
 
   describe '#push' do
     it 'can append multiple values' do
-      expect(array.push 'value', 'value2').to equal array
+      expect(array.push('value', 'value2')).to equal array
       expect(array[0]).to eql 'value'
       expect(array[1]).to eql 'value2'
     end
@@ -353,7 +353,7 @@ describe Rackstash::Fields::Array do
     end
 
     it 'can use append as an alias' do
-      expect(array.append 'foo').to equal array
+      expect(array.append('foo')).to equal array
       expect(array[0]).to eql 'foo'
     end
   end

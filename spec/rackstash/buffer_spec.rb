@@ -400,7 +400,7 @@ describe Rackstash::Buffer do
     end
 
     it 'merges fields and tags as values' do
-      fields = {foo: :bar}
+      fields = { foo: :bar }
       tags = ['default_tag']
 
       expect(buffer.fields).to receive(:deep_merge).with(fields, force: false)
@@ -410,8 +410,8 @@ describe Rackstash::Buffer do
     end
 
     it 'merges fields and tags as Procs' do
-      fields = ->{}
-      tags = ->{}
+      fields = -> {}
+      tags = -> {}
 
       expect(buffer.fields).to receive(:deep_merge).with(fields, force: false)
       expect(buffer.tags).to receive(:merge).with(tags)

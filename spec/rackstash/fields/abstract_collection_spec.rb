@@ -474,7 +474,7 @@ describe Rackstash::Fields::AbstractCollection do
 
       it 'returns the inspected proc on errors' do
         error = -> { raise 'Oh, no!' }
-        expected_arguments = ->(arg1, args, arg3) { 'cherio' }
+        expected_arguments = ->(_arg1, _args, _arg3) { 'cherio' }
         ok = -> { :ok }
         outer = -> { [ok, error, expected_arguments] }
 

@@ -30,7 +30,7 @@ describe Rackstash::Adapters::File do
     end
 
     it 'accepts a Pathname' do
-      expect(described_class.new(Pathname.new logfile.path).filename)
+      expect(described_class.new(Pathname.new(logfile.path)).filename)
         .to eql(logfile.path)
         .and be_a String
     end
@@ -43,13 +43,13 @@ describe Rackstash::Adapters::File do
 
     it 'creates the file and leading directories' do
       Dir.mktmpdir do |base|
-        expect(File.exist? File.join(base, 'dir')).to be false
+        expect(File.exist?(File.join(base, 'dir'))).to be false
 
         adapter = described_class.new File.join(base, 'dir', 'sub', 'test.log')
 
         expect(adapter.filename).to eql File.join(base, 'dir', 'sub', 'test.log')
-        expect(File.directory? File.join(base, 'dir')).to be true
-        expect(File.file? File.join(base, 'dir', 'sub', 'test.log')).to be true
+        expect(File.directory?(File.join(base, 'dir'))).to be true
+        expect(File.file?(File.join(base, 'dir', 'sub', 'test.log'))).to be true
       end
     end
   end

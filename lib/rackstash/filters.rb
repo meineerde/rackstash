@@ -64,8 +64,8 @@ module Rackstash
         next unless filter_class.is_a?(Class)
 
         filter_class_name = const.to_s
-          .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
-          .gsub(/([a-z\d])([A-Z])/,'\1_\2')
+          .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+          .gsub(/([a-z\d])([A-Z])/, '\1_\2')
           .downcase
           .to_sym
 

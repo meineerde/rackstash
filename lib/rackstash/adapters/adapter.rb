@@ -90,7 +90,7 @@ module Rackstash
       # @return [void]
       # @raise NotImplementedHereError
       def write_single(log)
-        raise NotImplementedHereError, 'write_single needs to be implemented ' +
+        raise NotImplementedHereError, 'write_single needs to be implemented ' \
           'in the actual adapter subclass'
       end
 

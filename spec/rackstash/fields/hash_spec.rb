@@ -24,9 +24,7 @@ describe Rackstash::Fields::Hash do
       expect(hash.forbidden_keys)
         .to be_a(Set)
         .and be_frozen
-        .and all(
-          be_frozen.and be_a String
-        )
+        .and all be_frozen.and be_a String
     end
 
     it 'accepts forbidden_keys as a Set' do
@@ -36,9 +34,7 @@ describe Rackstash::Fields::Hash do
       expect(hash.forbidden_keys)
         .to be_a(Set)
         .and be_frozen
-        .and all(
-          be_frozen.and be_a String
-        )
+        .and all be_frozen.and be_a String
 
       # We create a new set without affecting the passed one
       expect(hash.forbidden_keys).not_to equal forbidden_keys

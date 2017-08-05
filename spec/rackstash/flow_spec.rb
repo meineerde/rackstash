@@ -124,7 +124,7 @@ describe Rackstash::Flow do
       expect { flow.encoder 23 }.to raise_error TypeError
       expect { flow.encoder true }.to raise_error TypeError
       expect { flow.encoder false }.to raise_error TypeError
-      expect { flow.encoder ->{} }.to raise_error TypeError
+      expect { flow.encoder -> {} }.to raise_error TypeError
     end
   end
 
@@ -173,7 +173,7 @@ describe Rackstash::Flow do
     it 'calls FilterChain#append' do
       expect(flow.filter_chain).to receive(:append).twice.and_call_original
 
-      expect(flow.filter_append ->(event) { event }).to equal flow
+      expect(flow.filter_append(->(event) { event })).to equal flow
       expect(flow.filter_append { |event| event }).to equal flow
 
       expect(flow.filter_chain.size).to eql 2
@@ -183,7 +183,6 @@ describe Rackstash::Flow do
       expect(flow.method(:filter)).to eql flow.method(:filter_append)
     end
   end
-
 
   describe '#filter_delete' do
     before(:each) do
@@ -217,7 +216,7 @@ describe Rackstash::Flow do
     it 'calls FilterChain#unshift' do
       expect(flow.filter_chain).to receive(:unshift).twice.and_call_original
 
-      expect(flow.filter_unshift ->(event) { event }).to equal flow
+      expect(flow.filter_unshift(->(event) { event })).to equal flow
       expect(flow.filter_unshift { |event| event }).to equal flow
 
       expect(flow.filter_chain.size).to eql 2

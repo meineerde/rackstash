@@ -33,7 +33,7 @@ describe Rackstash::Logger do
     end
 
     it 'allows to set #formatter' do
-      logger = described_class.new('output.log', formatter: ->{})
+      logger = described_class.new('output.log', formatter: -> {})
       expect(logger.formatter).to be_a Proc
     end
   end
@@ -80,7 +80,7 @@ describe Rackstash::Logger do
 
   describe '#default_fields=' do
     it 'forwards to the sink' do
-      expect(logger.sink).to receive(:default_fields=).with({ 'key' => 'value' })
+      expect(logger.sink).to receive(:default_fields=).with('key' => 'value')
       logger.default_fields = { 'key' => 'value' }
     end
   end
@@ -421,7 +421,7 @@ describe Rackstash::Logger do
 
       expect(buffer).not_to receive(:add_message)
 
-      expect(logger.add(0, { foo: 'bar' })).to eql(foo: 'bar')
+      expect(logger.add(0, foo: 'bar')).to eql(foo: 'bar')
     end
 
     it 'can use debug shortcut' do

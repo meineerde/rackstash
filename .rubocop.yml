@@ -23,10 +23,6 @@ Metrics/ClassLength:
 Metrics/MethodLength:
   Enabled: false
 
-# As long as methods are readable, this should be fine.
-# In any case, this shouldn't be a hard error. We try to improve where sensible
-# using tools like RubyCritic instead
-
 # rspec uses long blocks by definition
 Metrics/BlockLength:
   Exclude:
@@ -63,6 +59,9 @@ Style/DoubleNegation:
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
+
+Style/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
 
 # Multiline indentation is always tricky. Format it as deemed useful in the
 # local method, but try to avoid it at all wherever possible

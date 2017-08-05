@@ -20,13 +20,13 @@ describe Rackstash::Filters::SkipEvent do
     end
 
     it 'accepts a block' do
-      expect { described_class.new { } }.not_to raise_error
+      expect { described_class.new {} }.not_to raise_error
     end
   end
 
   describe '#call' do
     it 'returns the event if the condition is falsey' do
-      event = {'foo' => 'bar'}
+      event = { 'foo' => 'bar' }
 
       expect(described_class.new(->(_event) { false }).call(event)).to equal event
       expect(described_class.new(->(_event) { nil }).call(event)).to equal event
@@ -35,7 +35,7 @@ describe Rackstash::Filters::SkipEvent do
     end
 
     it 'returns false if the condition is truethy' do
-      event = {'foo' => 'bar'}
+      event = { 'foo' => 'bar' }
 
       expect(described_class.new(->(_event) { true }).call(event)).to be false
       expect(described_class.new(->(_event) { event }).call(event)).to be false
