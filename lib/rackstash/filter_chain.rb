@@ -67,7 +67,7 @@ module Rackstash
 
       synchronize do
         id = index_at(index)
-        unless id && (0..@filters.size).include?(id)
+        unless id && (0..@filters.size).cover?(id)
           raise ArgumentError, "Cannot insert at index #{index.inspect}"
         end
 
@@ -185,7 +185,7 @@ module Rackstash
 
       synchronize do
         id = index_at(index)
-        unless id && (0...@filters.size).include?(id)
+        unless id && (0...@filters.size).cover?(id)
           raise ArgumentError, "No such filter to insert after: #{index.inspect}"
         end
 
@@ -215,7 +215,7 @@ module Rackstash
 
       synchronize do
         id = index_at(index)
-        unless id && (0...@filters.size).include?(id)
+        unless id && (0...@filters.size).cover?(id)
           raise ArgumentError, "No such filter to insert before: #{index.inspect}"
         end
 
