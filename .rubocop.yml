@@ -37,10 +37,11 @@ Metrics/LineLength:
   AllowURI: true
   Max: 100
 
+# We use a semantic style with do...end for procedual blocks and { ... } for
+# functional blocks. Unfortunately, it's often not clear from a simple code
+# analysis, which kind we ought to use. Use common sense in this case :)
 Style/BlockDelimiters:
-  EnforcedStyle: semantic
-  Exclude:
-    - 'spec/**/*'
+  Enabled: false
 
 Style/Copyright:
   Enabled: true
