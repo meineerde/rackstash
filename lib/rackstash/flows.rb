@@ -82,10 +82,48 @@ module Rackstash
       @flows.empty?
     end
 
+    # @overload first
+    #   @return [Flow, nil] the first flow. If the list is empty, `nil` is
+    #     returned.
+    #
+    # @overload first(n)
+    #   @param n [Integer] the number of flows to return
+    #   @return [Array<Flow>] the first `n` flows. If the list is empty, an
+    #     empty array is returned.
+    #
+    # @return [Flow, Array<Flow>, nil]
+    # @see #last #last for the opposite effect.
+    def first(n = UNDEFINED)
+      if UNDEFINED.equal? n
+        @flows.first
+      else
+        @flows.first(n)
+      end
+    end
+
     # @return [String] a string representation of `self`
     def inspect
       id_str = Object.instance_method(:to_s).bind(self).call[2..-2]
       "#<#{id_str} #{self}>"
+    end
+
+    # @overload last
+    #   @return [Flow, nil] the last flow. If the list is empty, `nil` is
+    #     returned.
+    #
+    # @overload last(n)
+    #   @param n [Integer] the number of flows to return
+    #   @return [Array<Flow>] the last `n` flows. If the list is empty, an empty
+    #     array is returned.
+    #
+    # @return [Flow, Array<Flow>, nil]
+    # @see #first #first for the opposite effect.
+    def last(n = UNDEFINED)
+      if UNDEFINED.equal? n
+        @flows.last
+      else
+        @flows.last(n)
+      end
     end
 
     # @return [Integer] the number of elements in `self`. May be zero.

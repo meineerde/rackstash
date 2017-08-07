@@ -161,12 +161,50 @@ describe Rackstash::Flows do
     end
   end
 
+  describe '#first' do
+    it 'gets the first flow' do
+      expect(flows.first).to be_nil
+
+      flows << a_flow
+      expect(flows.first).to equal flows[0]
+    end
+
+    it 'gets a number of flows' do
+      flow_list = [a_flow, a_flow, a_flow]
+      flow_list.each do |flow|
+        flows << flow
+      end
+
+      expect(flows.first(2)).to eql flow_list[0, 2]
+      expect(flows.first(4)).to eql flow_list
+    end
+  end
+
   describe '#inspect' do
     it 'formats the object' do
       expect(flows).to receive(:to_s).and_return('["<flow>"]')
       expect(flows.inspect).to(
         match %r{\A#<Rackstash::Flows:0x[a-f0-9]+ \["<flow>"\]>\z}
       )
+    end
+  end
+
+  describe '#last' do
+    it 'gets the last flow' do
+      expect(flows.last).to be_nil
+
+      flows << a_flow
+      expect(flows.last).to equal flows[0]
+    end
+
+    it 'gets a number of flows' do
+      flow_list = [a_flow, a_flow, a_flow]
+      flow_list.each do |flow|
+        flows << flow
+      end
+
+      expect(flows.last(2)).to eql flow_list[1, 2]
+      expect(flows.last(4)).to eql flow_list
     end
   end
 
