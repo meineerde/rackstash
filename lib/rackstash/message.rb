@@ -58,6 +58,20 @@ module Rackstash
       freeze
     end
 
+    # Create a new Message object based on the values in `self`, optionally
+    # overwriting any of the them.
+    #
+    # @param (see #initialize)
+    # @return [Message] a new Message
+    def copy_with(message = nil, severity: nil, time: nil, progname: nil)
+      self.class.new(
+        message.nil? ? self.message : message,
+        severity: severity.nil? ? self.severity : severity,
+        time: time.nil? ? self.time : time,
+        progname: progname.nil? ? self.progname : progname
+      )
+    end
+
     # @return [String] the human readable label for the {#severity}.
     # @see Rackstash.severity_label
     def severity_label

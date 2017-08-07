@@ -12,6 +12,9 @@ require 'json'
 require 'rackstash/message'
 
 describe Rackstash::Message do
+  let(:message_args) { {} }
+  let(:message) { described_class.new 'message', **message_args }
+
   describe '#initialize' do
     it 'encodes the message as UTF-8' do
       utf8_str = 'Dönerstraße'
@@ -53,6 +56,35 @@ describe Rackstash::Message do
 
     it 'freezes the Message' do
       expect(described_class.new('message')).to be_frozen
+    end
+  end
+
+  describe '#copy_with' do
+    it 'creates a new message instance' do
+      expect(message.copy_with).to be_instance_of described_class
+      expect(message.copy_with.message).to equal message.message
+      expect(message.copy_with.severity).to equal message.severity
+      expect(message.copy_with.progname).to equal message.progname
+      expect(message.copy_with.time).to equal message.time
+
+      expect(message.copy_with).not_to equal message
+    end
+
+    it 'can overwrite the message' do
+      expect(message.copy_with('new stuff').message).to eql 'new stuff'
+    end
+
+    it 'can overwrite the severity' do
+      expect(message.copy_with(severity: 3).severity).to eql 3
+    end
+
+    it 'can overwrite the progname' do
+      expect(message.copy_with(progname: 'blar').progname).to eql 'blar'
+    end
+
+    it 'can overwrite the progname' do
+      time = Time.now.freeze
+      expect(message.copy_with(time: time).time).to equal time
     end
   end
 
