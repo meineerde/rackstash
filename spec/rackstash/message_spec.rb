@@ -13,7 +13,8 @@ require 'rackstash/message'
 
 describe Rackstash::Message do
   let(:message_args) { {} }
-  let(:message) { described_class.new 'message', **message_args }
+  let(:msg) { 'message' }
+  let(:message) { described_class.new msg, **message_args }
 
   describe '#initialize' do
     it 'encodes the message as UTF-8' do
@@ -117,6 +118,48 @@ describe Rackstash::Message do
       # Ruby's strange semantics for them
     end
   end
+
+  describe '#lstrip' do
+    let(:msg) { "\t \r\t\nmy \tmessage\r\n \t" }
+
+    it 'returns a new Message' do
+      expect(message.lstrip).to be_instance_of(described_class)
+      expect(message.lstrip).not_to equal message
+    end
+
+    it 'strips leading whitespace from the message' do
+      msg = "\t \r\t\nmy \tmessage\r\n \t"
+      expect(message.lstrip.to_s).to eql "my \tmessage\r\n \t"
+    end
+  end
+
+  describe '#rstrip' do
+    let(:msg) { "\t \r\t\nmy \tmessage\r\n \t" }
+
+    it 'returns a new Message' do
+      expect(message.rstrip).to be_instance_of(described_class)
+      expect(message.rstrip).not_to equal message
+    end
+
+    it 'strips trailing whitespace from the message' do
+      expect(message.rstrip.to_s).to eql "\t \r\t\nmy \tmessage"
+    end
+  end
+
+  describe '#strip' do
+    let(:msg) { "\t \r\t\nmy \tmessage\r\n \t" }
+
+    it 'returns a new Message' do
+      expect(message.strip).to be_instance_of(described_class)
+      expect(message.strip).not_to equal message
+    end
+
+    it 'strips the message' do
+      msg = "\t \r\t\nmy \tmessage\r\n \t"
+      expect(message.strip.to_s).to eql "my \tmessage"
+    end
+  end
+
 
   describe '#message' do
     it 'is aliased to to_str' do

@@ -132,6 +132,24 @@ module Rackstash
       copy_with(message.freeze)
     end
 
+    # @return [Message] Returns a copy of `self` with leading whitespace
+    #   removed on the `message`.
+    def lstrip
+      copy_with(@message.lstrip.freeze)
+    end
+
+    # @return [Message] Returns a copy of `self` with trailing whitespace
+    #   removed on the `message`.
+    def rstrip
+      copy_with(@message.rstrip.freeze)
+    end
+
+    # @return [Message] Returns a copy of `self` with leading and trailing
+    #   whitespace removed on the `message`.
+    def strip
+      copy_with(@message.strip.freeze)
+    end
+
     # @return [String] the human readable label for the {#severity}.
     # @see Rackstash.severity_label
     def severity_label
