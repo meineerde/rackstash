@@ -72,6 +72,66 @@ module Rackstash
       )
     end
 
+    # Returns a copy of the Message with all occurances of `pattern` in the
+    # `message` attribute substituted for the second argument.
+    #
+    # This works very similar to
+    # [`String#gsub`](https://ruby-doc.org/core/String.html#method-i-gsub). We
+    # are returning a new Message object herre with the `message` attribute
+    # being updated. Please see the documentation of the String method for how
+    # to use this.
+    #
+    # Note that when supplying a block for replacement, the current match string
+    # is passed in as a parameter. Differing from `String#gsub`, the special
+    # variables `$1`, `$2`, `$``, `$&`, and `$'` will *not* be set here.
+    #
+    # @param pattern [String, Regexp] the search pattern
+    # @param replacement [String, Hash] the replacement definition
+    # @yield match If `replacement` is not given, we yield each match to the
+    #   supplied block and use its return value for the replacement
+    # @return [Message, Enumerator] a new frozen Message object or an Enumerator
+    #   if neither a block nor a `replacement` were given.
+    def gsub(pattern, replacement = UNDEFINED, &block)
+      if UNDEFINED.equal? replacement
+        if block_given?
+          copy_with @message.gsub(pattern, &block).freeze
+        else
+          return enum_for(__method__)
+        end
+      else
+        copy_with @message.gsub(pattern, replacement, &block).freeze
+      end
+    end
+
+    # Returns a copy of the Message with the first occurance of `pattern` in the
+    # `message` attribute substituted for the second argument.
+    #
+    # This works very similar to
+    # [`String#sub`](https://ruby-doc.org/core/String.html#method-i-sub). We
+    # are returning a new Message object herre with the `message` attribute
+    # being updated. Please see the documentation of the String method for how
+    # to use this.
+    #
+    # Note that when supplying a block for replacement, the current match string
+    # is passed in as a parameter. Differing from `String#gsub`, the special
+    # variables `$1`, `$2`, `$``, `$&`, and `$'` will *not* be set here.
+    #
+    # @param pattern [String, Regexp] the search pattern
+    # @param replacement [String, Hash] the replacement definition
+    # @yield match If `replacement` is not given, we yield the match (if any) to
+    #   the supplied block and use its return value for the replacement.
+    # @return [Message, Enumerator] a new frozen Message object or an Enumerator
+    #   if neither a block nor a `replacement` were given.
+    def sub(pattern, replacement = UNDEFINED, &block)
+      message =
+        if UNDEFINED.equal? replacement
+          @message.sub(pattern, &block)
+        else
+          @message.sub(pattern, replacement, &block)
+        end
+      copy_with(message.freeze)
+    end
+
     # @return [String] the human readable label for the {#severity}.
     # @see Rackstash.severity_label
     def severity_label

@@ -88,6 +88,36 @@ describe Rackstash::Message do
     end
   end
 
+  describe '#gsub' do
+    it 'can perform simple replaces' do
+      expect(message.gsub(/s/, 'S')).to be_a described_class
+      expect(message.gsub(/s/, 'S').to_s).to eql 'meSSage'
+    end
+
+    it 'can perform replaces with a block' do
+      expect(message.gsub(/[l-w]/) { |match| match.upcase }.to_s).to eql 'MeSSage'
+      # The magic $1, $2, ... variables don't work in our block form due to
+      # Ruby's strange semantics for them
+    end
+
+    it 'returns an enumerator if there is no replacement' do
+      expect(message.gsub(//)).to be_a Enumerator
+    end
+  end
+
+  describe '#sub' do
+    it 'can perform simple replaces' do
+      expect(message.sub(/s/, 'S')).to be_a described_class
+      expect(message.sub(/s/, 'S').to_s).to eql 'meSsage'
+    end
+
+    it 'can perform replaces with a block' do
+      expect(message.sub(/[l-w]/) { |match| match.upcase }.to_s).to eql 'Message'
+      # The magic $1, $2, ... variables don't work in our block form due to
+      # Ruby's strange semantics for them
+    end
+  end
+
   describe '#message' do
     it 'is aliased to to_str' do
       message = described_class.new('hello world')
