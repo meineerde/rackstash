@@ -23,7 +23,7 @@ module Rackstash
     # @param msg [String, Exception, #inspect] the log message
     # @return [String] the formatted message with a final newline character
     def call(_severity, _time, _progname, msg)
-      "#{msg2str(msg)}\n"
+      "#{msg2str(msg)}\n".freeze
     end
   end
 
