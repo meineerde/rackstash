@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 # Copyright 2017 Holger Just
 #
 # This software may be modified and distributed under the terms
@@ -145,4 +144,3 @@ module Rackstash
     end
   end
 end
-
