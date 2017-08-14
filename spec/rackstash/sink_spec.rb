@@ -146,8 +146,7 @@ describe Rackstash::Sink do
       event_spec = {
         'message' => [],
         'tags' => [],
-        '@timestamp' => instance_of(String),
-        '@version' => '1'
+        '@timestamp' => instance_of(String)
       }
 
       # only the first event is duplicated

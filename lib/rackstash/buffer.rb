@@ -51,7 +51,7 @@ module Rackstash
       FIELD_MESSAGE,    # filled with #{add_message}
       FIELD_TAGS,       # set with {#tag}
       FIELD_TIMESTAMP,  # an ISO8601 timestamp of the log event
-      FIELD_VERSION,    # the version of the schema. Currently "1"
+      FIELD_VERSION,    # the version of the Logstash JSON schema. Usually "1"
     ].freeze
 
     # @!attribute [r] fields
@@ -269,8 +269,6 @@ module Rackstash
     #   now contains an array of {Message} objects.
     # * We add the buffer's timestamp to the `event['@timestamp]` field as an
     #   ISO 8601 formatted string. The timestamp is always in UTC.
-    # * We add the version of the logstash event format as
-    #   `event[@version] = 1`.
     #
     # The typical event emitted here looks like this:
     #
@@ -282,8 +280,7 @@ module Rackstash
     #         #<Rackstash::Message:0x007f908b4414c0 ...>,
     #         #<Rackstash::Message:0x007f908d14aee0 ...>
     #       ],
-    #       "@timestamp" => "2016-10-17T13:37:42.000Z",
-    #       "@version" => "1"
+    #       "@timestamp" => "2016-10-17T13:37:42.000Z"
     #     }
     #
     #
@@ -312,7 +309,6 @@ module Rackstash
 
       event[FIELD_MESSAGE] = messages
       event[FIELD_TIMESTAMP] = timestamp
-      event[FIELD_VERSION] = '1'.freeze
 
       event
     end

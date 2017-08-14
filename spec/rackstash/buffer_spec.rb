@@ -429,8 +429,7 @@ describe Rackstash::Buffer do
         'foo' => 'bar',
         'message' => [message],
         'tags' => ['some_tag'],
-        '@timestamp' => instance_of(String),
-        '@version' => '1'
+        '@timestamp' => instance_of(String)
       )
     end
   end
