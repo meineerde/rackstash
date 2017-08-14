@@ -491,10 +491,11 @@ describe Rackstash::Fields::AbstractCollection do
       expect(normalize(complex)).to be_frozen
     end
 
-    it 'transforms Rational to Float' do
+    it 'transforms Rational to String' do
       rational = Rational(-8, 6)
 
-      expect(normalize(rational)).to be_a Float
+      expect(normalize(rational)).to eql '-4/3'
+      expect(normalize(rational).encoding).to eql Encoding::UTF_8
       expect(normalize(rational)).to be_frozen
     end
 

@@ -5,6 +5,8 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'bigdecimal'
+require 'complex'
+require 'rational'
 require 'pathname'
 require 'uri'
 
@@ -153,7 +155,7 @@ module Rackstash
           # number and no way to recover other than manually inspecting the
           # string with the JSON code itself.
           return value.to_s('F').encode!(Encoding::UTF_8).freeze
-        when ::Complex
+        when ::Complex, ::Rational
           # A complex number can not reliably converted to a float or rational,
           # thus we always transform it to a String
           return utf8_encode(value)
