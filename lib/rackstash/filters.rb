@@ -5,6 +5,7 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/filters/clear_color'
 require 'rackstash/filters/skip_event'
 
 module Rackstash
