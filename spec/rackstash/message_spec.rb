@@ -127,7 +127,6 @@ describe Rackstash::Message do
     end
 
     it 'strips leading whitespace from the message' do
-      msg = "\t \r\t\nmy \tmessage\r\n \t"
       expect(message.lstrip.to_s).to eql "my \tmessage\r\n \t"
     end
   end
@@ -154,7 +153,6 @@ describe Rackstash::Message do
     end
 
     it 'strips the message' do
-      msg = "\t \r\t\nmy \tmessage\r\n \t"
       expect(message.strip.to_s).to eql "my \tmessage"
     end
   end
