@@ -6,6 +6,7 @@
 
 require 'rackstash/filters/clear_color'
 require 'rackstash/filters/skip_event'
+require 'rackstash/filters/truncate_message'
 
 module Rackstash
   # Filters are part of a {Flow} where they can alter the log event before it is
