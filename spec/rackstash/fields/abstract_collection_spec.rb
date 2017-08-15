@@ -92,6 +92,20 @@ describe Rackstash::Fields::AbstractCollection do
     end
   end
 
+  describe '#freeze' do
+    it 'freezes the collection and the raw data' do
+      raw = [123, 'foo']
+      collection.send(:raw=, raw)
+
+      expect(raw).not_to be_frozen
+
+      collection.freeze
+
+      expect(collection).to be_frozen
+      expect(raw).to be_frozen
+    end
+  end
+
   describe '#hash' do
     it 'returns the same hash for the same raw content' do
       collection.send(:raw=, [123, 'foo'])

@@ -29,6 +29,16 @@ module Rackstash
       end
       alias eql? ==
 
+      # Prevents further modifications to `self`. A `RuntimeError` will be
+      # raised if modification is attempted. There is no way to unfreeze a
+      # frozen object.
+      #
+      # @return [self]
+      def freeze
+        raw.freeze
+        super
+      end
+
       # Compute a hash-code for this collection.
       #
       # Two collections with the same raw content will have the same hash code
