@@ -6,4 +6,5 @@
 
 require 'rackstash/encoders/json'
 require 'rackstash/encoders/logstash'
+require 'rackstash/encoders/message'
 require 'rackstash/encoders/raw'
