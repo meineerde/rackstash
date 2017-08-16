@@ -414,13 +414,10 @@ describe Rackstash::Logger do
     end
 
     it 'merges fields if message is a Hash' do
-      fields = instance_double('Rackstash::Fields::Hash')
-      expect(buffer).to receive(:fields).and_return(fields)
-      expect(fields).to receive(:deep_merge!).with(foo: 'bar')
-
+      expect(buffer).to receive(:add_fields).with(foo: 'bar')
       expect(buffer).not_to receive(:add_message)
 
-      expect(logger.add(0, foo: 'bar')).to eql(foo: 'bar')
+      logger.add(0, foo: 'bar')
     end
 
     it 'can use debug shortcut' do

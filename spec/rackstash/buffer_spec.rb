@@ -77,6 +77,72 @@ describe Rackstash::Buffer do
     end
   end
 
+  describe '#add_fields' do
+    it 'deep-merges fields' do
+      buffer.add_fields(foo: :bar, number: 123)
+
+      expect(buffer.fields['foo']).to eql 'bar'
+      expect(buffer.fields['number']).to eql 123
+    end
+
+    it 'overwrites fields' do
+      buffer.fields['foo'] = 'initial'
+      buffer.add_fields(foo: 'overwritten')
+
+      expect(buffer.fields['foo']).to eql 'overwritten'
+    end
+
+    it 'raises ArgumentError when trying to set a forbidden key' do
+      expect { buffer.add_fields(message: 'oh no!') }.to raise_error ArgumentError
+    end
+
+    it 'sets the timestamp' do
+      expect(buffer).to receive(:timestamp)
+      buffer.add_fields(key: 'value')
+    end
+
+    context 'when buffering?' do
+      before do
+        buffer_options[:buffering] = true
+      end
+
+      it 'does not call #flush' do
+        expect(buffer).not_to receive(:flush)
+        buffer.add_fields(key: 'value')
+      end
+
+      it 'does not call #clear' do
+        expect(buffer).not_to receive(:clear)
+        buffer.add_fields(key: 'value')
+        expect(buffer.fields['key']).to eql 'value'
+      end
+    end
+
+    context 'when not buffering?' do
+      before do
+        buffer_options[:buffering] = false
+      end
+
+      it 'calls #flush' do
+        expect(buffer).to receive(:flush)
+        buffer.add_fields(key: 'value')
+      end
+
+      it 'calls #clear' do
+        allow(buffer).to receive(:flush)
+        expect(buffer).to receive(:clear).and_call_original
+        buffer.add_fields(key: 'value')
+        expect(buffer.fields).to be_empty
+        expect(buffer.pending?).to be false
+      end
+    end
+
+    it 'returns the given value' do
+      fields = {key: 'value'}
+      expect(buffer.add_fields(fields)).to equal fields
+    end
+  end
+
   describe '#add_message' do
     it 'adds a message to the buffer' do
       msg = double(message: 'Hello World', time: Time.now)

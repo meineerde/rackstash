@@ -322,8 +322,7 @@ module Rackstash
 
       case msg
       when Hash, Rackstash::Fields::Hash
-        buffer.fields.deep_merge!(msg)
-        msg
+        buffer.add_fields(msg)
       else
         time = Time.now.utc.freeze
         buffer.add_message Message.new(

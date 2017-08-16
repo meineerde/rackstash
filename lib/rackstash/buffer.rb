@@ -118,6 +118,29 @@ module Rackstash
       exception
     end
 
+    # Deep-merge fields to the buffer. This will mark the current buffer as
+    # {pending?} and will result in the eventual flush of the logged data.
+    #
+    # The buffer's timestamp will be initialized with the current time if it
+    # wasn't set earlier already.
+    #
+    # If the buffer is not {#buffering?}, it will be {#flush}ed and {#clear}ed
+    # after each added message. All fields, tags, and messages added before as
+    # well as the fields added with this method call will be flushed.
+    #
+    # @param hash (see Fields::Hash#deep_merge!)
+    # @raise (see Fields::Hash#deep_merge!)
+    # @return [Rackstash::Fields::Hash, ::Hash, Proc] the given `hash` value
+    #
+    # @see Fields::Hash#deep_merge!
+    def add_fields(hash)
+      timestamp
+      fields.deep_merge!(hash, force: true)
+      auto_flush
+
+      hash
+    end
+
     # Add a new message to the buffer. This will mark the current buffer as
     # {pending?} and will result in the eventual flush of the logged data.
     #
