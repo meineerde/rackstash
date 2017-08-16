@@ -252,6 +252,7 @@ module Rackstash
     # @return [Fields::Tags] the resolved tags which are set on the buffer.
     #   All strings are frozen.
     def tag(*new_tags, scope: nil)
+      timestamp
       tags.merge!(new_tags, scope: scope)
     end
 

@@ -429,6 +429,11 @@ describe Rackstash::Buffer do
       expect(buffer.tags).to contain_exactly('tag')
     end
 
+    it 'sets the timestamp' do
+      expect(buffer).to receive(:timestamp)
+      buffer.tag('hello')
+    end
+
     describe 'when passing procs' do
       let(:struct) {
         Struct.new(:value) do
