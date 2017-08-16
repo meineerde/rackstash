@@ -206,14 +206,16 @@ module Rackstash
     # This flag denotes whether the current buffer holds flushable data. By
     # default, a new buffer is not pending and will not be flushed to the sink.
     # Each time there is a new message logged, this is set to `true` for the
-    # buffer. For changes of tags or fields, the `pending?` flag is only
-    # flipped to `true` if {#allow_silent?} is set to `true`.
+    # buffer. For changes of tags or fields or when setting the {#timestamp},
+    # the `pending?` flag is only flipped to `true` if {#allow_silent?} is set
+    # to `true`.
     #
     # @return [Boolean] `true` if the buffer has stored data which should be
     #   flushed.
     def pending?
       return true if @messages.any?
       if allow_silent?
+        return true unless @timestamp.nil?
         return true unless @fields.nil? || @fields.empty?
         return true unless @tags.nil? || @tags.empty?
       end

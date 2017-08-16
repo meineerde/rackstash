@@ -283,6 +283,11 @@ describe Rackstash::Buffer do
         buffer.tags << 'alice'
         expect(buffer.pending?).to be true
       end
+
+      it 'is true if the timestamp was set' do
+        buffer.timestamp
+        expect(buffer.pending?).to be true
+      end
     end
 
     context 'with allow_silent: false' do
@@ -302,6 +307,11 @@ describe Rackstash::Buffer do
 
       it 'ignores tags' do
         buffer.tags << 'alice'
+        expect(buffer.pending?).to be false
+      end
+
+      it 'ignores the timestamp' do
+        buffer.timestamp
         expect(buffer.pending?).to be false
       end
     end
