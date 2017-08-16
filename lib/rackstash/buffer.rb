@@ -54,20 +54,6 @@ module Rackstash
       FIELD_VERSION,    # the version of the Logstash JSON schema. Usually "1"
     ].freeze
 
-    # @!attribute [r] fields
-    #   @return [Fields::Hash] the defined fields of the current buffer in a
-    #     hash-like structure
-    def fields
-      @fields ||= Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
-    end
-
-    # @!attribute [r] tags
-    #   @return [Fields::Tags] a tags list containing the defined tags for the
-    #     current buffer. It contains frozen strings only.
-    def tags
-      @tags ||= Rackstash::Fields::Tags.new
-    end
-
     # @return [Sink] the log {Sink} where the buffer is eventually flushed to
     attr_reader :sink
 
@@ -198,6 +184,12 @@ module Rackstash
       self
     end
 
+    # @return [Fields::Hash] the defined fields of the current buffer in a
+    #   hash-like structure
+    def fields
+      @fields ||= Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
+    end
+
     # Flush the current buffer to the log {#sink} if it is pending.
     #
     # After the flush, the existing buffer should not be used anymore. You
@@ -261,6 +253,12 @@ module Rackstash
     #   All strings are frozen.
     def tag(*new_tags, scope: nil)
       tags.merge!(new_tags, scope: scope)
+    end
+
+    # @return [Fields::Tags] a tags list containing the defined tags for the
+    #   current buffer. It contains frozen strings only.
+    def tags
+      @tags ||= Rackstash::Fields::Tags.new
     end
 
     # Returns the time of the current buffer as an ISO 8601 formatted string.
