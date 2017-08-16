@@ -79,7 +79,7 @@ module Rackstash
     #   were just added fields or tags without any logged messages. If this is
     #   `false` and there were no messages logged with {#add_message}, the
     #   buffer will not be flushed to the sink but will be silently dropped.
-    def initialize(sink, buffering: true, allow_silent: false)
+    def initialize(sink, buffering: true, allow_silent: true)
       @sink = sink
       @buffering = !!buffering
       @allow_silent = !!allow_silent

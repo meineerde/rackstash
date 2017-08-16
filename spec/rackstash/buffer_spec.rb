@@ -14,8 +14,8 @@ describe Rackstash::Buffer do
   let(:buffer) { described_class.new(sink, **buffer_options) }
 
   describe '#allow_silent?' do
-    it 'defaults to false' do
-      expect(buffer.allow_silent?).to be false
+    it 'defaults to true' do
+      expect(buffer.allow_silent?).to be true
     end
   end
 
@@ -99,6 +99,28 @@ describe Rackstash::Buffer do
     it 'sets the timestamp' do
       expect(buffer).to receive(:timestamp)
       buffer.add_fields(key: 'value')
+    end
+
+    context 'when allow_silent?' do
+      before do
+        buffer_options[:allow_silent] = true
+      end
+
+      it 'sets pending? to true' do
+        buffer.add_fields(key: 'value')
+        expect(buffer.pending?).to be true
+      end
+    end
+
+    context 'when not allow_silent?' do
+      before do
+        buffer_options[:allow_silent] = false
+      end
+
+      it 'does not set pending? to true' do
+        buffer.add_fields(key: 'value')
+        expect(buffer.pending?).to be false
+      end
     end
 
     context 'when buffering?' do
