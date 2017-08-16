@@ -13,9 +13,9 @@ describe Rackstash::Buffer do
   let(:sink) { instance_double(Rackstash::Sink) }
   let(:buffer) { described_class.new(sink, **buffer_options) }
 
-  describe '#allow_empty?' do
+  describe '#allow_silent?' do
     it 'defaults to false' do
-      expect(buffer.allow_empty?).to be false
+      expect(buffer.allow_silent?).to be false
     end
   end
 
@@ -264,10 +264,10 @@ describe Rackstash::Buffer do
       expect(buffer.pending?).to be true
     end
 
-    context 'with allow_empty: true' do
+    context 'with allow_silent: true' do
       before do
-        buffer_options[:allow_empty] = true
-        expect(buffer.allow_empty?).to be true
+        buffer_options[:allow_silent] = true
+        expect(buffer.allow_silent?).to be true
       end
 
       it 'defaults to false' do
@@ -285,10 +285,10 @@ describe Rackstash::Buffer do
       end
     end
 
-    context 'with allow_empty: false' do
+    context 'with allow_silent: false' do
       before do
-        buffer_options[:allow_empty] = false
-        expect(buffer.allow_empty?).to be false
+        buffer_options[:allow_silent] = false
+        expect(buffer.allow_silent?).to be false
       end
 
       it 'defaults to false' do

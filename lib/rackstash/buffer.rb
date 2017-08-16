@@ -74,16 +74,15 @@ module Rackstash
     # @param buffering [Boolean] When set to `true`, this buffer is considered
     #   to be buffering data. When buffering, logged messages will not be
     #   flushed immediately but only with an explicit call to {#flush}.
-    # @param allow_empty [Boolean] When set to `true` the data in this buffer
-    #   will be flushed to the sink, even if no messages were logged but there
-    #   were just added fields or tags. If this is `false` and there were no
-    #   explicit changes to the buffer (e.g. a logged message, added tags or
-    #   fields), the buffer will not be flushed to the sink but will be silently
-    #   dropped.
-    def initialize(sink, buffering: true, allow_empty: false)
+    # @param allow_silent [Boolean] When set to `true` the data in this buffer
+    #   will be flushed to the sink, even if there
+    #   were just added fields or tags without any logged messages. If this is
+    #   `false` and there were no messages logged with {#add_message}, the
+    #   buffer will not be flushed to the sink but will be silently dropped.
+    def initialize(sink, buffering: true, allow_silent: false)
       @sink = sink
       @buffering = !!buffering
-      @allow_empty = !!allow_empty
+      @allow_silent = !!allow_silent
 
       # initialize the internal data structures for fields, tags, ...
       clear
@@ -145,14 +144,15 @@ module Rackstash
     end
 
     # When set to `true` in {#initialize}, the data in this buffer will be
-    # flushed to the sink, even if no messages were logged but there were just
-    # added fields or tags. If this is `false` and there were no explicit
-    # changes to the buffer (e.g. a logged message, added tags or fields), the
-    # buffer will not be flushed to the sink but will be silently dropped.
+    # flushed to the sink, even if there were just added fields or tags but no
+    # messages.
+    #
+    # If this is `false` and there were no messages logged with {#add_message},
+    # the buffer will not be flushed to the sink but will be silently dropped.
     #
     # @return [Boolean]
-    def allow_empty?
-      @allow_empty
+    def allow_silent?
+      @allow_silent
     end
 
     # When set to `true` in {#initialize}, this buffer is considered to be
@@ -207,13 +207,13 @@ module Rackstash
     # default, a new buffer is not pending and will not be flushed to the sink.
     # Each time there is a new message logged, this is set to `true` for the
     # buffer. For changes of tags or fields, the `pending?` flag is only
-    # flipped to `true` if {#allow_empty?} is set to `true`.
+    # flipped to `true` if {#allow_silent?} is set to `true`.
     #
     # @return [Boolean] `true` if the buffer has stored data which should be
     #   flushed.
     def pending?
       return true if @messages.any?
-      if allow_empty?
+      if allow_silent?
         return true unless @fields.nil? || @fields.empty?
         return true unless @tags.nil? || @tags.empty?
       end
