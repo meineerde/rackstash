@@ -125,20 +125,17 @@ module Rackstash
     # added message if it wasn't set earlier already.
     #
     # If the buffer is not {#buffering?}, it will be {#flush}ed and {#clear}ed
-    # after each added message. All fields and tags added before the log message
-    # will be flushed along with the single message.
+    # after each added message. All fields, tags, and messages added before as
+    # well as the message added with this method call will be flushed.
     #
     # @param message [Message] A {Message} to add to the current message
     #   buffer.
     # @return [Message] the passed `message`
     def add_message(message)
-      @messages << message
       timestamp(message.time)
+      @messages << message
 
-      unless buffering?
-        flush
-        clear
-      end
+      auto_flush
 
       message
     end
@@ -313,6 +310,23 @@ module Rackstash
       event[FIELD_TIMESTAMP] = timestamp
 
       event
+    end
+
+    private
+
+    # Non buffering buffers, i.e., those with `buffering: false`, flush
+    # themselves to the sink whenever there is something logged to it. That way,
+    # such a buffer acts like a regular old Logger would: it just flushes a
+    # logged message to its log device as soon as it is logged.
+    #
+    # By calling `auto_flush`, the current buffer is flushed and cleared
+
+    # Flush and clear the current buffer if necessary.
+    def auto_flush
+      return if buffering?
+
+      flush
+      clear
     end
   end
 end
