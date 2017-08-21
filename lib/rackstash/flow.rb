@@ -200,15 +200,10 @@ module Rackstash
     # 1. At first, we filter the event with the defined filters in their given
     #    order. If any of the filters returns `false`, the writing will be
     #    aborted. No further filters will be applied and the event will not be
-    #    written to the adapter.
-    # 2. After the filters, we normalize the `event["message"]` field. While the
-    #    filters still had access to the array of {Message} objects for
-    #    filtering, we now concatenate the raw messages as a single string to
-    #    get the final event. The `event["message"]` field now contains a single
-    #    `String` object.
-    # 3. We encode the event to a format suitable for the adapter using the
+    #    written to the adapter. See {FilterChain#call} for details.
+    # 2. We encode the event to a format suitable for the adapter using the
     #    configured {#encoder}.
-    # 4. Finally, the encoded event will be passed to the {#adapter} to be send
+    # 3. Finally, the encoded event will be passed to the {#adapter} to be send
     #    to the actual log target, e.g. a file or an external log receiver.
     #
     # @api private
@@ -221,17 +216,6 @@ module Rackstash
       # Silently abort writing if any filter (and thus the while filter chain)
       # returns `false`.
       return false unless @filter_chain.call(event)
-
-      event[FIELD_MESSAGE] =
-        case event[FIELD_MESSAGE]
-        when Array
-          event[FIELD_MESSAGE].map!(&:to_s).join
-        when nil
-          ''
-        else
-          event[FIELD_MESSAGE].to_s
-        end
-
       @adapter.write @encoder.encode(event)
       true
     end

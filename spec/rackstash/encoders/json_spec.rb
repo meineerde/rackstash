@@ -13,8 +13,8 @@ describe Rackstash::Encoders::JSON do
 
   describe '#encode' do
     it 'formats the passed event hash as a JSON string' do
-      event = { 'hello' => 'world', 'message' => 'hello' }
-      expect(encoder.encode(event)).to eql '{"hello":"world","message":"hello"}'
+      event = { 'hello' => 'world', 'message' => ["hello\n", "world"] }
+      expect(encoder.encode(event)).to eql '{"hello":"world","message":"hello\nworld"}'
     end
 
     it 'formats newlines as \n' do

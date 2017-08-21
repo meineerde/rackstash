@@ -13,8 +13,8 @@ describe Rackstash::Encoders::Message do
 
   describe '#encode' do
     it 'gets the message from the event hash' do
-      event = { 'hello' => 'world', 'message' => 'hello' }
-      expect(encoder.encode(event)).to eql 'hello'
+      event = { 'hello' => 'world', 'message' => ["hello\n", "world"] }
+      expect(encoder.encode(event)).to eql "hello\nworld"
     end
 
     it 'rstrips the message' do

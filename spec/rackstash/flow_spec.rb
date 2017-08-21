@@ -277,30 +277,6 @@ describe Rackstash::Flow do
       flow.write!(event)
     end
 
-    it 'concatenates message array before encoding' do
-      event['message'] = ["a\n", "b\n"]
-
-      expect(flow.encoder).to receive(:encode).with('message' => "a\nb\n")
-      flow.write!(event)
-    end
-
-    it 'sets message to an emoty string if deleted' do
-      event['message'] = nil
-
-      expect(flow.encoder).to receive(:encode).with('message' => '')
-      flow.write!(event)
-    end
-
-    it 'enforces to_s on other messages' do
-      foo = String.new('foo')
-      event['message'] = foo
-
-      expect(foo).to receive(:to_s).and_call_original
-      expect(flow.encoder).to receive(:encode).with('message' => 'foo')
-
-      flow.write!(event)
-    end
-
     it 'encodes the event' do
       expect(flow.encoder).to receive(:encode).with(event)
       flow.write!(event)

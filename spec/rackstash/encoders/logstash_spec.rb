@@ -13,8 +13,8 @@ describe Rackstash::Encoders::Logstash do
 
   describe '#encode' do
     it 'formats the passed event hash as a JSON string and includes @version' do
-      event = { 'hello' => 'world', 'message' => 'hello' }
-      expect(encoder.encode(event)).to eql '{"hello":"world","message":"hello","@version":"1"}'
+      event = { 'hello' => 'world', 'message' => ["hello\n", "world"] }
+      expect(encoder.encode(event)).to eql '{"hello":"world","message":"hello\nworld","@version":"1"}'
     end
   end
 end

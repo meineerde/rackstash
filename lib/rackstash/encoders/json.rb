@@ -6,6 +6,8 @@
 
 require 'json'
 
+require 'rackstash/encoders/helpers/message'
+
 module Rackstash
   module Encoders
     # The JSON encoder formats the log event as a single-line JSON string. The
@@ -13,9 +15,13 @@ module Rackstash
     #
     # Most {Adapters} default to use this codec.
     class JSON
+      include Rackstash::Encoders::Helpers::Message
+
       # @param event [Hash] a log event as produced by the {Flow}
       # @return [String] the event as a single-line JSON string
       def encode(event)
+        normalize_message(event)
+
         ::JSON.dump(event)
       end
     end
