@@ -5,6 +5,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'rackstash/encoders/json'
+require 'rackstash/encoders/lograge'
 require 'rackstash/encoders/logstash'
 require 'rackstash/encoders/message'
 require 'rackstash/encoders/raw'
