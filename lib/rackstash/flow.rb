@@ -235,15 +235,16 @@ module Rackstash
     private
 
     def log_error(message, exception)
+      message = Rackstash::Message.new(message, severity: ERROR)
+
       error_event = {
         FIELD_ERROR => exception.class.name,
         FIELD_ERROR_MESSAGE => exception.message,
         FIELD_ERROR_TRACE => (exception.backtrace || []).join("\n"),
 
         FIELD_TAGS => [],
-        FIELD_MESSAGE => message,
-        FIELD_TIMESTAMP => Time.now.utc.iso8601(ISO8601_PRECISION).freeze,
-        FIELD_VERSION => '1'.freeze
+        FIELD_MESSAGE => [message],
+        FIELD_TIMESTAMP => message.time
       }
       error_flow.write!(error_event)
     rescue

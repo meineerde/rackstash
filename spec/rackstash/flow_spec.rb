@@ -83,10 +83,15 @@ describe Rackstash::Flow do
     it 'rescues any exception thrown by the adapter' do
       error_flow = instance_double(described_class)
       expect(error_flow).to receive(:write!)
-        .with hash_including(
-          'message' => /^close failed for adapter/,
+        .with(
           'error' => 'RuntimeError',
-          'error_message' => 'ERROR'
+          'error_message' => 'ERROR',
+          'error_trace' => instance_of(String),
+
+          'tags' => [],
+          'message' => [instance_of(Rackstash::Message)],
+
+          '@timestamp' => instance_of(Time)
         )
       expect(flow).to receive(:error_flow).and_return(error_flow)
 
@@ -242,10 +247,15 @@ describe Rackstash::Flow do
     it 'rescues any exception thrown by the adapter' do
       error_flow = instance_double(described_class)
       expect(error_flow).to receive(:write!)
-        .with hash_including(
-          'message' => /^reopen failed for adapter/,
+        .with(
           'error' => 'RuntimeError',
-          'error_message' => 'ERROR'
+          'error_message' => 'ERROR',
+          'error_trace' => instance_of(String),
+
+          'tags' => [],
+          'message' => [instance_of(Rackstash::Message)],
+
+          '@timestamp' => instance_of(Time)
         )
       expect(flow).to receive(:error_flow).and_return(error_flow)
 
@@ -306,10 +316,15 @@ describe Rackstash::Flow do
     it 'rescues any exception thrown by the adapter' do
       error_flow = instance_double(described_class)
       expect(error_flow).to receive(:write!)
-        .with hash_including(
-          'message' => /^write failed for adapter/,
+        .with(
           'error' => 'RuntimeError',
-          'error_message' => 'ERROR'
+          'error_message' => 'ERROR',
+          'error_trace' => instance_of(String),
+
+          'tags' => [],
+          'message' => [instance_of(Rackstash::Message)],
+
+          '@timestamp' => instance_of(Time)
         )
       expect(flow).to receive(:error_flow).and_return(error_flow)
 
