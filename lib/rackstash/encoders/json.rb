@@ -7,6 +7,7 @@
 require 'json'
 
 require 'rackstash/encoders/helpers/message'
+require 'rackstash/encoders/helpers/timestamp'
 
 module Rackstash
   module Encoders
@@ -16,11 +17,13 @@ module Rackstash
     # Most {Adapters} default to use this codec.
     class JSON
       include Rackstash::Encoders::Helpers::Message
+      include Rackstash::Encoders::Helpers::Timestamp
 
       # @param event [Hash] a log event as produced by the {Flow}
       # @return [String] the event as a single-line JSON string
       def encode(event)
         normalize_message(event)
+        normalize_timestamp(event)
 
         ::JSON.dump(event)
       end

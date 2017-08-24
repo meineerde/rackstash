@@ -274,8 +274,9 @@ module Rackstash
     # @return [String] an ISO 8601 formatted UTC timestamp.
     def timestamp(time = nil)
       @timestamp ||= begin
-        time ||= Time.now
-        time.getutc.iso8601(ISO8601_PRECISION).freeze
+        time ||= Time.now.utc.freeze
+        time = time.getutc.freeze unless time.utc? && time.frozen?
+        time
       end
     end
 
@@ -301,14 +302,20 @@ module Rackstash
     #         #<Rackstash::Message:0x007f908b4414c0 ...>,
     #         #<Rackstash::Message:0x007f908d14aee0 ...>
     #       ],
-    #       "@timestamp" => "2016-10-17T13:37:42.000Z"
+    #       "@timestamp" => 2016-10-17 13:37:42 UTC
     #     }
     #
-    #
     # Note that the resulting hash still contains an Array of {Message}s in the
-    # `"message"` field. This allows the {Flow}'s' {Filters} to reject or adapt
-    # some messages based on their original attributes, e.g., their severity or
-    # timestamp.
+    # `"message"` field and a `Time` object in the '@timestamp' field. This
+    # allows the {Flow}'s components (usually the {Filters} or the
+    # {Flow#encoder}) to reject or adapt some messages based on
+    # their original attributes, e.g., their severity or timestamp. It is the
+    # responsibility of the {Flow#encoder} to correctly format the
+    # `"@timestamp"` field.
+    #
+    # All other fields in the event Hash besides `"message"` and `@timestamp"`
+    # are either `Hash`, `Array`, frozen `String`, `Integer` or `Float` objects.
+    # All hashes (including nested hashes) use `String` keys.
     #
     # @param fields [Hash<String => Object>, Proc] additional fields which are
     #   merged with this Buffer's fields in the returned event Hash

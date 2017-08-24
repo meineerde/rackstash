@@ -178,7 +178,7 @@ describe Rackstash::Buffer do
       msg = double(message: 'Hello World', time: time)
 
       buffer.add_message msg
-      expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000000Z'
+      expect(buffer.timestamp).to eql time.getutc
     end
 
     context 'when buffering?' do
@@ -256,12 +256,12 @@ describe Rackstash::Buffer do
 
     it 'resets the timestamp' do
       buffer.timestamp(Time.parse('2016-10-17 15:37:00 +02:00'))
-      expect(buffer.timestamp).to eql '2016-10-17T13:37:00.000000Z'
+      expect(buffer.timestamp).to eql Time.utc(2016, 10, 17, 13, 37, 0)
 
       buffer.clear
 
       expect(Time).to receive(:now).and_call_original
-      expect(buffer.timestamp).not_to eql '2016-10-17T13:37:00.000000Z'
+      expect(buffer.timestamp).not_to eql Time.utc(2016, 10, 17, 13, 37, 0)
     end
   end
 
@@ -462,20 +462,22 @@ describe Rackstash::Buffer do
   describe '#timestamp' do
     it 'initializes @timestamp to Time.now.utc' do
       now = Time.parse('2016-10-17 13:37:00 +03:00')
+      now_utc = Time.utc(2016, 10, 17, 10, 37, 0).freeze
 
       expect(Time).to receive(:now).once.and_return(now)
-      expect(now).to receive(:getutc).once.and_return(now.getutc)
+      expect(now).to receive(:utc).once.and_return(now_utc)
 
-      expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000000Z'
-      expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000000Z'
+      expect(buffer.timestamp).to equal now_utc
+      expect(buffer.timestamp).to equal now_utc
     end
 
     it 'initializes @timestamp with the passed time' do
       now = Time.parse('2016-10-17 13:37:00 +03:00')
+      now_utc = Time.utc(2016, 10, 17, 10, 37, 0).freeze
 
       expect(Time).not_to receive(:now)
-      expect(buffer.timestamp(now)).to eql '2016-10-17T10:37:00.000000Z'
-      expect(buffer.timestamp).to eql '2016-10-17T10:37:00.000000Z'
+      expect(buffer.timestamp(now)).to eql now_utc
+      expect(buffer.timestamp).to eql now_utc
     end
 
     it 'does not overwrites an already set timestamp' do
@@ -483,13 +485,13 @@ describe Rackstash::Buffer do
       second = Time.parse('2016-10-17 20:20:20 +03:00')
 
       buffer.timestamp(first)
-      expect(buffer.timestamp).to eql '2016-10-17T07:10:10.000000Z'
+      expect(buffer.timestamp).to eql first.getutc
 
       buffer.timestamp
-      expect(buffer.timestamp).to eql '2016-10-17T07:10:10.000000Z'
+      expect(buffer.timestamp).to eql first.getutc
 
       buffer.timestamp(second)
-      expect(buffer.timestamp).to eql '2016-10-17T07:10:10.000000Z'
+      expect(buffer.timestamp).to eql first.getutc
     end
   end
 
@@ -532,7 +534,7 @@ describe Rackstash::Buffer do
         'foo' => 'bar',
         'message' => [message],
         'tags' => ['some_tag'],
-        '@timestamp' => instance_of(String)
+        '@timestamp' => instance_of(Time)
       )
     end
   end
