@@ -14,6 +14,8 @@ module Rackstash
       # handling timestamps in the event Hash, especially the {FIELD_TIMESTAMP}
       # field.
       module Timestamp
+        private
+
         # Normalize the `"@timestamp"` field of the given log event Hash.
         # Before any filters, only the `"@timestamp"` fueld contains a `Time`
         # object denoting the timestamp of the log event. To represent this
@@ -25,7 +27,7 @@ module Rackstash
         #   hash. By default, we use the `"@timestamp"` field.
         # @return [Hash] the given event with the `field` key set as an ISO 8601
         #   formatted time string.
-        def normalize_timestamp(event, field: FIELD_TIMESTAMP)
+        def normalize_timestamp(event, field: FIELD_TIMESTAMP) #:doc:
           time = event[field]
 
           if time.is_a?(Time) || time.is_a?(DateTime)

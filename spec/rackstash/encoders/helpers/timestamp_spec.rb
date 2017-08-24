@@ -9,7 +9,15 @@ require 'spec_helper'
 require 'rackstash/encoders/helpers/timestamp'
 
 describe Rackstash::Encoders::Helpers::Timestamp do
-  let(:helper) { Object.new.extend(described_class) }
+  let(:helper) {
+    helper = Object.new.extend(described_class)
+    described_class.private_instance_methods(false).each do |method|
+      helper.define_singleton_method(method) do |*args|
+        super(*args)
+      end
+    end
+    helper
+  }
   let(:event) { {} }
 
   describe '#normalize_timestamp' do
