@@ -20,6 +20,8 @@ module Rackstash
       # @return [String] the event as a single-line JSON string
       def encode(event)
         event[FIELD_VERSION] = '1'.freeze if event[FIELD_VERSION].nil?
+        event[FIELD_TIMESTAMP] ||= Time.now.utc.freeze
+
         super(event)
       end
     end
