@@ -66,5 +66,10 @@ describe Rackstash::Encoders::Lograge do
       expect(encoder.encode(event))
         .to eql 'some.key=a.value a=b=c=d a key=some value'
     end
+
+    it 'ignores all messages' do
+      event = { 'key' => 'value', 'message' => ['foo', 'bar'] }
+      expect(encoder.encode(event)).to eql 'key=value'
+    end
   end
 end
