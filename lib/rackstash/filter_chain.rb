@@ -49,8 +49,8 @@ module Rackstash
       end
     end
 
-    # Set the new filter at the given index or at the end of the chain if the
-    # value at `index` could not be found.
+    # Set the new filter at the given `index`. You can specify any existing
+    # filter or an index one above the highest index.
     #
     # @param index [Integer, Class, String, Object] The existing filter which
     #   should be overwritten with `filter`. It can be described in different
@@ -60,6 +60,8 @@ module Rackstash
     #   named like that; when given any other object, we assume it is a filter
     #   and search for that.
     # @param filter [#call, nil] the filter to set at `index`
+    # @raise [ArgumentError] if no existing filter could be found at `index`
+    # @raise [TypeError] if the given filter is not callable
     # @return [#call] the given `filter`
     def []=(index, filter)
       raise TypeError, 'must provide a filter' unless filter.respond_to?(:call)
@@ -79,10 +81,9 @@ module Rackstash
     # callable object (e.g. a `Proc` or one of the {Filters}) or specify the
     # filter with a given block.
     #
-    # @param filter [#call, nil] a filter to add. If given, this value will
-    #   take precedence to the block. If `nil`, we expect a block to be given
-    #   which we will then take as the filter.
-    # @raise [TypeError] if the given filter is not callable
+    # @param filter_spec (see #build_filter)
+    # @raise [TypeError] if no suitable filter could be created from
+    #   `filter_spec`
     # @return [self]
     def append(*filter_spec, &block)
       filter = build_filter(filter_spec, &block)
@@ -94,12 +95,13 @@ module Rackstash
     end
     alias << append
 
-    # Filter the given event by calling each defined filter with it.
+    # Filter the given event by calling each defined filter with it. Each filter
+    # will be called with the current event and can manipulate it in any way.
     #
-    # Each filter will be called with the current event and can manipulate it
-    # in any way. If any of the filters returns `false`, no further filter will
-    # be applied and we also return `false`. This behavior can be used by
-    # filters to cancel the writing of an individual event.
+    # If any of the filters returns `false`, no further filter will be applied
+    # and we also return `false`. This behavior can be used by filters to cancel
+    # the writing of an individual event. Any other return value of filters is
+    # ignored.
     #
     # @param event [Hash] an event hash, see {Sink#write} for details
     # @return [Hash, false] the filtered event or `false` if any of the
@@ -120,7 +122,6 @@ module Rackstash
     #   find the first filter being of that type; when given a `String`, we try
     #   to find the first filter being of a type named like that; when given any
     #   other object, we assume it is a filter and search for that.
-    # @raise [ArgumentError] if the existing filter could not be found
     # @return [#call, nil] the deleted filter or `nil` if no filter for `index`
     #   could be found
     def delete(index)
@@ -150,7 +151,7 @@ module Rackstash
 
     # Returns the index of the first filter in `self` matching
     #
-    # @param filter [Integer, Class, String, Object] The existing filter to
+    # @param index [Integer, Class, String, Object] The existing filter to
     #   find. It can be described in different ways: When given an `Integer`,
     #   we expect it to be the index number; when given a `Class`, we try to
     #   find the first filter being of that type; when given a `String`, we try
@@ -158,8 +159,8 @@ module Rackstash
     #   other object, we assume it is a filter and search for that.
     # @return [Integer, nil] The index of the existing filter or `nil` if no
     #   filter could be found for `index`
-    def index(filter)
-      synchronize { index_at(filter) }
+    def index(index)
+      synchronize { index_at(index) }
     end
 
     # Insert a new filter after an existing filter in the filter chain.
@@ -171,11 +172,10 @@ module Rackstash
     #   when given a `String`, we try to find the first filter being of a type
     #   named like that; when given any other object, we assume it is a filter
     #   and search for that.
-    # @param filter [#call, nil] a filter to insert. If given, this value will
-    #   take precedence to the block. If `nil`, we expect a block to be given
-    #   which we will then take as the filter.
-    # @raise [TypeError] if the given filter is not callable
-    # @raise [ArgumentError] if the existing filter could not be found
+    # @param filter_spec (see #build_filter)
+    # @raise [ArgumentError] if no existing filter could be found at `index`
+    # @raise [TypeError] if we could not build a filter from the given
+    #   `filter_spec`
     # @return [self]
     def insert_after(index, *filter_spec, &block)
       filter = build_filter(filter_spec, &block)
@@ -200,11 +200,10 @@ module Rackstash
     #   when given a `String`, we try to find the first filter being of a type
     #   named like that; when given any other object, we assume it is a filter
     #   and search for that.
-    # @param filter [#call, nil] a filter to insert. If given, this value will
-    #   take precedence to the block. If `nil`, we expect a block to be given
-    #   which we will then take as the filter.
-    # @raise [TypeError] if the given filter is not callable
-    # @raise [ArgumentError] if the existing filter could not be found
+    # @param filter_spec (see #build_filter)
+    # @raise [ArgumentError] if no existing filter could be found at `index`
+    # @raise [TypeError] if we could not build a filter from the given
+    #   `filter_spec`
     # @return [self]
     def insert_before(index, *filter_spec, &block)
       filter = build_filter(filter_spec, &block)
@@ -240,10 +239,9 @@ module Rackstash
     # give a callable object (e.g. a `Proc` or one of the {Filters}) or specify
     # the filter with a given block.
     #
-    # @param filter [#call, nil] a filter to prepend. If given, this value will
-    #   take precedence to the block. If `nil`, we expect a block to be given
-    #   which we will then take as the filter.
-    # @raise [TypeError] if the given filter is not callable
+    # @param filter_spec (see #build_filter)
+    # @raise [TypeError] if we could not build a filter from the given
+    #   `filter_spec`
     # @return [self]
     def unshift(*filter_spec, &block)
       filter = build_filter(filter_spec, &block)
@@ -291,6 +289,17 @@ module Rackstash
       end
     end
 
+    # Build a new filter instance from the given specification.
+    #
+    # @param filter_spec [Array] the description of a filter to create. If you
+    #   give a single `Proc` or a block (or another object which responds to
+    #   `#call`), we will directly return it. If you give a `Class` plus any
+    #   optional initializer arguments, we will return a new instance of that
+    #   class. When giving a `String` or `Symbol`, we will resolve it to a
+    #   filter class from the {Rackstash::Filters} module and create a new
+    #   instance of that class with the additional arguments given to
+    #   `initialize`.
+    # @return [#call] a filter instance
     def build_filter(filter_spec, &block)
       if filter_spec.empty?
         return block if block_given?
