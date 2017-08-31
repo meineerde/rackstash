@@ -27,9 +27,6 @@ describe Rackstash::Flows do
     it 'accepts a list of flows' do
       raw_flows = Array.new(3) { a_flow }
 
-      list_with_array = described_class.new(raw_flows)
-      expect(list_with_array.size).to eql 3
-
       list_with_splat = described_class.new(*raw_flows)
       expect(list_with_splat.size).to eql 3
     end

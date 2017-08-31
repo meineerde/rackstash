@@ -57,10 +57,10 @@ module Rackstash
     #   By default we use {PROGNAME}.
     # @param formatter [#call] the log formatter for each individual buffered
     #   line. See {#formatter} for details.
-    def initialize(flows, level: DEBUG, progname: PROGNAME, formatter: Formatter.new)
+    def initialize(*flows, level: DEBUG, progname: PROGNAME, formatter: Formatter.new)
       @buffer_stack = Concurrent::ThreadLocalVar.new
 
-      @sink = Rackstash::Sink.new(flows)
+      @sink = Rackstash::Sink.new(*flows)
       self.level = level
       self.progname = progname
       self.formatter = formatter

@@ -15,8 +15,8 @@ module Rackstash
     # @param flows [Array<Flow, Object>, Flow, Adapters::Adapter, Object]
     #   an array of {Flow}s or a single {Flow}, respectivly object which can be
     #   used as a {Flow}'s adapter. See {Flow#initialize}.
-    def initialize(flows)
-      @flows = Rackstash::Flows.new(flows)
+    def initialize(*flows)
+      @flows = Rackstash::Flows.new(*flows)
 
       @default_fields = {}
       @default_tags = []

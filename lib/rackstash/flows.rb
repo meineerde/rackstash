@@ -19,7 +19,7 @@ module Rackstash
     def initialize(*flows)
       @flows = Concurrent::Array.new
 
-      flows.flatten.each do |flow|
+      flows.each do |flow|
         add(flow)
       end
     end

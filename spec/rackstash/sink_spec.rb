@@ -19,27 +19,27 @@ describe Rackstash::Sink do
     flow
   end
 
-  let(:flow) { a_flow }
-  let(:sink) { described_class.new(flow) }
+  let(:flows) { [a_flow] }
+  let(:sink) { described_class.new(*flows) }
 
   describe 'initialize' do
     # We deliberately use the real Rackstash::Flows class here to server as an
     # integration test
     it 'wraps a single flow in a flows list' do
-      expect(Rackstash::Flows).to receive(:new).with(flow)
+      expect(Rackstash::Flows).to receive(:new).with(*flows)
         .and_call_original
 
-      sink = described_class.new(flow)
+      sink = described_class.new(*flows)
       expect(sink.flows).to be_a Rackstash::Flows
-      expect(sink.flows.to_a).to eql [flow]
+      expect(sink.flows.to_a).to eql flows
     end
 
     it 'wraps multiple flows in a flows list' do
       flows = [a_flow, a_flow]
 
-      expect(Rackstash::Flows).to receive(:new).with(flows)
+      expect(Rackstash::Flows).to receive(:new).with(*flows)
         .and_call_original
-      sink = described_class.new(flows)
+      sink = described_class.new(*flows)
 
       expect(sink.flows).to be_a Rackstash::Flows
       expect(sink.flows.to_a).to eql flows
@@ -111,19 +111,19 @@ describe Rackstash::Sink do
   end
 
   describe '#close' do
-    let(:flow) { [a_flow, a_flow] }
+    let(:flows) { [a_flow, a_flow] }
 
     it 'calls close on all flows' do
-      expect(flow).to all receive(:close)
+      expect(flows).to all receive(:close)
       expect(sink.close).to be_nil
     end
   end
 
   describe '#reopen' do
-    let(:flow) { [a_flow, a_flow] }
+    let(:flows) { [a_flow, a_flow] }
 
     it 'calls reopen on all flows' do
-      expect(flow).to all receive(:reopen)
+      expect(flows).to all receive(:reopen)
       expect(sink.reopen).to be_nil
     end
   end
@@ -134,7 +134,6 @@ describe Rackstash::Sink do
         allow(flow).to receive(:write)
       end
     }
-    let(:sink) { described_class.new(flows) }
     let(:buffer) { Rackstash::Buffer.new(sink) }
 
     it 'merges default_fields and default_tags' do
