@@ -51,16 +51,26 @@ describe Rackstash do
     end
   end
 
-  it 'defines UNDEFINED' do
-    expect(Rackstash::UNDEFINED).to be_instance_of Rackstash::UndefinedClass
-    expect(Rackstash::UNDEFINED.to_s).to eql 'undefined'
+  describe 'UNDEFINED' do
+    it 'defines the UndefinedClass' do
+      expect(Rackstash::UndefinedClass).to be_a Class
 
-    expect(Rackstash::UNDEFINED).to equal Rackstash::UNDEFINED
+      # No (further) ibjects can be created of this class
+      expect { Rackstash::UndefinedClass.new }.to raise_error NoMethodError
+      expect { Rackstash::UndefinedClass.allocate }.to raise_error NoMethodError
+    end
 
-    expect(Rackstash::UNDEFINED).not_to eql nil
-    expect(Rackstash::UNDEFINED).not_to eql false
-    expect(Rackstash::UNDEFINED).not_to eql true
-    expect(Rackstash::UNDEFINED).not_to eql 42
+    it 'defines the singleton object' do
+      expect(Rackstash::UNDEFINED).to be_instance_of Rackstash::UndefinedClass
+      expect(Rackstash::UNDEFINED.to_s).to eql 'undefined'
+
+      expect(Rackstash::UNDEFINED).to equal Rackstash::UNDEFINED
+
+      expect(Rackstash::UNDEFINED).not_to eql nil
+      expect(Rackstash::UNDEFINED).not_to eql false
+      expect(Rackstash::UNDEFINED).not_to eql true
+      expect(Rackstash::UNDEFINED).not_to eql 42
+    end
   end
 
   describe '.severity_label' do

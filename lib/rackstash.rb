@@ -84,7 +84,12 @@ module Rackstash
     alias inspect to_s
   end
 
-  UNDEFINED = UndefinedClass.new
+  UNDEFINED = UndefinedClass.new.tap do |undefined|
+    class << undefined.class
+      undef_method :allocate
+      undef_method :new
+    end
+  end
 
   EMPTY_STRING = ''.freeze
   EMPTY_SET = Set.new.freeze
