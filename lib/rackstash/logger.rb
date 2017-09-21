@@ -57,13 +57,24 @@ module Rackstash
     #   By default we use {PROGNAME}.
     # @param formatter [#call] the log formatter for each individual buffered
     #   line. See {#formatter} for details.
-    def initialize(*flows, level: DEBUG, progname: PROGNAME, formatter: Formatter.new)
+    # @yieldparam flow [Rackstash::Flow] if the given block accepts an argument,
+    #   we yield the last {Flow} as a parameter. Without an expected argument,
+    #   the block is directly executed in the context of the last {Flow}.
+    def initialize(*flows, level: DEBUG, progname: PROGNAME, formatter: Formatter.new, &block)
       @buffer_stack = Concurrent::ThreadLocalVar.new
 
       @sink = Rackstash::Sink.new(*flows)
       self.level = level
       self.progname = progname
       self.formatter = formatter
+
+      if block_given? && (flow = @sink.flows.last)
+        if block.arity == 0
+          flow.instance_eval(&block)
+        else
+          yield flow
+        end
+      end
     end
 
     # Add a message to the current buffer without any further formatting. If

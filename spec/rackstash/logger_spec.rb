@@ -35,6 +35,35 @@ describe Rackstash::Logger do
       logger = described_class.new('output.log', formatter: -> {})
       expect(logger.formatter).to be_a Proc
     end
+
+    it 'yields the last flow to a parameterized block' do
+      block_called = 0
+      block_self = nil
+      block_args = nil
+
+      described_class.new(StringIO.new, StringIO.new) do |*args|
+        block_called += 1
+        block_self = self
+        block_args = args
+      end
+
+      expect(block_called).to eql 1
+      expect(block_self).to equal self
+      expect(block_args).to match [instance_of(Rackstash::Flow)]
+    end
+
+    it 'instance_evals the parameter-less block in the last flow' do
+      block_called = 0
+      block_self = nil
+
+      described_class.new(StringIO.new, StringIO.new) do
+        block_called += 1
+        block_self = self
+      end
+
+      expect(block_called).to eql 1
+      expect(block_self).to be_instance_of(Rackstash::Flow)
+    end
   end
 
   describe 'subscript accessors' do
