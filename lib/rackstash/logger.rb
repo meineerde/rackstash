@@ -13,7 +13,7 @@ require 'rackstash/sink'
 
 module Rackstash
   # The Logger is the main entry point for Rackstash. It provides an interface
-  # very similar to the Logger class in Ruby's Stamdard Library but extends it
+  # very similar to the Logger class in Ruby's Standard Library but extends it
   # with facilities for structured logging.
   class Logger
     # Logging formatter, a `Proc`-like object which take four arguments and
