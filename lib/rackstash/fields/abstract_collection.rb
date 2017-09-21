@@ -104,7 +104,9 @@ module Rackstash
 
       def resolve_value(value, scope: nil)
         return value unless value.is_a?(Proc)
-        scope.nil? ? value.call : scope.instance_exec(&value)
+
+        return value.call if scope.nil?
+        value.arity == 0 ? scope.instance_exec(&value) : value.call(scope)
       rescue
         value.inspect
       end

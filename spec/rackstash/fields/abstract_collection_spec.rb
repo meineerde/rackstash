@@ -261,7 +261,24 @@ describe Rackstash::Fields::AbstractCollection do
           expect(normalize(hash, scope: scope)['beep']).to be_a Rackstash::Fields::Hash
           expect(normalize(hash, scope: scope)['beep']['scope']).to eql 'SCOPE'
         end
+
+        it 'passes the supplied scope but retains self' do
+          scope = 'scope'
+          test_self = self
+
+          hash = {
+            beep: ->(v) {
+              expect(self).to equal test_self
+              { v.upcase => -> { self } }
+            }
+          }
+
+          expect(normalize(hash, scope: scope)).to be_a Rackstash::Fields::Hash
+          expect(normalize(hash, scope: scope)['beep']).to be_a Rackstash::Fields::Hash
+          expect(normalize(hash, scope: scope)['beep']['SCOPE']).to eql 'scope'
+        end
       end
+
     end
 
     describe 'with Array' do
