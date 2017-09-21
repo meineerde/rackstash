@@ -56,6 +56,7 @@ module Rackstash
     def []=(index, flow)
       flow = Flow.new(flow) unless flow.is_a?(Flow)
       @flows[index] = flow
+      flow
     end
 
     # Calls the given block once for each flow in `self`, passing that flow as
