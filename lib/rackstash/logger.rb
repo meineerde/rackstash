@@ -46,6 +46,51 @@ module Rackstash
     #   external log targets like a file, a socket, ...
     attr_reader :sink
 
+    # Create a new Logger instance.
+    #
+    # We mostly follow the common interface of Ruby's core Logger class with the
+    # exception that you can give one or more flows to write logs to. Each
+    # {Flow} is responsible to write a log event (e.g. to a file, STDOUT, a TCP
+    # socket, ...). Each log event is written to all defined {#flows}.
+    #
+    # When giving the flows here, you can given them in one of varous
+    # representations, all of which we will transform into an actual {Flow}:
+    #
+    # * A {Rackstash::Flow} object. For the most control over the flow, you can
+    #   create the {Flow} object on your own and pass it here
+    # * A {Rackstash::Adapters::Adapter}. When passing an adapter, we will
+    #   create a new {Flow} from this adapter, using its default encoder and
+    #   without any defined filters.
+    # * An log device from which we can create an adapter. In this case, we
+    #   first attempt to build an adapter from it using {Rackstash::Adapters.[]}.
+    #   After that, we use it to create a {Flow} as above.
+    #
+    # When passing a block to this initializer, we will yield the last created
+    # flow object to it. If you pass multiple log devices / adapters / flows,
+    # only the last one will be yielded. If the block doesn't expect an argument,
+    # we run the block in the instance scope of the flow.
+    #
+    # The following three example to create a custom Logger are thus equivalent:
+    #
+    #     logger = Rackstash::Logger.new(STDOUT) do
+    #       encoder Rackstash::Encoders::Message.new
+    #     end
+    #
+    #     logger = Rackstash::Logger.new(Rackstash::Adapters::IO.new(STDOUT)) do
+    #       encoder Rackstash::Encoders::Message.new
+    #     end
+    #
+    #     adapter = Rackstash::Adapters::IO.new(STDOUT)
+    #     flow = Rackstash::Flows.new(adapter) do
+    #       encoder Rackstash::Encoders::Message.new
+    #     end
+    #     logger = Rackstash::Logger.new(flow)
+    #
+    # To create a simple Logger which logs to `STDOUT` using the default JSON
+    # format, you can just use
+    #
+    #     logger = Rackstash::Logger.new(STDOUT)
+    #
     # @param flows [Array<Flow, Object>, Flow, Adapters::Adapter, Object]
     #   an array of {Flow}s or a single {Flow}, respectivly object which can be
     #   used as a {Flow}'s adapter. See {Flow#initialize}.
