@@ -13,9 +13,13 @@ describe Rackstash::Logger do
   let(:logger) { described_class.new(target) }
 
   describe '#initialize' do
-    it 'requires flows' do
+    it 'accepts flows' do
       expect(Rackstash::Sink).to receive(:new).with('output.log')
       described_class.new('output.log')
+    end
+
+    it 'does not require any flows' do
+      expect(described_class.new).to be_instance_of described_class
     end
 
     it 'allows to set #level' do
@@ -63,6 +67,10 @@ describe Rackstash::Logger do
 
       expect(block_called).to eql 1
       expect(block_self).to be_instance_of(Rackstash::Flow)
+    end
+
+    it 'does not yield without given flows' do
+      expect { |b| described_class.new(&b) }.not_to yield_control
     end
   end
 
