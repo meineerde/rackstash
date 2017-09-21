@@ -134,7 +134,7 @@ module Rackstash
     # @return [Array<Flow>] an array of all flow elements without any `nil`
     #   values
     def to_ary
-      @flows.to_a.compact
+      @flows.to_a.tap(&:compact!)
     end
     alias to_a to_ary
 
