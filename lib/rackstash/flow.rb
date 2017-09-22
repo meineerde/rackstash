@@ -206,8 +206,6 @@ module Rackstash
     # 3. Finally, the encoded event will be passed to the {#adapter} to be send
     #    to the actual log target, e.g. a file or an external log receiver.
     #
-    # @api private
-    #
     # @param event [Hash] an event hash
     # @return [Boolean] `true` if the event was written to the adapter, `false`
     #   otherwise
