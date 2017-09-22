@@ -80,7 +80,11 @@ module Rackstash
 
         @selectors.each do |selector|
           return event if overall_size_of(messages) <= @max_size || messages.size <= 1
-          messages.select! { |message| selector.call(message) }
+          if selector.is_a?(Proc)
+            messages.select!(&selector)
+          else
+            messages.select! { |message| selector.call(message) }
+          end
         end
         return event if messages.size <= 1
 
