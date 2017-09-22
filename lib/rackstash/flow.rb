@@ -106,9 +106,9 @@ module Rackstash
 
     # (see #close!)
     #
-    # Any error raised by the adapter when closing it is written to the
-    # {#error_flow} and then swallowed. Only grave exceptions (i.e. all those
-    # which do not derive from `StandardError`) are re-raised.
+    # Any error raised by the adapter when closing it is logged to the
+    # {#error_flow} and then swallowed. Grave exceptions (i.e. all those which
+    # do not derive from `StandardError`) are logged and then re-raised.
     def close
       close!
     rescue Exception => exception
@@ -182,9 +182,9 @@ module Rackstash
 
     # (see #reopen!)
     #
-    # Any error raised by the adapter when reopening it is written to the
-    # {#error_flow} and then swallowed. Only grave exceptions (i.e. all those
-    # which do not derive from `StandardError`) are re-raised.
+    # Any error raised by the adapter when reopening it is logged to the
+    # {#error_flow} and then swallowed. Grave exceptions (i.e. all those which
+    # do not derive from `StandardError`) are logged and then re-raised.
     def reopen
       reopen!
     rescue Exception => exception
@@ -220,9 +220,9 @@ module Rackstash
 
     # (see #write!)
     #
-    # Any error raised by the adapter when writing to it is written to the
-    # {#error_flow} and then swallowed. Only grave exceptions (i.e. all those
-    # which do not derive from `StandardError`) are re-raised.
+    # Any error raised by the adapter when writing to it is logged to the
+    # {#error_flow} and then swallowed. Grave exceptions (i.e. all those which
+    # do not derive from `StandardError`) are logged and then re-raised.
     def write(event)
       write!(event)
     rescue Exception => exception
