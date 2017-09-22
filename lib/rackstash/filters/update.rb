@@ -7,44 +7,46 @@
 
 module Rackstash
   module Filters
-    # Replace fields in the given event with new values. A new value can be
+    # Update fields in the given event with new values. A new value can be
     # specified as either a fixed value or as a `Proc` (or any other object
     # responding to `call`). In the latter case, the callable object will be
     # called with the event as its argument. It is then expected to return the
     # new value which is set on the key.
     #
-    # If a specified field does not exist in the event hash, it will be created
-    # with the given (or calculated) value anyway. To ignore a missing field,
-    # use the {Update} filter instead.
+    # If a specified field does not exist in the event hash yet, it will not be
+    # set and the respective proc will not be called. To set the field with the
+    # specified value anyway, use the {Replace} filter instead.
     #
     # @example
     #   Rackstash::Flow.new(STDOUT) do
-    #     filter :replace, {
-    #       "sample" => ->(event) { "#{event['source_host']}: #{event['sample']}" }
+    #     filter :update, {
+    #       "sample" => ->(event) { event['key'] }
     #     }
     #   end
     #
     # You should make sure to only set a new object of one of the basic types
     # here, namely `String`, `Integer`, `Float`, `Hash`, `Array`, `nil`, `true`,
     # or `false`.
-    class Replace
+    class Update
       # @param spec [Hash<#to_s => #call,Object>] a `Hash` specifying new field
       #   values for the named keys. Values can be given in the form of a fixed
       #   value or a callable object (e.g. a `Proc`) which accepts the event as
       #   its argument and returns the new value.
       def initialize(spec)
-        @replace = {}
+        @update = {}
         Hash(spec).each_pair do |key, value|
-          @replace[key.to_s] = value
+          @update[key.to_s] = value
         end
       end
 
-      # Replace or set fields in the event to a new value.
+      # Update existing field fields in the event with a new value.
       #
       # @param event [Hash] an event hash
       # return [Hash] the given `event` with the fields renamed
       def call(event)
-        @replace.each_pair do |key, value|
+        @update.each_pair do |key, value|
+          next unless event.key?(key)
+
           value = value.call(event) if value.respond_to?(:call)
           event[key] = value
         end
