@@ -41,14 +41,13 @@ module Rackstash
     #     #     only messages with a WARN severity or above
     #     #   * If it's still too large, we remove log lines from the middle of
     #     #     the messages until we reach the desired size.
-    #     filter Rackstash::Filters::TruncateMessage.new(
+    #     filter :truncate_message,
     #       1_000_000,
     #       selectors: [
     #         ->(message) { message.severity >= Rackstash::INFO },
     #         ->(message) { message.severity >= Rackstash::WARN }
     #       ],
     #       cut: :middle
-    #    )
     #   end
     class TruncateMessage
       # @param max_size [Integer] The maximum desired number of characters for
