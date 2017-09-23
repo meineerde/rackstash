@@ -16,6 +16,14 @@ describe Rackstash::Filters::TruncateMessage do
   let(:messages) { ['some long message', 'sweet middle text', 'final message'] }
   let(:event) { { 'message' => messages } }
 
+  def callable(&block)
+    Class.new do
+      define_method(:call) do |message|
+        block.call(message)
+      end
+    end.new
+  end
+
   describe '#initialize' do
     it 'verifies that a valid cut value is given' do
       expect { described_class.new(42, cut: 'foo') }.to raise_error(ArgumentError)
@@ -28,22 +36,22 @@ describe Rackstash::Filters::TruncateMessage do
   describe '#call' do
     context 'with selectors' do
       it 'calls all selectors' do
-        selector_1 = instance_double('Proc')
-        selector_2 = instance_double('Proc')
+        selector_1 = ->(message) { true }
+        selector_2 = callable { true }
         args[:selectors] = [selector_1, selector_2]
 
-        expect(selector_1).to receive(:call).exactly(3).times.and_return(true)
-        expect(selector_2).to receive(:call).exactly(3).times.and_return(true)
+        # selector_1 is a proc and is thus passed directly as a block to select!
+        expect(selector_2).to receive(:call).exactly(messages.count)
 
         filter.call(event)
       end
 
       it 'stops on goal' do
-        selector_1 = instance_double('Proc')
-        selector_2 = instance_double('Proc')
+        selector_1 = callable { false }
+        selector_2 = callable { true }
         args[:selectors] = [selector_1, selector_2]
 
-        expect(selector_1).to receive(:call).exactly(3).times.and_return(false)
+        expect(selector_1).to receive(:call).exactly(3).times.and_call_original
         expect(selector_2).not_to receive(:call)
 
         filter.call(event)
