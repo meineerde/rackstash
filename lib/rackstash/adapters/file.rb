@@ -34,8 +34,9 @@ module Rackstash
     #
     #     Rackstash::Adapters::File.new('/var/log/rackstash/my_app.log')
     #
-    # you can rotate the file with a config for the the standard
-    # [logrotate](https://github.com/logrotate/logrotate) utility like this:
+    # you can rotate the file with a config for the standard
+    # [logrotate](https://github.com/logrotate/logrotate) utility similar to
+    # this example:
     #
     #     /var/log/rackstash/my_app.log {
     #       daily

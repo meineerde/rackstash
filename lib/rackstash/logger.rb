@@ -420,11 +420,11 @@ module Rackstash
     #       buffer.flush if buffer
     #     end
     #
-    # By using the `begin ... ensure` block, you can enfore that the buffer is
-    # actually poped and flushed afte the execution leaves your environment,
-    # even in an Exception is raised. If you omit to pop the Buffer from the
+    # By using the `begin ... ensure` block, you can enforce that the buffer is
+    # actually poped and flushed after the execution leaves your environment,
+    # even if an Exception is raised. If you omit to pop the Buffer from the
     # stack, weird things can happen and your logs will probably end up not
-    # being consistent or even flushed.
+    # being consistent or not even flushed at all.
     #
     # @see #pop_buffer
     #

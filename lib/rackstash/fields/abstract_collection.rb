@@ -19,7 +19,7 @@ module Rackstash
     class AbstractCollection
       include Rackstash::Helpers::UTF8
 
-      # Equality -- Two collections are equal if they are of exactly the same
+      # Equality - Two collections are equal if they are of exactly the same
       # class and contain the same raw data according to `Object#==`.
       #
       # @return [Boolean] `true` if `other` is an object of the same class and
