@@ -5,6 +5,8 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'rackstash/filters/clear_color'
+require 'rackstash/filters/rename'
+require 'rackstash/filters/replace'
 require 'rackstash/filters/skip_event'
 require 'rackstash/filters/truncate_message'
 
