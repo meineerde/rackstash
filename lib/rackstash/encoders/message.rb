@@ -9,21 +9,59 @@ require 'rackstash/encoders/helpers/message'
 
 module Rackstash
   module Encoders
-    # The Message encoder only returns the message of log event. All other
-    # fields and tags are ignored.
+    # The Message encoder only returns the formatted message of log event. All
+    # other fields and tags are ignored. This encoder is useful in environments
+    # where the added fields are not required, mostly during development where
+    # (debug) logs are directly consumed by humans.
     #
-    # This encoder is useful in environments where the added fields are not
-    # required, mostly during development where debug logs are directly consumed
-    # by humans
+    # If any `prefix_fields` are given in the initializer, we gather their
+    # values from the event and prefix them to each line in the message if the
+    # current event contains a value at the given field names.
+    #
+    #     encoder = Rackstash::Encoders::Message.new(tagged: ['tags', 'remote_ip'])
+    #
+    #     event = {
+    #       'remote_ip' => '127.0.0.1',
+    #       'tags' => ['foo', 123],
+    #       'message' => ["Hello\n", "World\n"],
+    #       'key' => 'value'
+    #     }
+    #     encoder.encode(event)
+    #     # Logs "[foo,123] [127.0.0.1] Hello\n[foo,123] [127.0.0.1] World\n"
     class Message
       include Rackstash::Encoders::Helpers::Message
 
+      # @param [Array<#to_s>] An array of field names whose values are added in
+      #   front of each message line on encode
+      def initialize(tagged: [])
+        @tagged_fields = Array(tagged).map(&:to_s)
+      end
+
+      # Return the formatted message of the given event.
+      #
       # @param event [Hash] a log event as produced by the {Flow}
-      # @return [String] the `"message"` field of the event
+      # @return [String] the formatted message of the event
       def encode(event)
         normalize_message(event)
+        message = event[FIELD_MESSAGE]
 
-        event[FIELD_MESSAGE]
+        tags = @tagged_fields.map { |key| format_tag event[key] }.compact.join
+        message = message.gsub(/^/) { tags } unless tags.empty?
+
+        message
+      end
+
+      private
+
+      def format_tag(value)
+        case value
+        when nil
+          nil
+        when Array
+          "[#{value.map(&:to_s).join(',')}] "
+        else
+          "[#{value}] "
+        end
       end
     end
   end
