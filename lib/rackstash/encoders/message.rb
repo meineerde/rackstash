@@ -19,12 +19,11 @@ module Rackstash
       include Rackstash::Encoders::Helpers::Message
 
       # @param event [Hash] a log event as produced by the {Flow}
-      # @return [String] the `"message"` field of the event. Trailing whitespace
-      #     will be removed.
+      # @return [String] the `"message"` field of the event
       def encode(event)
         normalize_message(event)
 
-        event[FIELD_MESSAGE].rstrip
+        event[FIELD_MESSAGE]
       end
     end
   end
