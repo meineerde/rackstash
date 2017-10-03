@@ -9,6 +9,12 @@ module Rackstash
   module Filters
     # Remove all ANSI color codes from the `"message"` field of the given event
     # `Hash`.
+    #
+    # @example
+    #   Rackstash::Flow.new(STDOUT) do
+    #     # Removes all ANSI color codes from the message field
+    #     filter :clear_color
+    #   end
     class ClearColor
       # a regular expression matching ANSI color codes
       COLOR_REGEX = /\e\[[0-9;]*m/.freeze
