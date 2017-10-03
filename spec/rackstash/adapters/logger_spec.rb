@@ -27,6 +27,7 @@ describe Rackstash::Adapters::Logger do
       end
     end.new([])
   }
+
   let(:logger) {
     ::Logger.new(bucket).tap do |logger|
       logger.formatter = ->(_severity, _time, _progname, msg) { msg }
@@ -35,7 +36,8 @@ describe Rackstash::Adapters::Logger do
       def logger.reopen
       end
     end
-   }
+  }
+
   let(:logger_ducky) {
     Object.new.tap do |duck|
       allow(duck).to receive(:add)

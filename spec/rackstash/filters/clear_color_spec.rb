@@ -19,10 +19,10 @@ describe Rackstash::Filters::ClearColor do
 
   it 'removes color codes from a message array' do
     event = {
-      'message' => ["Some \e[31mred\e[0m\nand", "some \e[32mgreen\e[0m text" ]
+      'message' => ["Some \e[31mred\e[0m\nand", "some \e[32mgreen\e[0m text"]
     }
     expect(filter.call(event)).to eql 'message' => [
-      "Some red\nand", "some green text"
+      "Some red\nand", 'some green text'
     ]
   end
 
@@ -30,5 +30,4 @@ describe Rackstash::Filters::ClearColor do
     event = { 'foo' => 'bar' }
     expect(filter.call(event)).to eql 'foo' => 'bar'
   end
-
 end

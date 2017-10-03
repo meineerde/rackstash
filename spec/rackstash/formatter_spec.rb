@@ -29,7 +29,6 @@ describe Rackstash::Formatter do
     expect(formatter.call('ERROR', Time.now, 'progname', [1, 'y']))
       .to eql("[1, \"y\"]\n")
       .and be_frozen
-
   end
 
   it 'formats exceptions' do
@@ -47,7 +46,7 @@ describe Rackstash::Formatter do
     expect(formatter.call('ERROR', Time.now, 'progname', exception))
       .to match(checker)
       .and be_frozen
-    end
+  end
 
   it 'inspects unknown objects' do
     object = Object.new

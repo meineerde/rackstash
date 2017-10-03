@@ -96,7 +96,7 @@ module Rackstash
         if block_given?
           copy_with @message.gsub(pattern, &block).freeze
         else
-          return enum_for(__method__)
+          enum_for(__method__)
         end
       else
         copy_with @message.gsub(pattern, replacement, &block).freeze

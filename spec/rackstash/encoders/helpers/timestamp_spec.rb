@@ -24,12 +24,14 @@ describe Rackstash::Encoders::Helpers::Timestamp do
   describe '#normalize_timestamp' do
     it 'formats a Time object' do
       event['@timestamp'] = Time.parse('2016-10-17 13:37:00 +03:00')
-      expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql '2016-10-17T10:37:00.000000Z'
+      expect(helper.normalize_timestamp(event).fetch('@timestamp'))
+        .to eql '2016-10-17T10:37:00.000000Z'
     end
 
     it 'formats a DateTime object' do
       event['@timestamp'] = DateTime.parse('2016-10-17 13:37:00 +03:00')
-      expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql '2016-10-17T10:37:00.000000Z'
+      expect(helper.normalize_timestamp(event).fetch('@timestamp'))
+        .to eql '2016-10-17T10:37:00.000000Z'
     end
 
     it 'ignores an unset value' do
@@ -51,10 +53,10 @@ describe Rackstash::Encoders::Helpers::Timestamp do
       event['@timestamp'] = Time.parse('2016-10-17 13:37:00 +03:00')
       event['custom'] = Time.parse('2016-10-17 20:42:00 +07:00')
 
-      expect(helper.normalize_timestamp(event, field: 'custom')).to match({
+      expect(helper.normalize_timestamp(event, field: 'custom')).to match(
         '@timestamp' => instance_of(Time),
         'custom' => '2016-10-17T13:42:00.000000Z'
-      })
+      )
     end
   end
 end

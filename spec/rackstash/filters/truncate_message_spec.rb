@@ -37,23 +37,23 @@ describe Rackstash::Filters::TruncateMessage do
   describe '#call' do
     context 'with selectors' do
       it 'calls all selectors' do
-        selector_1 = ->(message) { true }
-        selector_2 = callable { true }
-        args[:selectors] = [selector_1, selector_2]
+        selector1 = ->(_message) { true }
+        selector2 = callable { true }
+        args[:selectors] = [selector1, selector2]
 
-        # selector_1 is a proc and is thus passed directly as a block to select!
-        expect(selector_2).to receive(:call).exactly(messages.count)
+        # selector1 is a proc and is thus passed directly as a block to select!
+        expect(selector2).to receive(:call).exactly(messages.count)
 
         filter.call(event)
       end
 
       it 'stops on goal' do
-        selector_1 = callable { false }
-        selector_2 = callable { true }
-        args[:selectors] = [selector_1, selector_2]
+        selector1 = callable { false }
+        selector2 = callable { true }
+        args[:selectors] = [selector1, selector2]
 
-        expect(selector_1).to receive(:call).exactly(3).times.and_call_original
-        expect(selector_2).not_to receive(:call)
+        expect(selector1).to receive(:call).exactly(3).times.and_call_original
+        expect(selector2).not_to receive(:call)
 
         filter.call(event)
         expect(messages).to be_empty

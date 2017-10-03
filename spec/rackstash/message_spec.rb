@@ -91,8 +91,8 @@ describe Rackstash::Message do
 
   describe '#gsub' do
     it 'can perform simple replaces' do
-      expect(message.gsub(/s/, 'S')).to be_a described_class
-      expect(message.gsub(/s/, 'S').to_s).to eql 'meSSage'
+      expect(message.gsub(/ss/, 'SS')).to be_a described_class
+      expect(message.gsub(/ss/, 'SS').to_s).to eql 'meSSage'
     end
 
     it 'can perform replaces with a block' do
@@ -108,8 +108,8 @@ describe Rackstash::Message do
 
   describe '#sub' do
     it 'can perform simple replaces' do
-      expect(message.sub(/s/, 'S')).to be_a described_class
-      expect(message.sub(/s/, 'S').to_s).to eql 'meSsage'
+      expect(message.sub(/ss/, 'SS')).to be_a described_class
+      expect(message.sub(/ss/, 'SS').to_s).to eql 'meSSage'
     end
 
     it 'can perform replaces with a block' do
@@ -157,7 +157,6 @@ describe Rackstash::Message do
       expect(message.strip.to_s).to eql "my \tmessage"
     end
   end
-
 
   describe '#message' do
     it 'is aliased to to_str' do

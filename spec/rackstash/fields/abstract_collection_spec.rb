@@ -268,7 +268,7 @@ describe Rackstash::Fields::AbstractCollection do
           test_self = self
 
           hash = {
-            beep: ->(v) {
+            beep: lambda { |v|
               expect(self).to equal test_self
               { v.upcase => -> { self } }
             }

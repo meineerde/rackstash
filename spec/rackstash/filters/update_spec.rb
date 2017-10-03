@@ -22,17 +22,17 @@ describe Rackstash::Filters::Update do
   end
 
   it 'sets evaluated values from callable objects' do
-    filter!('foo' => ->(event) { event['foo'].upcase } )
+    filter!('foo' => ->(event) { event['foo'].upcase })
     expect(event).to eql 'foo' => 'FOO VALUE', 'bar' => 'bar value'
   end
 
   it 'sets raw values' do
-    filter!('bar' => 123 )
+    filter!('bar' => 123)
     expect(event).to eql 'foo' => 'foo value', 'bar' => 123
   end
 
   it 'ignores missing fields' do
-    spec = {'baz' => 42, 'boing' => ->(event) { 'quark' }}
+    spec = { 'baz' => 42, 'boing' => ->(_event) { 'quark' } }
     expect(spec['boing']).not_to receive(:call)
 
     filter!(spec)
@@ -43,7 +43,7 @@ describe Rackstash::Filters::Update do
   end
 
   it 'stringifies keys' do
-    filter!(foo: ->(event) { event['foo'].upcase } )
+    filter!(foo: ->(event) { event['foo'].upcase })
     expect(event).to eql 'foo' => 'FOO VALUE', 'bar' => 'bar value'
   end
 

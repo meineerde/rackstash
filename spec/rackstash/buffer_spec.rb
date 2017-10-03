@@ -161,7 +161,7 @@ describe Rackstash::Buffer do
     end
 
     it 'returns the given value' do
-      fields = {key: 'value'}
+      fields = { key: 'value' }
       expect(buffer.add_fields(fields)).to equal fields
     end
   end
