@@ -141,5 +141,6 @@ require 'rackstash/logger'
 
 require 'rackstash/adapters/callable'
 require 'rackstash/adapters/file'
+require 'rackstash/adapters/logger'
 require 'rackstash/adapters/io'
 require 'rackstash/adapters/null'
