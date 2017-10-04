@@ -31,8 +31,8 @@ module Rackstash
     class Message
       include Rackstash::Encoders::Helpers::Message
 
-      # @param [Array<#to_s>] An array of field names whose values are added in
-      #   front of each message line on encode
+      # @param tagged [Array<#to_s>] An array of field names whose values are
+      #   added in front of each message line on encode
       def initialize(tagged: [])
         @tagged_fields = Array(tagged).map(&:to_s)
       end
