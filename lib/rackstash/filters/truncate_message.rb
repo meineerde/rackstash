@@ -27,6 +27,8 @@ module Rackstash
     #   message list, with `cut: :bottom` (the default) with the very last
     #   message and with `cut: :middle` we are deleting from the middle of the
     #   message list preserving the messages at the beginning and the end.
+    #   If there are any messages deleted in this last step, we insert the
+    #   `elipsis` once at the location where the messages were removed.
     #
     # Note that in any case, we are only ever deleting whole messages (which
     # usually but not necessarily amount to whole lines). We are not splitting
@@ -51,6 +53,8 @@ module Rackstash
     #       cut: :middle
     #   end
     class TruncateMessage
+      ELLIPSIS = "[...]\n".freeze
+
       # @param max_size [Integer] The maximum desired number of characters for
       #   all the messages in an event combined
       # @param selectors [Array<#call>] An optional list of message filters
@@ -59,7 +63,10 @@ module Rackstash
       # @param cut [Symbol] where to start removing messages if the message list
       #   is still too large after all filters were applied. One of `:top`,
       #   `:middle`, or `:bottom`.
-      def initialize(max_size, selectors: [], cut: :bottom)
+      # @param ellipsis [String] A string to insert at the location where lines
+      #   were removed by the final cut (if any) to mark the location in the
+      #   logs. Set this to `nil` to not insert an ellipsis.
+      def initialize(max_size, selectors: [], cut: :bottom, ellipsis: ELLIPSIS)
         @max_size = Integer(max_size)
         @selectors = Array(selectors)
 
@@ -67,6 +74,7 @@ module Rackstash
           raise ArgumentError, 'cut must be one of :top, :middle, :bottom'
         end
         @cut = cut
+        @ellipsis = ellipsis
       end
 
       # Remove messages if the overall size in bytes of all the messages in the
@@ -90,6 +98,7 @@ module Rackstash
         return event if messages.size <= 1
 
         overall_size = overall_size_of(messages)
+        ellipsis = nil
         until overall_size <= @max_size || messages.size <= 1
           case @cut
           when :top
@@ -100,6 +109,18 @@ module Rackstash
             msg = messages.pop
           end
           overall_size -= msg.size
+          unless ellipsis || @ellipsis.nil?
+            ellipsis = Rackstash::Message.new(@ellipsis)
+            overall_size += ellipsis.size
+          end
+        end
+
+        if ellipsis
+          case @cut
+          when :top then messages.unshift(ellipsis)
+          when :middle then messages.insert((messages.size + 1) / 2, ellipsis)
+          when :bottom then messages.push(ellipsis)
+          end
         end
 
         event

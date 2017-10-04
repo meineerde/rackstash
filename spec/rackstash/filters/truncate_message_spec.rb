@@ -10,7 +10,7 @@ require 'spec_helper'
 require 'rackstash/filters/truncate_message'
 
 describe Rackstash::Filters::TruncateMessage do
-  let(:max_size) { 30 }
+  let(:max_size) { 36 }
   let(:args) { { selectors: [], cut: :bottom } }
   let(:filter) { described_class.new(max_size, **args) }
 
@@ -67,7 +67,11 @@ describe Rackstash::Filters::TruncateMessage do
 
       it 'removes the messages at the beginning' do
         filter.call(event)
-        expect(messages).to eql ['sweet middle text', 'final message']
+        expect(messages).to match [
+          instance_of(Rackstash::Message), # the ellipsis
+          'sweet middle text',
+          'final message'
+        ]
       end
     end
 
@@ -78,7 +82,11 @@ describe Rackstash::Filters::TruncateMessage do
 
       it 'removes the messages in the middle' do
         filter.call(event)
-        expect(messages).to eql ['some long message', 'final message']
+        expect(messages).to match [
+          'some long message',
+          instance_of(Rackstash::Message), # the ellipsis
+          'final message'
+        ]
       end
     end
 
@@ -89,8 +97,17 @@ describe Rackstash::Filters::TruncateMessage do
 
       it 'removes the messages at the end' do
         filter.call(event)
-        expect(messages).to eql ['some long message']
+        expect(messages).to match [
+          'some long message',
+          instance_of(Rackstash::Message) # the ellipsis
+        ]
       end
+    end
+
+    it 'does not include an ellipsis if it is nil' do
+      args[:ellipsis] = nil
+      filter.call(event)
+      expect(messages).to eql ['some long message', 'sweet middle text']
     end
   end
 end
