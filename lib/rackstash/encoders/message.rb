@@ -57,7 +57,7 @@ module Rackstash
         case value
         when nil
           nil
-        when Array
+        when ::Array
           "[#{value.map(&:to_s).join(',')}] "
         else
           "[#{value}] "

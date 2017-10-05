@@ -6,7 +6,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'rackstash/adapters/adapter'
-require 'rackstash/encoders/raw'
+require 'rackstash/encoders/hash'
 
 module Rackstash
   module Adapters
@@ -46,15 +46,15 @@ module Rackstash
         end
       end
 
-      # By default, we use an {Rackstash::Encoders::Raw} to encode the events.
-      # This ensures that the raw event is passed through to to the callable by
-      # default.
+      # By default, we use an {Rackstash::Encoders::Hash} to encode the events.
+      # This ensures that all of the data in the logged event is passed through
+      # to the callable by default.
       #
       # You can define a custom encoder in the responsible {Flow}.
       #
-      # @return [Rackstash::Encoders::Raw] a new Raw encoder
+      # @return [Rackstash::Encoders::Hash] a new Hash encoder
       def default_encoder
-        Rackstash::Encoders::Raw.new
+        Rackstash::Encoders::Hash.new
       end
 
       # Write a single log line by calling the defined `callable` given in

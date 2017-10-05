@@ -7,9 +7,12 @@
 
 module Rackstash
   module Encoders
-    # The Raw encoder formats the log event as a raw `Hash` containing all data
-    # exposed by the buffer. This can be used by special log targets which are
-    # designed to handle hashes as opposed to formatted strings.
+    # The Raw encoder passes along the raw unformatted event hash. It still
+    # contains an `Array` of {Message} objects in the `"message"` key and a
+    # `Time` object in the `"@timestamp"` key.
+    #
+    # When expecting a Hash in an adapter, usually it's more useful to use the
+    # {Rackstash::Encoders::Hash} encoder instead.
     class Raw
       # @param event [Hash] a log event as produced by the {Flow}
       # @return [Hash] the passed `event`

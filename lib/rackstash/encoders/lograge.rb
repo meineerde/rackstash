@@ -123,10 +123,10 @@ module Rackstash
         case value
         when nil
           return
-        when Hash
+        when ::Hash
           return if value.empty?
           return serialize_hash(value, prefix: key)
-        when Array
+        when ::Array
           return if value.empty?
           return serialize_array(value, prefix: key)
         when Float

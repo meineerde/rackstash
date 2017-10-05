@@ -32,8 +32,8 @@ describe Rackstash::Adapters::Callable do
   end
 
   describe '.default_encoder' do
-    it 'returns a Raw encoder' do
-      expect(adapter.default_encoder).to be_instance_of Rackstash::Encoders::Raw
+    it 'returns a Hash encoder' do
+      expect(adapter.default_encoder).to be_instance_of Rackstash::Encoders::Hash
     end
   end
 
