@@ -100,6 +100,42 @@ describe Rackstash do
     end
   end
 
+  describe '.severity' do
+    it 'can be set as an integer' do
+      expect(Rackstash.severity(3)).to eql 3
+      expect(Rackstash.severity(42)).to eql 42
+      expect(Rackstash.severity(-25)).to eql(-25)
+    end
+
+    it 'can be set as a symbol' do
+      %i[debug info warn error fatal unknown].each_with_index do |level, i|
+        expect(Rackstash.severity(level)).to eql i
+      end
+
+      %i[DeBuG InFo WaRn ErRoR FaTaL UnKnOwN].each_with_index do |level, i|
+        expect(Rackstash.severity(level)).to eql i
+      end
+    end
+
+    it 'can be set as a string' do
+      %w[debug info warn error fatal unknown].each_with_index do |level, i|
+        expect(Rackstash.severity(level)).to eql i
+      end
+
+      %w[DeBuG InFo WaRn ErRoR FaTaL UnKnOwN].each_with_index do |level, i|
+        expect(Rackstash.severity(level)).to eql i
+      end
+    end
+
+    it 'rejects invalid values' do
+      expect { Rackstash.severity('invalid') }.to raise_error(ArgumentError)
+      expect { Rackstash.severity(Object.new) }.to raise_error(ArgumentError)
+      expect { Rackstash.severity(nil) }.to raise_error(ArgumentError)
+      expect { Rackstash.severity(false) }.to raise_error(ArgumentError)
+      expect { Rackstash.severity(true) }.to raise_error(ArgumentError)
+    end
+  end
+
   describe '.error_flow' do
     it 'returns a default Flow' do
       expect(described_class.error_flow).to be_instance_of Rackstash::Flow

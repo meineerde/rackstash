@@ -160,47 +160,12 @@ describe Rackstash::Logger do
       expect(logger.level).to eql 0
     end
 
-    it 'can be set as an integer' do
-      logger.level = 3
+    it 'resolves value with Rackstash.severity' do
+      logger # initialize the logger
+
+      expect(Rackstash).to receive(:severity).with(:ErRor).and_call_original
+      logger.level = :ErRor
       expect(logger.level).to eql 3
-
-      logger.level = 42
-      expect(logger.level).to eql 42
-
-      logger.level = -25
-      expect(logger.level).to eql(-25)
-    end
-
-    it 'can be set as a symbol' do
-      %i[debug info warn error fatal unknown].each_with_index do |level, i|
-        logger.level = level
-        expect(logger.level).to eql i
-      end
-
-      %i[DeBuG InFo WaRn ErRoR FaTaL UnKnOwN].each_with_index do |level, i|
-        logger.level = level
-        expect(logger.level).to eql i
-      end
-    end
-
-    it 'can be set as a string' do
-      %w[debug info warn error fatal unknown].each_with_index do |level, i|
-        logger.level = level
-        expect(logger.level).to eql i
-      end
-
-      %w[DeBuG InFo WaRn ErRoR FaTaL UnKnOwN].each_with_index do |level, i|
-        logger.level = level
-        expect(logger.level).to eql i
-      end
-    end
-
-    it 'rejects invalid values' do
-      expect { logger.level = 'invalid' }.to raise_error(ArgumentError)
-      expect { logger.level = Object.new }.to raise_error(ArgumentError)
-      expect { logger.level = nil }.to raise_error(ArgumentError)
-      expect { logger.level = false }.to raise_error(ArgumentError)
-      expect { logger.level = true }.to raise_error(ArgumentError)
     end
 
     it 'can set all the levels' do

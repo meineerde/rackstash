@@ -69,13 +69,7 @@ module Rackstash
       # @raise [ArgumentError] if no severity could be found for the given
       #   value.
       def severity=(severity)
-        if severity.is_a?(Integer)
-          @severity = severity
-        else
-          @severity = SEVERITY_NAMES.fetch(severity.to_s.downcase) do
-            raise ArgumentError, "invalid log severity: #{severity.inspect}"
-          end
-        end
+        @severity = Rackstash.severity(severity)
       end
 
       # Close the base logger (if supported). The exact behavior is dependent on

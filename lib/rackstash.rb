@@ -49,6 +49,8 @@ module Rackstash
   # its numeric value or its name in most variations (`Symbol`, `String`,
   # different cases).
   #
+  # If the given severity if unknown or out of range, we return `"ANY"`.
+  #
   # @param severity [Integer, #to_s] A numeric value of one of the {SEVERITIES}
   #   or a {SEVERITY_NAMES} key
   # @return [String] one of the {SEVERITY_LABELS}
@@ -59,6 +61,26 @@ module Rackstash
     else
       severity = SEVERITY_NAMES.fetch(severity.to_s.downcase, UNKNOWN)
       SEVERITY_LABELS[severity]
+    end
+  end
+
+  # Resolve a given severity to its numeric value. You can specify the severity
+  # either by its numeric value (generally one of the {SEVERITIES}), or its name
+  # in most variations (`Symbol`, `String`, different cases), i.e. one of the
+  # {SEVERITY_NAMES}.
+  #
+  # If an invalid severity name is given, we raise an `ArgumentError`. All
+  # Integer values are accepted without further checks.
+  #
+  # @param severity [Integer, #to_s] A numeric value of one of the {SEVERITIES}
+  #   or a {SEVERITY_NAMES} key)
+  # @raise [ArgumentError] if an invalid severity name is given.
+  # @return [Integer] the resolved severity
+  def self.severity(severity)
+    return severity if severity.is_a?(Integer)
+
+    SEVERITY_NAMES.fetch(severity.to_s.downcase) do
+      raise ArgumentError, "invalid log severity: #{severity.inspect}"
     end
   end
 

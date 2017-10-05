@@ -84,6 +84,19 @@ describe Rackstash::Adapters::Logger do
     end
   end
 
+  describe '#severity' do
+    it 'defaults to INFO' do
+      expect(adapter.severity).to eql 1
+    end
+
+    it 'resolves value with Rackstash.severity' do
+      adapter # initialize the logger
+      expect(Rackstash).to receive(:severity).with(:WaRn).and_call_original
+      adapter.severity = :WaRn
+      expect(adapter.severity).to eql 2
+    end
+  end
+
   describe '#reopen' do
     context 'with logger' do
       it 'closes the logger object' do

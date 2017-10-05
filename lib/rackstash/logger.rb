@@ -168,13 +168,7 @@ module Rackstash
     # @param severity [Integer, String, Symbol] one of the {SEVERITIES} or its
     #   name
     def level=(severity)
-      if severity.is_a?(Integer)
-        @level = severity
-      else
-        @level = SEVERITY_NAMES.fetch(severity.to_s.downcase) do
-          raise ArgumentError, "invalid log level: #{severity}"
-        end
-      end
+      @level = Rackstash.severity(severity)
     end
 
     # (see Sink#close)
