@@ -184,11 +184,12 @@ module Rackstash
 
       # Appends the elements of `array` to self.
       #
+      # @macro resolves_procs_with_scope
+      #
       # @param array [Array, ::Array, Proc] an array of values. Each value is
       #   normalized before being added to `self`.
       # @param scope [Object, nil] if `array` or any of its (deeply-nested)
-      #   values is a proc, it will be called in the instance scope of this
-      #   object (when given).
+      #   values is a `Proc`, it will be called with this object (when given)
       # @return [self]
       def concat(array, scope: nil)
         array = implicit(normalize(array, wrap: false, scope: scope))
@@ -211,11 +212,12 @@ module Rackstash
       # `self` and `array` excluding any duplicates and preserving the order
       # from `self`.
       #
+      # @macro resolves_procs_with_scope
+      #
       # @param array [Array, ::Array, Proc] an array of values. Each value is
       #   normalized before being added to `self`.
       # @param scope [Object, nil] if `array` or any of its (deeply-nested)
-      #   values is a proc, it will be called in the instance scope of this
-      #   object (when given).
+      #   values is a `Proc`, it will be called with this object (when given)
       # @return [Array]
       #
       # @see #|
@@ -227,11 +229,12 @@ module Rackstash
       # Set Union - Add value from `array` to `self` excluding any duplicates
       # and preserving the order from `self`.
       #
+      # @macro resolves_procs_with_scope
+      #
       # @param array [Array, ::Array, Proc] an array of values. Each value is
       #   normalized before being added to `self`.
       # @param scope [Object, nil] if `array` or any of its (deeply-nested)
-      #   values is a proc, it will be called in the instance scope of this
-      #   object (when given).
+      #   values is a `Proc`, it will be called with this object (when given)
       # @return [self]
       #
       # @see #merge
@@ -251,7 +254,6 @@ module Rackstash
       # @return [Object, Array<Object>, nil] If `n` was given, we always return
       #   an array with at most `n` elements. Else, we return the last element
       #   or `nil` if the array is empty.
-      #
       def pop(n = nil)
         n.nil? ? @raw.pop : @raw.pop(n)
       end
@@ -260,10 +262,11 @@ module Rackstash
       # values will be normalized before being added. This method returns the
       # array itself, so several appends may be chained together.
       #
+      # @macro resolves_procs_with_scope
+      #
       # @param values [::Array] a list of values to append at the end of `self`
-      # @param scope [Object, nil] if any of the (deeply-nested) values is a
-      #   proc, it will be called in the instance scope of this object (when
-      #   given).
+      # @param scope [Object, nil] if any of the (deeply-nested) values in
+      #   `values` is a `Proc`, it will be called with this object (when given)
       # @return [self]
       def push(*values, scope: nil)
         concat(values, scope: scope)
@@ -288,11 +291,12 @@ module Rackstash
       # Prepends objects to the front of `self`, moving other elements upwards.
       # See also {#shift} for the opposite effect.
       #
+      # @macro resolves_procs_with_scope
+      #
       # @param values [::Array] a list of values to prepend to the front of
       #   `self`
-      # @param scope [Object, nil] if any of the (deeply-nested) values is a
-      #   proc, it will be called in the instance scope of this object (when
-      #   given).
+      # @param scope [Object, nil] if any of the (deeply-nested) values in
+      #   `values` is a `Proc`, it will be called with this object (when given)
       # @return [self]
       def unshift(*values, scope: nil)
         values.map! { |value| normalize(value, scope: scope) }

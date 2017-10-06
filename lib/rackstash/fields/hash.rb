@@ -83,14 +83,7 @@ module Rackstash
       # {#merge}, this method deep-merges Hash and Array values if the existing
       # and merged values are of the same type.
       #
-      # If the value is a callable object (e.g. a proc or lambda), we will call
-      # it and use the returned value instead, which must then be a Hash of
-      # course. If any of the values of the hash is a proc, it will also be
-      # called and the return value will be used.
-      #
-      # If you give the optional `scope` argument, the Procs will be evaluated
-      # in the instance scope of this object. If you leave the `scope` empty,
-      # they will be called in the scope of their creation environment.
+      # @macro resolves_procs_with_scope
       #
       # The following examples are thus all equivalent:
       #
@@ -101,7 +94,9 @@ module Rackstash
       #     merged = hash.deep_merge -> { 'foo' => 'bar' }
       #     merged = hash.deep_merge -> { 'foo' => -> { 'bar' } }
       #     merged = hash.deep_merge({ 'foo' => -> { self } }, scope: 'bar')
+      #     merged = hash.deep_merge({ 'foo' => ->(scope) { scope } }, scope: 'bar')
       #     merged = hash.deep_merge -> { { 'foo' => -> { self } } }, scope: 'bar'
+      #     merged = hash.deep_merge ->(scope) { { 'foo' => ->(scope) { scope } } }, scope: 'bar'
       #
       # Nested hashes will be deep-merged and all field names will be normalized
       # to strings, even on deeper levels. Given an empty Hash, these calls
@@ -142,12 +137,13 @@ module Rackstash
       #   field. When set to `false` we silently ignore new values if they exist
       #   already or are forbidden from being set.
       # @param scope (see #merge)
+      #
       # @yield (see #merge)
       # @yieldreturn (see #merge)
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
-      # @return [Rackstash::Fields::Hash] a new hash containing the merged
-      #   key-value pairs
+      # @return [Rackstash::Fields::Hash] a new Rackstash Hash containing the
+      #   merged key-value pairs
       #
       # @see #merge
       # @see #deep_merge!
@@ -160,14 +156,7 @@ module Rackstash
       # added. In contrast to {#merge!}, this method deep-merges Hash and Array
       # values if the existing and merged values are of the same type.
       #
-      # If the value is a callable object (e.g. a proc or lambda), we will call
-      # it and use the returned value instead, which must then be a Hash of
-      # course. If any of the values of the hash is a proc, it will also be
-      # called and the return value will be used.
-      #
-      # If you give the optional `scope` argument, the Procs will be evaluated
-      # in the instance scope of this object. If you leave the `scope` empty,
-      # they will be called in the scope of their creation environment.
+      # @macro resolves_procs_with_scope
       #
       # The following examples are thus all equivalent:
       #
@@ -178,7 +167,9 @@ module Rackstash
       #     hash.deep_merge! -> { 'foo' => 'bar' }
       #     hash.deep_merge! -> { 'foo' => -> { 'bar' } }
       #     hash.deep_merge!({ 'foo' => -> { self } }, scope: 'bar')
+      #     hash.deep_merge!({ 'foo' => ->(scope) { scope } }, scope: 'bar')
       #     hash.deep_merge! -> { { 'foo' => -> { self } } }, scope: 'bar'
+      #     hash.deep_merge! ->(scope) { { 'foo' => ->(scope) { scope } } }, scope: 'bar'
       #
       # Nested hashes will be deep-merged and all field names will be normalized
       # to strings, even on deeper levels. Given an empty Hash, these calls
@@ -219,6 +210,7 @@ module Rackstash
       #   field. When set to `false` we silently ignore new values if they exist
       #   already or are forbidden from being set.
       # @param scope (see #merge!)
+      #
       # @yield (see #merge!)
       # @yieldreturn (see #merge!)
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
@@ -272,17 +264,15 @@ module Rackstash
 
       # Returns a new {Hash} containing the contents of `hash` and of
       # `self`. If no block is specified, the value for entries with duplicate
-      # keys will be that of hash. Otherwise the value for each duplicate key
+      # keys will be that of `hash`. Otherwise the value for each duplicate key
       # is determined by calling the block with the `key`, its value in `self`
       # and its value in `hash`.
       #
-      # If there are any forbidden fields defined on `self`, An `ArgumentError`
-      # is raised when trying to set any of these. The values are ignored of
-      # `force` is set to `false`.
+      # @macro resolves_procs_with_scope
       #
-      # If `hash` itself of any of its (deeply-nested) values is a proc, it will
-      # get called and its result will be used instead of it. The proc will be
-      # evaluated in the instance scope of `scope` if given.
+      # If there are any forbidden fields defined on `self`, An `ArgumentError`
+      # is raised when trying to set any of these. The values are ignored if
+      # `force` is set to `false`.
       #
       # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
       #   the hash to merge into `self`. If this is a proc, it will get called
@@ -292,8 +282,7 @@ module Rackstash
       #   forbidden key. If `false`, we silently ignore values for existing or
       #   forbidden keys.
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
-      #   values is a proc, it will be called in the instance scope of this
-      #   object (when given).
+      #   values is a `Proc`, it will be called with this object (when given)
       #
       # @yield [key, old_val, new_val] if a block is given and there is a
       #   duplicate key, we call the block and use its return value as the value
@@ -303,11 +292,11 @@ module Rackstash
       # @yieldparam new_val [Object] The new normalized value for `key` in
       #   `hash`
       # @yieldreturn [Object] the intended new value for `key` to be merged into
-      #   `self` at `key`. The value will be normalized under the given `scope`.
+      #   `self`. The value will be normalized under the given `scope`.
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
-      # @return [Rackstash::Fields::Hash] a new hash containing the merged
-      #   key-value pairs
+      # @return [Rackstash::Fields::Hash] a new Rackstash `Hash` containing the
+      #   merged key-value pairs
       def merge(hash, force: true, scope: nil)
         if block_given?
           dup.merge!(hash, force: force, scope: scope) { |key, old_val, new_val|
@@ -320,6 +309,8 @@ module Rackstash
 
       # Adds the contents of `hash` to `self`. `hash` is normalized before being
       # added.
+      #
+      # @macro resolves_procs_with_scope
       #
       # If there are any forbidden keys defined on `self`, {#merge!} will raise
       # an `ArgumentError` when trying to set any of these. The keys are
@@ -335,15 +326,6 @@ module Rackstash
       # the value from `hash`. If `force` is false, we use the existing value in
       # `self` if it is not `nil`.
       #
-      # If `hash` itself of any of its (deeply-nested) values is a callable
-      # object (e.g. a proc or lambda) we call it and use its normalized result
-      # instead of the proc.
-      #
-      # If you give the optional `scope` argument, the Procs will be evaluated
-      # in the instance scope of the `scope` object. If you leave the `scope`
-      # empty, Procs will be called in the scope of their closure (creation
-      # environment).
-      #
       # @param hash [::Hash<#to_s, => Proc, Object>, Rackstash::Fields::Hash, Proc]
       #   the hash to merge into `self`. If this is a proc, it will get called
       #   and its result is used instead
@@ -352,8 +334,7 @@ module Rackstash
       #   forbidden key. If `false`, we silently ignore values for existing or
       #   forbidden keys.
       # @param scope [Object, nil] if `hash` or any of its (deeply-nested)
-      #   values is a proc, it will be called in the instance scope of this
-      #   object (when given).
+      #   values is a `Proc`, it will be called with this object (when given)
       #
       # @yield [key, old_val, new_val] if a block is given and there is a
       #   duplicate key, we call the block and use its return value as the value
@@ -363,7 +344,7 @@ module Rackstash
       # @yieldparam new_val [Object] The new normalized value for `key` in
       #   `hash`
       # @yieldreturn [Object] the intended new value for `key` to be merged into
-      #   `self` at `key`. The value will be normalized under the given `scope`.
+      #   `self`. The value will be normalized under the given `scope`.
       # @raise [ArgumentError] if you attempt to set one of the forbidden fields
       #   and `force` is `true`
       # @return [self]
@@ -400,14 +381,7 @@ module Rackstash
       # {#merge}, this method preserves any non-nil values of existing keys in
       # `self` in the returned hash.
       #
-      # If `hash` is a callable object (e.g. a proc or lambda), we will call
-      # it and use the returned value instead, which must then be a Hash of
-      # course. If any of the values of the hash is a proc, it will also be
-      # called and the return value will be used.
-      #
-      # If you give the optional `scope` argument, the Procs will be evaluated
-      # in the instance scope of this object. If you leave the `scope` empty,
-      # they will be called in the scope of their creation environment.
+      # @macro resolves_procs_with_scope
       #
       # @param hash (see #merge)
       # @param scope (see #merge)
@@ -424,14 +398,7 @@ module Rackstash
       # added. `hash` is normalized before being added. In contrast to {#merge},
       # this method preserves any non-nil values of existing keys in `self`.
       #
-      # If `hash` is a callable object (e.g. a proc or lambda), we will call
-      # it and use the returned value instead, which must then be a Hash of
-      # course. If any of the values of the hash is a proc, it will also be
-      # called and the return value will be used.
-      #
-      # If you give the optional `scope` argument, the Procs will be evaluated
-      # in the instance scope of this object. If you leave the `scope` empty,
-      # they will be called in the scope of their creation environment.
+      # @macro resolves_procs_with_scope
       #
       # @param hash (see #merge!)
       # @param scope (see #merge!)
@@ -502,6 +469,7 @@ module Rackstash
       #   merge operation, usually either `:merge` or `:merge!`
       # @param force [Boolean] set to `true` to overwrite keys with divering
       #   value types, or `false` to silently ignore the new value
+      # @param scope [Object, nil] the object to evaluate Proc objects with
       # @return [Lambda] a resolver block for deep-merging a hash.
       def deep_merge_resolver(merge_method, force: true, scope: nil)
         resolver = lambda do |key, old_val, new_val|
