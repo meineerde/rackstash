@@ -78,7 +78,7 @@ module Rackstash
     #   context of `self`.
     def initialize(adapter, encoder: nil, filters: [], error_flow: nil, &block)
       @adapter = Rackstash::Adapters[adapter]
-      self.encoder(encoder || @adapter.default_encoder)
+      self.encoder = encoder || @adapter.default_encoder
       @filter_chain = Rackstash::FilterChain.new(filters)
 
       if error_flow.nil?
@@ -122,12 +122,24 @@ module Rackstash
     #
     # @param encoder [#encode, nil] if given, set the flow's encoder to this
     #   object
-    # @raise [TypeError] if the given encoder does not respond to the `encode`
+    # @raise [TypeError] if the given `encoder` does not respond to the `encode`
     #   method
-    # @return [#encode] the new encoder if given or the currently defined one
+    # @return [#encode] the newly set encoder (if given) or the currently
+    #   defined one
+    # @see #encoder=
     def encoder(encoder = nil)
       return @encoder if encoder.nil?
+      self.encoder = encoder
+    end
 
+    # Set the encoder for the log {#adapter}. You can use any object which
+    # responds to the `encode` method.
+    #
+    # @param encoder [#encode] the encoder to use for the log {#adapter}.
+    # @raise [TypeError] if the given `encoder` does not respond to the `encode`
+    #   method
+    # @return [#encode] the new `encoder`
+    def encoder=(encoder)
       raise TypeError, 'must provide an encoder' unless encoder.respond_to?(:encode)
       @encoder = encoder
     end

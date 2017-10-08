@@ -123,13 +123,22 @@ describe Rackstash::Flow do
       # The encoder is persisted and is returned afterwards
       expect(flow.encoder).to equal encoder
     end
+  end
+
+  describe '#encoder=' do
+    it 'sets a new encoder' do
+      encoder = Rackstash::Encoders::JSON.new
+      flow.encoder = encoder
+
+      expect(flow.encoder).to equal encoder
+    end
 
     it 'rejects invalid encoders' do
-      expect { flow.encoder :foo }.to raise_error TypeError
-      expect { flow.encoder 23 }.to raise_error TypeError
-      expect { flow.encoder true }.to raise_error TypeError
-      expect { flow.encoder false }.to raise_error TypeError
-      expect { flow.encoder -> {} }.to raise_error TypeError
+      expect { flow.encoder = :foo }.to raise_error TypeError
+      expect { flow.encoder = 23 }.to raise_error TypeError
+      expect { flow.encoder = true }.to raise_error TypeError
+      expect { flow.encoder = false }.to raise_error TypeError
+      expect { flow.encoder = -> {} }.to raise_error TypeError
     end
   end
 
