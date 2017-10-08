@@ -412,9 +412,15 @@ module Rackstash
       alias reverse_update reverse_merge!
 
       # Set a `key` of `self` to the returned value of the passed block.
-      # If the key is forbidden from being set or already exists with a value
-      # other than `nil`, the block will not be called and the value will not be
-      # set.
+      #
+      # With `force: true`, we call the given block and set the normalized
+      # result to the `key`, overwriting any existing value. If the key is
+      # forbidden from being set, we raise an `ArgumentError` without calling
+      # the block.
+      #
+      # With `force: false`, if the key is forbidden from being set or already
+      # exists with a value other than `nil`, the block will not be called and
+      # the value will not be set / overwritten.
       #
       # @param key [#to_s] the field name. When setting the field, this name
       #   will be normalized as a frozen UTF-8 string.
