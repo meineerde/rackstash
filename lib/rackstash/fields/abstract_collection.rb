@@ -108,8 +108,6 @@ module Rackstash
 
         return value.call if scope.nil?
         value.arity == 0 ? scope.instance_exec(&value) : value.call(scope)
-      rescue
-        value.inspect
       end
 
       # Note: You should never mutate an array or hash returned by normalize

@@ -503,15 +503,30 @@ describe Rackstash::Fields::AbstractCollection do
         expect(normalize(outer)).to eql 'return'
       end
 
-      it 'returns the inspected proc on errors' do
-        error = -> { raise 'Oh, no!' }
-        expected_arguments = ->(_arg1, _args, _arg3) { 'cherio' }
-        ok = -> { :ok }
-        outer = -> { [ok, error, expected_arguments] }
+      it 'stops on error and raises' do
+        called = Hash.new(false)
 
-        expect(normalize(outer))
-          .to be_a(Rackstash::Fields::Array)
-          .and contain_exactly('ok', error.inspect, expected_arguments.inspect)
+        ok = -> {
+          called[:ok] = true
+          :ok
+        }
+
+        error = -> {
+          called[:error] = true
+          raise 'Oh, no!'
+        }
+
+        ignored = ->() {
+          called[:ignored] = true
+          'cherio'
+        }
+
+        proc = -> { [ok, error, ignored] }
+
+        expect { normalize(proc) }.to raise_error('Oh, no!')
+        expect(called[:ok]).to be true
+        expect(called[:error]).to be true
+        expect(called[:ignored]).to be false
       end
     end
 
