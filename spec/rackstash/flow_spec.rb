@@ -144,8 +144,10 @@ describe Rackstash::Flow do
 
   describe '#error_flow' do
     it 'returns the global error_flow by default' do
-      expect(Rackstash).to receive(:error_flow).and_call_original
+      expect(Rackstash).to receive(:error_flow).twice.and_call_original
+
       expect(flow.error_flow).to be_instance_of described_class
+      expect(flow.error_flow(nil)).to be_instance_of described_class
     end
 
     it 'can set a custom error_flow' do
@@ -155,16 +157,27 @@ describe Rackstash::Flow do
       # The error_flow is persisted and is returned afterwards
       expect(flow.error_flow).to equal error_flow
     end
+  end
 
+  describe '#error_flow=' do
     it 'creates a flow object when setting a value' do
       # load the flow helper so that the receive test below counts correctly
-      flow = self.flow
+      flow
 
       expect(described_class).to receive(:new).with(adapter).and_call_original
-      new_flow = flow.error_flow(adapter)
+      flow.error_flow = adapter
 
       expect(flow.error_flow).to be_instance_of described_class
-      expect(flow.error_flow).to equal new_flow
+      expect(flow.error_flow.adapter).to equal adapter
+    end
+
+    it 'resets the error_flow when setting nil' do
+      flow.error_flow = flow
+      expect(flow.error_flow).to equal flow
+      expect(flow.error_flow).not_to equal Rackstash.error_flow
+
+      flow.error_flow = nil
+      expect(flow.error_flow).to equal Rackstash.error_flow
     end
   end
 

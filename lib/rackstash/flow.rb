@@ -80,12 +80,7 @@ module Rackstash
       @adapter = Rackstash::Adapters[adapter]
       self.encoder = encoder || @adapter.default_encoder
       @filter_chain = Rackstash::FilterChain.new(filters)
-
-      if error_flow.nil?
-        @error_flow = nil
-      else
-        self.error_flow(error_flow)
-      end
+      self.error_flow = error_flow
 
       if block_given?
         if block.arity == 0
@@ -144,13 +139,38 @@ module Rackstash
       @encoder = encoder
     end
 
-    def error_flow(flow = nil)
-      if flow.nil?
-        @error_flow || Rackstash.error_flow
-      else
-        flow = Flow.new(flow) unless flow.is_a?(Rackstash::Flow)
-        @error_flow = flow
+    # Get or set a separate {Flow} which is used by this flow to write details
+    # about any unexpected errors during interaction with the {#adapter}. If no
+    # explicit value is set here, we use {Rackstash.error_flow} by default.
+    #
+    # @param error_flow [Flow, nil] if given, set the separate error flow to
+    #   this object
+    # @return [Rackstash::Flow] the newly set error flow (if given) or the
+    #   currently defined one
+    # @see #error_flow=
+    def error_flow(error_flow = nil)
+      return @error_flow || Rackstash.error_flow if error_flow.nil?
+      self.error_flow = error_flow
+      @error_flow
+    end
+
+    # Set a separate {Flow} which is used by this flow to write details
+    # about any unexpected errors during interaction with the {#adapter}.
+    #
+    # If the given object is not already a {Flow}, we will wrap in into one.
+    # This allows you to also give an adapter or just a plain log target which
+    # can be wrapped in an adapter.
+    #
+    # @param error_flow [Flow, Adapter, Object, nil] the separate error flow or
+    #   `nil` to unset the custom error_flow ant to use the global
+    #   {Rackstash.error_flow} again
+    # @return [Rackstash::Flow] the newly set error_flow
+    def error_flow=(error_flow)
+      unless error_flow.nil? || error_flow.is_a?(Rackstash::Flow)
+        error_flow = Flow.new(error_flow)
       end
+
+      @error_flow = error_flow
     end
 
     # (see FilterChain#insert_after)
