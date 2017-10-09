@@ -4,6 +4,8 @@
 --title=Rackstash
 --template default
 --default-return undocumented
+lib/rackstash/documentation.rb
+lib/**/*.rb
 -
 README.md
 CHANGELOG.md
