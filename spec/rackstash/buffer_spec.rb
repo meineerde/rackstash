@@ -11,8 +11,8 @@ require 'rackstash/buffer'
 
 describe Rackstash::Buffer do
   let(:buffer_options) { {} }
-  let(:sink) { instance_double(Rackstash::Sink) }
-  let(:buffer) { described_class.new(sink, **buffer_options) }
+  let(:flows) { instance_double(Rackstash::Flows) }
+  let(:buffer) { described_class.new(flows, **buffer_options) }
 
   describe '#allow_silent?' do
     it 'defaults to true' do
@@ -290,15 +290,26 @@ describe Rackstash::Buffer do
     end
 
     context 'when pending?' do
+      let(:time) { Time.now }
+      let(:message) { double(message: 'Hello World!', time: time) }
+      let(:event) {
+        {
+          'message' => [message],
+          'tags' => [],
+          '@timestamp' => Time.now
+        }
+      }
+
       before do
-        buffer.add_message double(message: 'Hello World!', time: Time.now)
+        buffer.add_message(message)
 
         # We might call Buffer#flush during the following tests
-        allow(sink).to receive(:write).with(buffer).once
+        allow(buffer).to receive(:to_event).and_return(event)
+        allow(flows).to receive(:write).with(event).once
       end
 
-      it 'flushes the buffer to the sink' do
-        expect(sink).to receive(:write).with(buffer).once
+      it 'flushes the buffer to the flows' do
+        expect(flows).to receive(:write).with(event).once
         buffer.flush
       end
 
@@ -314,8 +325,8 @@ describe Rackstash::Buffer do
     end
 
     context 'when not pending?' do
-      it 'does not flushes the buffer to the sink' do
-        expect(sink).not_to receive(:write)
+      it 'does not flushes the buffer to the flows' do
+        expect(flows).not_to receive(:write)
         buffer.flush
       end
 
@@ -497,33 +508,6 @@ describe Rackstash::Buffer do
   end
 
   describe '#to_event' do
-    it 'does not merge field and tags if empty' do
-      expect(buffer).not_to receive(:fields)
-      expect(buffer).not_to receive(:tags)
-
-      buffer.to_event(fields: {}, tags: [])
-    end
-
-    it 'merges fields and tags as values' do
-      fields = { foo: :bar }
-      tags = ['default_tag']
-
-      expect(buffer.fields).to receive(:deep_merge).with(fields, force: false)
-      expect(buffer.tags).to receive(:merge).with(tags)
-
-      buffer.to_event(fields: fields, tags: tags)
-    end
-
-    it 'merges fields and tags as Procs' do
-      fields = -> {}
-      tags = -> {}
-
-      expect(buffer.fields).to receive(:deep_merge).with(fields, force: false)
-      expect(buffer.tags).to receive(:merge).with(tags)
-
-      buffer.to_event(fields: fields, tags: tags)
-    end
-
     it 'creates an event hash' do
       message = double(message: 'Hello World', time: Time.now)
       allow(message)

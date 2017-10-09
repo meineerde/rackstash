@@ -10,13 +10,13 @@ require 'spec_helper'
 require 'rackstash/buffer_stack'
 
 describe Rackstash::BufferStack do
-  let(:sink) { instance_double(Rackstash::Sink) }
-  let(:stack) { described_class.new(sink) }
+  let(:flows) { instance_double(Rackstash::Flows) }
+  let(:stack) { described_class.new(flows) }
 
   describe '#current' do
     it 'initializes a buffer' do
       expect(stack.current).to be_a Rackstash::Buffer
-      expect(stack.current.sink).to equal sink
+      expect(stack.current.flows).to equal flows
     end
 
     it 'repeatedly returns the same buffer' do

@@ -17,9 +17,8 @@ module Rackstash
   # Each time, a message is logged or a field or tag is set to a {Logger}, it
   # is set on a Buffer. Each Buffer belongs to exactly one {BufferStack} (and
   # thus in turn to exactly one {Logger}) which creates it and controls its
-  # complete life cycle. The data a buffer holds can be exported via a {Sink}
-  # and passed on to one or more {Flow}s which send the data to an external
-  # log receiver.
+  # complete life cycle. The data a buffer holds can be written to one or more
+  # {Flow}s which send the data to an external log receiver.
   #
   # Most methods of the Buffer are directly exposed to the user-accessible
   # {Logger}. The Buffer class itself is considered private and should not be
@@ -28,18 +27,17 @@ module Rackstash
   # by exposing a Buffer to each thread as the "current Buffer".
   #
   # Buffers can be buffering or non-buffering. While this doesn't affect the
-  # behavior of the Buffer itself, it affects when the Buffer is flushed to a
-  # {Sink} and what happens to the data stored in the Buffer after that.
+  # behavior of the Buffer itself, it affects when the Buffer is flushed to the
+  # flows and what happens to the data stored in the Buffer after that.
   #
-  # Generally, a non-buffering Buffer will be flushed to the sink after each
-  # logged message. This thus mostly resembles the way traditional loggers work
-  # in Ruby. A buffering Buffer however holds log messages for a longer time,
-  # e.g., for the duration of a web request. Only after the request finished
-  # all log messages and stored fields for this request will be flushed to the
-  # {Sink} as a single log event.
+  # Generally, a non-buffering Buffer will be flushed after each logged message.
+  # This thus mostly resembles the way traditional loggers work in Ruby. A
+  # buffering Buffer however holds log messages for a longer time, e.g., for the
+  # duration of a web request. Only after the request finished, all log messages
+  # and stored fields for this request will be flushed as a single log event.
   #
-  # While the fields structure of a Buffer is geared towards the format used by
-  # Logstash, it can be adaptd in many ways suited for a specific log target.
+  # While the field structure of a Buffer is geared towards the format used by
+  # Logstash, it can be adapted in many ways suited for a specific log target.
   #
   # @note The Buffer class is designed to be created and used by its responsible
   #   {BufferStack} object only and is not intended used from multiple Threads
@@ -55,19 +53,22 @@ module Rackstash
       FIELD_VERSION,    # the version of the Logstash JSON schema. Usually "1"
     ].freeze
 
-    # @return [Sink] the log {Sink} where the buffer is eventually flushed to
-    attr_reader :sink
+    # @return [Flows] the list of defined {Flow} objects which are responsible
+    #   for transforming, encoding, and persisting the log events.
+    attr_reader :flows
 
+    # @param flows [Flows] a list of {Flow} objects where this buffer eventually
+    #   writes to
     # @param buffering [Boolean] When set to `true`, this buffer is considered
     #   to be buffering data. When buffering, logged messages will not be
     #   flushed immediately but only with an explicit call to {#flush}.
     # @param allow_silent [Boolean] When set to `true` the data in this buffer
-    #   will be flushed to the sink, even if there
-    #   were just added fields or tags without any logged messages. If this is
-    #   `false` and there were no messages logged with {#add_message}, the
-    #   buffer will not be flushed to the sink but will be silently dropped.
-    def initialize(sink, buffering: true, allow_silent: true)
-      @sink = sink
+    #   will be flushed to the flows, even if there were just added fields or
+    #   tags without any logged messages. If this is `false` and there were no
+    #   messages logged with {#add_message}, the buffer will not be flushed but
+    #   will be silently dropped.
+    def initialize(flows, buffering: true, allow_silent: true)
+      @flows = flows
       @buffering = !!buffering
       @allow_silent = !!allow_silent
 
@@ -151,11 +152,11 @@ module Rackstash
     end
 
     # When set to `true` in {#initialize}, the data in this buffer will be
-    # flushed to the sink, even if there were just added fields or tags but no
-    # messages.
+    # flushed to the {#flows}, even if there were just added fields or tags but
+    # no messages.
     #
     # If this is `false` and there were no messages logged with {#add_message},
-    # the buffer will not be flushed to the sink but will be silently dropped.
+    # the buffer will not be flushed to the flows but will be silently dropped.
     #
     # @return [Boolean]
     def allow_silent?
@@ -191,7 +192,7 @@ module Rackstash
       @fields ||= Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
     end
 
-    # Flush the current buffer to the log {#sink} if it is pending.
+    # Flush the current buffer to the {#flows} if it is pending.
     #
     # After the flush, the existing buffer should not be used anymore. You
     # should either call {#clear} to remove all volatile data or create a new
@@ -202,7 +203,7 @@ module Rackstash
     def flush
       return unless pending?
 
-      @sink.write(self)
+      @flows.write(self.to_event)
       self
     end
 
@@ -217,7 +218,7 @@ module Rackstash
     end
 
     # This flag denotes whether the current buffer holds flushable data. By
-    # default, a new buffer is not pending and will not be flushed to the sink.
+    # default, a new buffer is not pending and will not be flushed.
     # Each time there is a new message logged, this is set to `true` for the
     # buffer. For changes of tags or fields or when setting the {#timestamp},
     # the `pending?` flag is only flipped to `true` if {#allow_silent?} is set
@@ -283,15 +284,13 @@ module Rackstash
 
     # Create an event hash from `self`.
     #
-    # * We take the buffer's existing fields and deep-merge the provided
-    #   `fields` into them. Existing fields on the buffer will always have
-    #   precedence here.
-    # * We add the given additional `tags` to the buffer's tags and add them as
-    #   a raw array of strings to the `event['tags']` field.
-    # * We add the buffer's array of messages to `event['message']`. This field
-    #   now contains an array of {Message} objects.
-    # * We add the buffer's timestamp to the `event['@timestamp]` field as an
-    #   ISO 8601 formatted string. The timestamp is always in UTC.
+    # * It contains the all of the current buffer's logged fields
+    # * We add the buffer's tags and add them as an array of strings to the
+    #   `event['tags']` field.
+    # * We add the buffer's list of messages to `event['message']`. This field
+    #   thus contains an array of {Message} objects.
+    # * We add the buffer's timestamp to the `event['@timestamp]` as a `Time`
+    #   object in UTC.
     #
     # The typical event emitted here looks like this:
     #
@@ -318,24 +317,10 @@ module Rackstash
     # are either `Hash`, `Array`, frozen `String`, `Integer` or `Float` objects.
     # All hashes (including nested hashes) use `String` keys.
     #
-    # @param fields [Hash<String => Object>, Proc] additional fields which are
-    #   merged with this Buffer's fields in the returned event Hash
-    # @param tags [Array<String>, Proc] additional tags which are merged
-    #   added to Buffer's tags in the returned event Hash
     # @return [Hash] the event expected by the event {Filters}.
-    def to_event(fields: {}, tags: [])
-      if (@fields.nil? || @fields.empty?) && ::Hash === fields && fields.empty?
-        event = {}
-      else
-        event = self.fields.deep_merge(fields, force: false).to_h
-      end
-
-      if (@tags.nil? || @tags.empty?) && ::Array === tags && tags.empty?
-        event[FIELD_TAGS] = []
-      else
-        event[FIELD_TAGS] = self.tags.merge(tags).to_a
-      end
-
+    def to_event
+      event = fields.to_h
+      event[FIELD_TAGS] = tags.to_a
       event[FIELD_MESSAGE] = messages
       event[FIELD_TIMESTAMP] = timestamp
 
@@ -344,14 +329,13 @@ module Rackstash
 
     private
 
-    # Non buffering buffers, i.e., those with `buffering: false`, flush
-    # themselves to the sink whenever there is something logged to it. That way,
-    # such a buffer acts like a regular old Logger would: it just flushes a
-    # logged message to its log device as soon as it is logged.
+    # Non-buffering buffers, i.e., those with `buffering: false`, flush
+    # themselves to the defined flows whenever there is something logged to it.
+    # That way, such a buffer acts like a regular old Logger would: it just
+    # flushes a logged message to its log device as soon as it is logged.
     #
-    # By calling `auto_flush`, the current buffer is flushed and cleared
-
-    # Flush and clear the current buffer if necessary.
+    # By calling `auto_flush`, the current buffer is flushed and cleared if
+    # necessary.
     def auto_flush
       return if buffering?
 

@@ -13,11 +13,12 @@ module Rackstash
   # is used by exactly one {Logger}. The responsible {Logger} ensures that each
   # BufferStack is only accessed from a single thread.
   class BufferStack
-    # @return [Sink] the log sink where the buffers are eventually flushed to
-    attr_reader :sink
+    # @return [Flows] the list of defined {Flow} objects which are responsible
+    #   for transforming, encoding, and persisting the log events.
+    attr_reader :flows
 
-    def initialize(sink)
-      @sink = sink
+    def initialize(flows)
+      @flows = flows
       @stack = []
     end
 
@@ -27,7 +28,7 @@ module Rackstash
     #
     # @return [Buffer]
     def current
-      @stack.last || Buffer.new(@sink, buffering: false).tap do |buffer|
+      @stack.last || Buffer.new(@flows, buffering: false).tap do |buffer|
         @stack.push buffer
       end
     end
@@ -43,7 +44,7 @@ module Rackstash
     #   {Buffer}. See {Buffer#initialize} for allowed values.
     # @return [Buffer] the newly created buffer
     def push(buffer_args = {})
-      buffer = Buffer.new(sink, buffer_args)
+      buffer = Buffer.new(@flows, buffer_args)
       @stack.push buffer
 
       buffer

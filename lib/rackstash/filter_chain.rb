@@ -104,7 +104,7 @@ module Rackstash
     # the writing of an individual event. Any other return value of filters is
     # ignored.
     #
-    # @param event [Hash] an event hash, see {Sink#write} for details
+    # @param event [Hash] an event hash, see {Buffer#to_event} for details
     # @return [Hash, false] the filtered event or `false` if any of the
     #   filters returned `false`
     def call(event)

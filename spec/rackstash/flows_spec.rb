@@ -111,6 +111,28 @@ describe Rackstash::Flows do
     end
   end
 
+  describe '#close' do
+    it 'calls close on all flows' do
+      [a_flow, a_flow].each do |flow|
+        expect(flow).to receive(:close)
+        flows << flow
+      end
+
+      expect(flows.close).to be_nil
+    end
+  end
+
+  describe '#reopen' do
+    it 'calls reopen on all flows' do
+      [a_flow, a_flow].each do |flow|
+        expect(flow).to receive(:reopen)
+        flows << flow
+      end
+
+      expect(flows.reopen).to be_nil
+    end
+  end
+
   describe '#each' do
     it 'yield each flow' do
       flow1 = a_flow
@@ -255,6 +277,31 @@ describe Rackstash::Flows do
       flows << a_flow
 
       expect(flows.to_s).to eql flows.to_a.to_s
+    end
+  end
+
+  describe '#write' do
+    it 'flushes the buffer to all flows' do
+      event_spec = {
+        'foo' => 'bar',
+        'tags' => [],
+        '@timestamp' => instance_of(Time)
+      }
+
+      [a_flow, a_flow].each do |flow|
+        expect(flow).to receive(:write).with(event_spec)
+        flows << flow
+      end
+
+      # only the first event is duplicated
+      expect(flows).to receive(:deep_dup_event).with(event_spec).and_call_original.ordered
+      event_spec.each_value do |arg|
+        expect(flows).to receive(:deep_dup_event).with(arg).and_call_original.ordered
+      end
+
+      # During flush, we create a single event, duplicate it and write each to
+      # each of the flows.
+      flows.write('foo' => 'bar', 'tags' => [], '@timestamp' => Time.now.utc)
     end
   end
 end

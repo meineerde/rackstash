@@ -14,7 +14,7 @@ module Rackstash
   # A Flow is responsible for taking a raw log event (originally corresponding
   # to a single {Buffer}), transforming it and finally sending it to an adapte
   # for persistence. A Flow instance is normally tied to a {Flows} list which in
-  # turn belongs to a log {Sink}.
+  # turn belongs to a {Logger}.
   #
   # In order to transform and persist log events, a Flow uses several
   # components:
@@ -54,11 +54,11 @@ module Rackstash
   #       end
   #     end
   #
-  #     # Write an event. This is normally done by the responsible Rackstash::Sink
+  #     # Write an event. This is normally done by a Rackstash::Buffer
   #     flow.write(an_event)
   #
-  # The event which eventually gets written to the flow is created by the {Sink}
-  # of a {Logger}.
+  # The event which eventually gets written to the flow is created from a Buffer
+  # with {Buffer#to_event}.
   class Flow
     # @return [Adapters::Adapter] the log adapter
     attr_reader :adapter
@@ -92,7 +92,7 @@ module Rackstash
     end
 
     # Close the log adapter if supported. This might be a no-op if the adapter
-    # does not support closing. This method is called by the logger's {Sink}.
+    # does not support closing.
     #
     # @return [nil]
     def close!
@@ -205,7 +205,7 @@ module Rackstash
     alias filter_prepend filter_unshift
 
     # Re-open the log adapter if supported. This might be a no-op if the adapter
-    # does not support reopening. This method is called by the logger's {Sink}.
+    # does not support reopening.
     #
     # @return [nil]
     def reopen!
@@ -226,23 +226,21 @@ module Rackstash
     end
 
     # Filter, encode and write the given `event` to the configured {#adapter}.
-    # This method is called by the logger's {Sink} to write a log event. The
-    # given `event` is updated in-place and should not be re-used afterwards
-    # anymore.
+    # The given `event` is updated in-place by the filters and encoder of the
+    # flow and should not be re-used afterwards anymore.
     #
-    # 1. At first, we filter the event with the defined filters in their given
-    #    order. If any of the filters returns `false`, the writing will be
+    # 1. At first, we filter the event with the defined {#filter_chain} in their
+    #    given order. If any of the filters returns `false`, the writing will be
     #    aborted. No further filters will be applied and the event will not be
     #    written to the adapter. See {FilterChain#call} for details.
     # 2. We encode the event to a format suitable for the adapter using the
     #    configured {#encoder}.
-    # 3. Finally, the encoded event will be passed to the {#adapter} to be send
+    # 3. Finally, the encoded event will be passed to the {#adapter} to be sent
     #    to the actual log target, e.g. a file or an external log receiver.
     #
     # @param event [Hash] an event hash
     # @return [Boolean] `true` if the event was written to the adapter, `false`
     #   otherwise
-    # @see Sink#write
     def write!(event)
       # Silently abort writing if any filter (and thus the while filter chain)
       # returns `false`.

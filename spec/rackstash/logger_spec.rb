@@ -15,7 +15,7 @@ describe Rackstash::Logger do
 
   describe '#initialize' do
     it 'accepts flows' do
-      expect(Rackstash::Sink).to receive(:new).with('output.log')
+      expect(Rackstash::Flows).to receive(:new).with('output.log')
       described_class.new('output.log')
     end
 
@@ -102,44 +102,15 @@ describe Rackstash::Logger do
   end
 
   describe '#close' do
-    it 'forwards to the sink' do
-      expect(logger.sink).to receive(:close)
+    it 'forwards to the flows' do
+      expect(logger.flows).to receive(:close)
       logger.close
     end
   end
 
-  describe '#default_fields' do
-    it 'forwards to the sink' do
-      expect(logger.sink).to receive(:default_fields)
-      logger.default_fields
-    end
-  end
-
-  describe '#default_fields=' do
-    it 'forwards to the sink' do
-      expect(logger.sink).to receive(:default_fields=).with('key' => 'value')
-      logger.default_fields = { 'key' => 'value' }
-    end
-  end
-
-  describe '#default_tags' do
-    it 'forwards to the sink' do
-      expect(logger.sink).to receive(:default_tags)
-      logger.default_tags
-    end
-  end
-
-  describe '#default_tags=' do
-    it 'forwards to the sink' do
-      expect(logger.sink).to receive(:default_tags=).with(['tag'])
-      logger.default_tags = ['tag']
-    end
-  end
-
   describe '#flows' do
-    it 'forwards to the sink' do
-      expect(logger.sink).to receive(:flows)
-      logger.flows
+    it 'is a Rackstash::Flows' do
+      expect(logger.flows).to be_instance_of Rackstash::Flows
     end
   end
 
@@ -195,15 +166,9 @@ describe Rackstash::Logger do
   end
 
   describe '#reopen' do
-    it 'forwards to the sink' do
-      expect(logger.sink).to receive(:reopen)
+    it 'forwards to the flows' do
+      expect(logger.flows).to receive(:reopen)
       logger.reopen
-    end
-  end
-
-  describe '#sink' do
-    it 'returns the created sink' do
-      expect(logger.sink).to be_a Rackstash::Sink
     end
   end
 
@@ -562,7 +527,7 @@ describe Rackstash::Logger do
     end
 
     it 'buffers multiple messages' do
-      expect(logger.sink).to receive(:write).once
+      expect(logger.flows).to receive(:write).once
 
       logger.with_buffer do
         logger.add 1, 'Hello World'

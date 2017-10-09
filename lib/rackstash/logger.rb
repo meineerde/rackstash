@@ -10,7 +10,7 @@ require 'concurrent'
 require 'rackstash/buffer_stack'
 require 'rackstash/formatter'
 require 'rackstash/message'
-require 'rackstash/sink'
+require 'rackstash/flows'
 
 module Rackstash
   # The Logger is the main entry point for Rackstash. It provides an interface
@@ -43,9 +43,9 @@ module Rackstash
     #   By default we use {PROGNAME}.
     attr_accessor :progname
 
-    # @return [Sink] the log {Sink} which flushes a {Buffer} to one or more
-    #   external log targets like a file, a socket, ...
-    attr_reader :sink
+    # @return [Flows] the list of defined {Flow} objects which are responsible
+    #   for transforming, encoding, and persisting the log events.
+    attr_reader :flows
 
     # Create a new Logger instance.
     #
@@ -109,12 +109,12 @@ module Rackstash
     def initialize(*flows, level: DEBUG, progname: PROGNAME, formatter: Formatter.new, &block)
       @buffer_stack = Concurrent::ThreadLocalVar.new
 
-      @sink = Rackstash::Sink.new(*flows)
+      @flows = Rackstash::Flows.new(*flows)
       self.level = level
       self.progname = progname
       self.formatter = formatter
 
-      if block_given? && (flow = @sink.flows.last)
+      if block_given? && (flow = @flows.last)
         if block.arity == 0
           flow.instance_eval(&block)
         else
@@ -123,9 +123,9 @@ module Rackstash
       end
     end
 
-    # Add a message to the current buffer without any further formatting. If
-    # the current {Buffer} is bufering, the message will just be added. Else,
-    # it will be flushed to the {#sink} directly.
+    # Add a message to the current {Buffer} without any further formatting. If
+    # the current buffer is bufering, the message will just be added. Else,
+    # it will be flushed to the configured {#flows} directly.
     #
     # @param msg [Object]
     # @return [String] the passed `msg`
@@ -161,6 +161,11 @@ module Rackstash
       buffer.fields[key] = value
     end
 
+    # (see Flows#close)
+    def close
+      @flows.close
+    end
+
     # Set the base log level as either one of the {SEVERITIES} or a
     # String/Symbol describing the level. When logging a message, it will only
     # be added if its log level is at or above the base level defined here
@@ -171,45 +176,14 @@ module Rackstash
       @level = Rackstash.severity(severity)
     end
 
-    # (see Sink#close)
-    def close
-      @sink.close
-    end
-
-    # (see Sink#default_fields)
-    def default_fields
-      @sink.default_fields
-    end
-
-    # (see Sink#default_fields=)
-    def default_fields=(fields)
-      @sink.default_fields = fields
-    end
-
-    # (see Sink#default_tags)
-    def default_tags
-      @sink.default_tags
-    end
-
-    # (see Sink#default_tags=)
-    def default_tags=(tags)
-      @sink.default_tags = tags
-    end
-
     # (see Buffer#fields)
     def fields
       buffer.fields
     end
 
-    # (see Sink#flows)
-    # @!attribute [r] flows
-    def flows
-      @sink.flows
-    end
-
-    # (see Sink#reopen)
+    # (see Flows#reopen)
     def reopen
-      @sink.reopen
+      @flows.reopen
     end
 
     # (see Buffer#tag)
@@ -486,7 +460,7 @@ module Rackstash
     private
 
     def buffer_stack
-      @buffer_stack.value ||= BufferStack.new(@sink)
+      @buffer_stack.value ||= BufferStack.new(@flows)
     end
 
     def buffer
