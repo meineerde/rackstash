@@ -122,6 +122,41 @@ describe Rackstash::Flows do
     end
   end
 
+  describe '#dup' do
+    it 'dups the flows' do
+      flows << a_flow
+      copied = flows.dup
+
+      expect(copied).to be_instance_of described_class
+      expect(copied.length).to eql 1
+      expect(copied).to_not equal flows
+    end
+
+    it 'separates the flows' do
+      flows << a_flow
+
+      copied = flows.dup
+      copied << a_flow
+
+      expect(copied.first).to equal flows.first
+
+      expect(flows.length).to eql 1
+      expect(copied.length).to eql 2
+    end
+  end
+
+  describe '#freeze' do
+    it 'freezes the object' do
+      expect(flows.freeze).to equal flows
+      expect(flows).to be_frozen
+    end
+
+    it 'denies all further changes' do
+      flows.freeze
+      expect { flows << a_flow }.to raise_error(RuntimeError)
+    end
+  end
+
   describe '#reopen' do
     it 'calls reopen on all flows' do
       [a_flow, a_flow].each do |flow|
