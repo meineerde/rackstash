@@ -29,7 +29,7 @@ module Rackstash
       # it will be ignored.
       #
       # @param event [Hash] an event hash
-      # return [Hash] the given `event` with the fields renamed
+      # @return [Hash] the given `event` with the fields renamed
       def call(event)
         @rename.each_pair do |old_key, new_key|
           next unless event.key?(old_key)

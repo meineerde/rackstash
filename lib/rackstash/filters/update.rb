@@ -42,7 +42,7 @@ module Rackstash
       # Update existing field fields in the event with a new value.
       #
       # @param event [Hash] an event hash
-      # return [Hash] the given `event` with the fields renamed
+      # @return [Hash] the given `event` with the fields renamed
       def call(event)
         @update.each_pair do |key, value|
           next unless event.key?(key)

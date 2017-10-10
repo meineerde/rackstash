@@ -42,7 +42,7 @@ module Rackstash
       # Replace or set fields in the event to a new value.
       #
       # @param event [Hash] an event hash
-      # return [Hash] the given `event` with the fields renamed
+      # @return [Hash] the given `event` with the fields renamed
       def call(event)
         @replace.each_pair do |key, value|
           value = value.call(event) if value.respond_to?(:call)
