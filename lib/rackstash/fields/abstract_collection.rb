@@ -7,7 +7,6 @@
 
 require 'bigdecimal'
 require 'complex'
-require 'rational'
 require 'pathname'
 require 'uri'
 
