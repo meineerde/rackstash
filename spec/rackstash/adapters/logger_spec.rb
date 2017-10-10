@@ -13,6 +13,11 @@ require 'rackstash/adapters/logger'
 describe Rackstash::Adapters::Logger do
   let(:bucket) {
     Struct.new(:lines) do
+      def initialize(*args)
+        super
+        @closed = false
+      end
+
       def write(log)
         raise IOError if @closed
         lines << log
