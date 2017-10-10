@@ -8,8 +8,3 @@
 source 'https://rubygems.org'
 
 gemspec name: 'rackstash'
-
-group :coverage do
-  gem 'coveralls', '~> 0.8.18', require: false
-  gem 'simplecov', require: false
-end
