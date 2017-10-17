@@ -124,9 +124,9 @@ describe Rackstash::Buffer do
       end
     end
 
-    context 'when buffering?' do
+    context 'with buffering: :full' do
       before do
-        buffer_options[:buffering] = true
+        buffer_options[:buffering] = :full
       end
 
       it 'does not call #flush' do
@@ -137,13 +137,14 @@ describe Rackstash::Buffer do
       it 'does not call #clear' do
         expect(buffer).not_to receive(:clear)
         buffer.add_fields(key: 'value')
+
         expect(buffer.fields['key']).to eql 'value'
       end
     end
 
-    context 'when not buffering?' do
+    context 'with buffering: :data' do
       before do
-        buffer_options[:buffering] = false
+        buffer_options[:buffering] = :data
       end
 
       it 'calls #flush' do
@@ -151,10 +152,29 @@ describe Rackstash::Buffer do
         buffer.add_fields(key: 'value')
       end
 
-      it 'calls #clear' do
-        allow(buffer).to receive(:flush)
-        expect(buffer).to receive(:clear).and_call_original
+      it 'clears only messages' do
+        allow(buffer).to receive(:flush).once
         buffer.add_fields(key: 'value')
+
+        expect(buffer.fields).to_not be_empty
+        expect(buffer.pending?).to be true
+      end
+    end
+
+    context 'with buffering: :none' do
+      before do
+        buffer_options[:buffering] = :none
+      end
+
+      it 'calls #flush' do
+        expect(buffer).to receive(:flush)
+        buffer.add_fields(key: 'value')
+      end
+
+      it 'clears the whole buffer' do
+        allow(buffer).to receive(:flush).once
+        buffer.add_fields(key: 'value')
+
         expect(buffer.fields).to be_empty
         expect(buffer.pending?).to be false
       end
@@ -182,9 +202,9 @@ describe Rackstash::Buffer do
       expect(buffer.timestamp).to eql time.getutc
     end
 
-    context 'when buffering?' do
+    context 'with buffering: :full' do
       before do
-        buffer_options[:buffering] = true
+        buffer_options[:buffering] = :full
       end
 
       it 'does not call #flush' do
@@ -192,16 +212,15 @@ describe Rackstash::Buffer do
         buffer.add_message double(message: 'Hello World!', time: Time.now)
       end
 
-      it 'does not call #clear' do
-        expect(buffer).not_to receive(:clear)
+      it 'retains messages' do
         buffer.add_message double(message: 'Hello World!', time: Time.now)
         expect(buffer.messages.count).to eql 1
       end
     end
 
-    context 'when not buffering?' do
+    context 'with buffering: :none' do
       before do
-        buffer_options[:buffering] = false
+        buffer_options[:buffering] = :data
       end
 
       it 'calls #flush' do
@@ -209,24 +228,61 @@ describe Rackstash::Buffer do
         buffer.add_message double(message: 'Hello World!', time: Time.now)
       end
 
-      it 'calls #clear' do
+      it 'clears messages' do
         allow(buffer).to receive(:flush)
-        expect(buffer).to receive(:clear).and_call_original
         buffer.add_message double(message: 'Hello World!', time: Time.now)
+
+        expect(buffer.messages.count).to eql 0
+        expect(buffer.pending?).to be false
+      end
+    end
+
+    context 'with buffering: :none' do
+      before do
+        buffer_options[:buffering] = :none
+      end
+
+      it 'calls #flush' do
+        expect(buffer).to receive(:flush)
+        buffer.add_message double(message: 'Hello World!', time: Time.now)
+      end
+
+      it 'clears messages' do
+        allow(buffer).to receive(:flush)
+        buffer.add_message double(message: 'Hello World!', time: Time.now)
+
         expect(buffer.messages.count).to eql 0
         expect(buffer.pending?).to be false
       end
     end
   end
 
-  describe '#buffering?' do
-    it 'defaults to false' do
-      expect(buffer.buffering?).to be true
+  describe '#buffering' do
+    it 'defaults to :full' do
+      expect(buffer.buffering).to eql :full
     end
 
-    it 'can be overwritten in initialize' do
-      buffer_options[:buffering] = false
-      expect(buffer.buffering?).to be false
+    it 'can be set to :full' do
+      expect(described_class.new(flows, buffering: true).buffering).to eql :full
+      expect(described_class.new(flows, buffering: :full).buffering).to eql :full
+    end
+
+    it 'can be set to :data' do
+      expect(described_class.new(flows, buffering: :data).buffering).to eql :data
+    end
+
+    it 'can be set to :none' do
+      expect(described_class.new(flows, buffering: false).buffering).to eql :none
+      expect(described_class.new(flows, buffering: :none).buffering).to eql :none
+    end
+
+    it 'does not allow other values' do
+      expect { described_class.new(flows, buffering: nil) }
+        .to raise_error(TypeError)
+      expect { described_class.new(flows, buffering: :invalid) }
+        .to raise_error(TypeError)
+      expect { described_class.new(flows, buffering: 'full') }
+        .to raise_error(TypeError)
     end
   end
 

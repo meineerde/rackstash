@@ -28,7 +28,7 @@ module Rackstash
     #
     # @return [Buffer]
     def current
-      @stack.last || Buffer.new(@flows, buffering: false).tap do |buffer|
+      @stack.last || Buffer.new(@flows, buffering: :none).tap do |buffer|
         @stack.push buffer
       end
     end

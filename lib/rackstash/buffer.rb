@@ -57,19 +57,52 @@ module Rackstash
     #   for transforming, encoding, and persisting the log events.
     attr_reader :flows
 
+    # Returns a Symbol describing the buffering behavior of the current buffer.
+    # This value can be set in {#initialize}.
+    #
+    # When set to `true` or `:full` this buffer is buffering all its messages
+    # and stored data. it will never automatically flush anything to the flows
+    # but when explicitly calling {#flush}.
+    #
+    # When set to `:data` or `:none`, the buffer automatically flushes all
+    # messages and data when adding a new message or, with {#allow_silent?}
+    # being `true`, also when adding fields. After each automatic {#flush}, all
+    # {#messages} and the {#timestamp} are cleared from the buffer. If
+    # {#buffering} is set to `:none`, we also clear the stored {#fields} and
+    # {#tags} in addition to the other data during an automatic flush.
+    # If {#buffering} is set to `:data`, all stored data except the {#messages}
+    # and the {#timestamp} are retained after an auto flush.
+    #
+    # @return [Symbol] the buffering behavior
+    attr_reader :buffering
+
     # @param flows [Flows] a list of {Flow} objects where this buffer eventually
     #   writes to
-    # @param buffering [Boolean] When set to `true`, this buffer is considered
-    #   to be buffering data. When buffering, logged messages will not be
-    #   flushed immediately but only with an explicit call to {#flush}.
+    # @param buffering [Symbol, Boolean] defines the buffering behavior of the
+    #   buffer. When set to `true` or `:full`, we buffer all data and never
+    #   automatically flush. When set to `:data`, we auto flush on adding new
+    #   data and clear all messages afterwards. When set to `:none` or `false`
+    #   we auto flush as above but clear all data from the buffer afterwards.
+    #   See {#buffering} for details.
     # @param allow_silent [Boolean] When set to `true` the data in this buffer
     #   will be flushed to the flows, even if there were just added fields or
     #   tags without any logged messages. If this is `false` and there were no
     #   messages logged with {#add_message}, the buffer will not be flushed but
     #   will be silently dropped.
-    def initialize(flows, buffering: true, allow_silent: true)
+    def initialize(flows, buffering: :full, allow_silent: true)
       @flows = flows
-      @buffering = !!buffering
+
+      @buffering =  case buffering
+      when :full, true
+        :full
+      when :data
+        :data
+      when :none, false
+        :none
+      else
+        raise TypeError, "Unknown buffering argument given: #{buffering.inspect}"
+      end
+
       @allow_silent = !!allow_silent
 
       # initialize the internal data structures for fields, tags, ...
@@ -112,9 +145,9 @@ module Rackstash
     # The buffer's timestamp will be initialized with the current time if it
     # wasn't set earlier already.
     #
-    # If the buffer is not {#buffering?}, it will be {#flush}ed and {#clear}ed
-    # after each added message. All fields, tags, and messages added before as
-    # well as the fields added with this method call will be flushed.
+    # If the buffer is not fully {#buffering}, the buffer will be {#flush}ed to
+    # the flows. Afterwards, all messages will be cleared. New and existing
+    # fields and tags will be cleared only if {#buffering} is set to `:none`.
     #
     # @param hash (see Fields::Hash#deep_merge!)
     # @raise (see Fields::Hash#deep_merge!)
@@ -135,9 +168,9 @@ module Rackstash
     # The buffer's timestamp will be initialized with the time of the first
     # added message if it wasn't set earlier already.
     #
-    # If the buffer is not {#buffering?}, it will be {#flush}ed and {#clear}ed
-    # after each added message. All fields, tags, and messages added before as
-    # well as the message added with this method call will be flushed.
+    # If the buffer is not fully {#buffering}, the buffer will be {#flush}ed to
+    # the flows. Afterwards, all messages will be cleared. Fields and tags will
+    # be cleared only if {#buffering} is set to `:none`.
     #
     # @param message [Message] A {Message} to add to the current message
     #   buffer.
@@ -163,25 +196,21 @@ module Rackstash
       @allow_silent
     end
 
-    # When set to `true` in {#initialize}, this buffer is considered to be
-    # buffering data. When buffering, logged messages will not be flushed
-    # immediately but only with an explicit call to {#flush}.
-    #
-    # @return [Boolean] true if the current buffer is intended to hold buffered
-    #   data of multiple log calls
-    def buffering?
-      @buffering
-    end
-
     # Clear the current buffer from all stored data, just as it was right after
     # inititialization.
     #
+    # @param everything [Boolean] When set to `true`, we clear {#messages},
+    #   {#fields}, {#tags} and the {#timestamp}. When set to `false`, we only
+    #   clear the {#messages} and the {#timestamp} but retain he other data.
     # @return [self]
-    def clear
+    def clear(everything = true)
       @messages = []
-      @fields = nil
-      @tags = nil
       @timestamp = nil
+
+      if everything
+        @fields = nil
+        @tags = nil
+      end
 
       self
     end
@@ -337,10 +366,16 @@ module Rackstash
     # By calling `auto_flush`, the current buffer is flushed and cleared if
     # necessary.
     def auto_flush
-      return if buffering?
-
-      flush
-      clear
+      case @buffering
+      when :full
+        return
+      when :data
+        flush
+        clear(false)
+      when :none
+        flush
+        clear(true)
+      end
     end
   end
 end
