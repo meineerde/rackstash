@@ -29,6 +29,11 @@ matrix:
     - rvm: 2.4.2
       env: COVERAGE=1
 
+    # An older Ruby/Rack combination as used by Rails 3.2. As long as it works
+    # with our required Ruby version, we want to support it.
+    - rvm: 2.1.10
+      env: RACK_VERSION=1.4.5
+
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head

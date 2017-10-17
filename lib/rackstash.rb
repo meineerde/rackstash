@@ -129,6 +129,12 @@ module Rackstash
   FIELD_ERROR_MESSAGE = 'error_message'.freeze
   FIELD_ERROR_TRACE = 'error_trace'.freeze
 
+  FIELD_DURATION = 'duration'.freeze
+  FIELD_METHOD = 'method'.freeze
+  FIELD_PATH = 'path'.freeze
+  FIELD_SCHEME = 'scheme'.freeze
+  FIELD_STATUS = 'status'.freeze
+
   # Returns a {Flow} which is used by the normal logger {Flow}s to write details
   # about any unexpected errors during interaction with their {Adapters}.
   #

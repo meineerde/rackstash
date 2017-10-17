@@ -8,3 +8,11 @@
 source 'https://rubygems.org'
 
 gemspec name: 'rackstash'
+
+group :test do
+  if ENV['RACK_VERSION']
+    gem 'rack', "~> #{ENV['RACK_VERSION']}"
+  else
+    gem 'rack'
+  end
+end
