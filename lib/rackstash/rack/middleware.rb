@@ -83,7 +83,7 @@ module Rackstash
     # fields set by the application will be preserved and are not overwritten.
     #
     # In case there is an unhandled exception during request processing in the
-    # Rack aplication or any lower middleware, we log this error using
+    # Rack application or any lower middleware, we log this error using
     # {Rackstash::Logger#add_exception}. The emitted event will still contain
     # all added request fields and tags as well as the `"status"` field (set to
     # `500`) and the duration of the request so far.
