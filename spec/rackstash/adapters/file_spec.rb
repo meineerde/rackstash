@@ -92,6 +92,13 @@ describe Rackstash::Adapters::File do
       expect(logfile.tap(&:rewind).read).to eql "a full line.\n"
     end
 
+    it 'ignores empty log lines' do
+      adapter.write('')
+      adapter.write(nil)
+
+      expect(logfile.tap(&:rewind).read).to eql ''
+    end
+
     context 'with auto_reopen: true' do
       let(:adapter_args) { { auto_reopen: true } }
 

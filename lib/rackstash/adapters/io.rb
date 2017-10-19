@@ -88,8 +88,11 @@ module Rackstash
       # @param log [#to_s] the encoded log event
       # @return [nil]
       def write_single(log)
+        line = normalize_line(log)
+        return if line.empty?
+
         @io.synchronize_for_rackstash do
-          @io.write normalize_line(log)
+          @io.write line
           @io.flush if @flush_immediately
         end
         nil

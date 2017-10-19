@@ -96,16 +96,17 @@ module Rackstash
 
       private
 
-      # Helper method to ensure that a log line passed to {#write} is a string
-      # that ends in a newline character by mutating the object is required.
+      # Helper method to ensure that a log line passed to {#write} is either a
+      # String that ends in a newline character or is completely empty.
       #
       # @param line [#to_s] a log line
       # @return [String] `line` with a trailing newline character (`"\n"`)
       #   appended if necessary
       def normalize_line(line)
         line = line.to_s
-        line = "#{line}\n" unless line.end_with?("\n".freeze)
-        line
+        return line if line.empty? || line.end_with?("\n".freeze)
+
+        "#{line}\n"
       end
     end
   end

@@ -104,9 +104,12 @@ module Rackstash
       # @param log [#to_s] the encoded log event
       # @return [nil]
       def write_single(log)
+        line = normalize_line(log)
+        return if line.empty?
+
         @mutex.synchronize do
           auto_reopen
-          @file.write normalize_line(log)
+          @file.write(line)
         end
         nil
       end

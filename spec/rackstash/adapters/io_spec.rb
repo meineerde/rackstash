@@ -77,5 +77,11 @@ describe Rackstash::Adapters::IO do
         adapter.write('bar')
       end
     end
+
+    it 'ignores empty log lines' do
+      expect(io).to_not receive(:write)
+      adapter.write('')
+      adapter.write(nil)
+    end
   end
 end
