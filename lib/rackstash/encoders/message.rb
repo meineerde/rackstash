@@ -45,8 +45,10 @@ module Rackstash
         normalize_message(event)
         message = event[FIELD_MESSAGE]
 
-        tags = @tagged_fields.map { |key| format_tag event[key] }.compact.join
-        message = message.gsub(/^/) { tags } unless tags.empty?
+        unless message.empty?
+          tags = @tagged_fields.map { |key| format_tag event[key] }.compact.join
+          message = message.gsub(/^/) { tags } unless tags.empty?
+        end
 
         message
       end

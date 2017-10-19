@@ -43,6 +43,17 @@ describe Rackstash::Encoders::Message do
         event = { 'message' => ["line1\n", "line2\n"] }
         expect(encoder.encode(event)).to eql "line1\nline2\n"
       end
+
+      it 'does not prefix fields on an empty message' do
+        event = { 'message' => [], 'tags' => ['foo', 'bar'] }
+        expect(encoder.encode(event)).to eql ''
+      end
+
+      it 'prefixes fields with a single newline' do
+        event = { 'message' => ["\n"], 'tags' => ['foo', 'bar'] }
+        expect(encoder.encode(event)).to eql "[foo,bar] \n"
+      end
+
     end
   end
 end
