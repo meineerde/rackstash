@@ -34,11 +34,13 @@ module Rackstash
     # filter in which case we are resolving it to a class defined inside the
     # {Rackstash::Filters} namespace.
     #
-    # @param klass [Class, Symbol, String] a description of the class from which
-    #   we are creating a new filter object. When giving a `Class`, we are using
-    #   it as is. When giving a `String` or `Symbol`, we are determining the
-    #   associated class from the {Rackstash::Filters} module and create an
-    #   instance of that.
+    # @param klass [Class, Symbol, String, #call] a description of the class
+    #   from which we are creating a new filter object. When giving a `Class`,
+    #   we are using it as is. When giving a `String` or `Symbol`, we are
+    #   determining the associated class from the {Rackstash::Filters} module
+    #   and create an instance of that. When giving an object which responds to
+    #   `call` already, we return it unchanged, ignoring any additional passed
+    #   `args`.
     # @param args [Array] an optional list of arguments which is passed to the
     #   initializer for the new filter object.
     # @raise [TypeError] if we can not create a new Filter object from `class`
@@ -56,6 +58,8 @@ module Rackstash
           .to_sym
         filter_class = const_get(filter_class_name, false)
         filter_class.new(*args, &block)
+      when ->(filter) { filter.respond_to?(:call) }
+        klass
       else
         raise TypeError, "Can not build filter for #{klass.inspect}"
       end

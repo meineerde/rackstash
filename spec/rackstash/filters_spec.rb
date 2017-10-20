@@ -43,10 +43,19 @@ describe Rackstash::Filters do
       described_class.build("filter_class#{random}", *args)
     end
 
+    it 'returns an existing filter' do
+      filter = -> {}
+      expect(described_class.build(filter)).to equal filter
+      expect(described_class.build(filter, :ignored, 42)).to equal filter
+    end
+
     it 'raises a TypeError with different arguments' do
       expect { described_class.build(123) }.to raise_error(TypeError)
       expect { described_class.build(nil) }.to raise_error(TypeError)
       expect { described_class.build(true) }.to raise_error(TypeError)
+
+      expect { described_class.build('MissingFilter') }.to raise_error(NameError)
+      expect { described_class.build(:missing_filter) }.to raise_error(NameError)
     end
   end
 

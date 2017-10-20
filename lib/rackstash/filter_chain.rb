@@ -302,10 +302,8 @@ module Rackstash
     # @return [#call] a filter instance
     def build_filter(filter_spec, &block)
       if filter_spec.empty?
-        return block if block_given?
+        return Rackstash::Filters.build(block) if block_given?
         raise ArgumentError, 'Need to specify a filter'
-      elsif filter_spec.length == 1 && filter_spec.first.respond_to?(:call)
-        filter_spec.first
       else
         Rackstash::Filters.build(*filter_spec, &block)
       end
