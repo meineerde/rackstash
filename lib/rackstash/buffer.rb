@@ -92,16 +92,17 @@ module Rackstash
     def initialize(flows, buffering: :full, allow_silent: true)
       @flows = flows
 
-      @buffering =  case buffering
-      when :full, true
-        :full
-      when :data
-        :data
-      when :none, false
-        :none
-      else
-        raise TypeError, "Unknown buffering argument given: #{buffering.inspect}"
-      end
+      @buffering =
+        case buffering
+        when :full, true
+          :full
+        when :data
+          :data
+        when :none, false
+          :none
+        else
+          raise TypeError, "Unknown buffering argument given: #{buffering.inspect}"
+        end
 
       @allow_silent = !!allow_silent
 

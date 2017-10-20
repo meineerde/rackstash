@@ -24,7 +24,7 @@ describe Rackstash::Buffer do
     it 'adds the exception fields' do
       begin
         raise 'My Error'
-      rescue => e
+      rescue RuntimeError => e
         buffer.add_exception(e)
       end
 
@@ -45,13 +45,13 @@ describe Rackstash::Buffer do
       it 'overwrites exceptions' do
         begin
           raise 'Error'
-        rescue => first
+        rescue RuntimeError => first
           buffer.add_exception(first, force: true)
         end
 
         begin
           raise TypeError, 'Another Error'
-        rescue => second
+        rescue TypeError => second
           buffer.add_exception(second, force: true)
         end
 
@@ -67,7 +67,7 @@ describe Rackstash::Buffer do
 
         begin
           raise TypeError, 'Error'
-        rescue => second
+        rescue TypeError => second
           buffer.add_exception(second, force: false)
         end
 

@@ -279,7 +279,6 @@ describe Rackstash::Fields::AbstractCollection do
           expect(normalize(hash, scope: scope)['beep']['SCOPE']).to eql 'scope'
         end
       end
-
     end
 
     describe 'with Array' do
@@ -470,10 +469,10 @@ describe Rackstash::Fields::AbstractCollection do
         exception = e
       end
 
-      checker = Regexp.new <<-EOF.gsub(/^\s+/, '').rstrip, Regexp::MULTILINE
+      checker = Regexp.new <<-REGEXP.gsub(/^\s+/, '').rstrip, Regexp::MULTILINE
         \\AAn Error \\(StandardError\\)
         #{Regexp.escape __FILE__}:#{__LINE__ - 7}:in `block .*`
-      EOF
+      REGEXP
       expect(normalize(exception)).to match checker
       expect(normalize(exception).encoding).to eql Encoding::UTF_8
       expect(normalize(exception)).to be_frozen
@@ -506,17 +505,17 @@ describe Rackstash::Fields::AbstractCollection do
       it 'stops on error and raises' do
         called = Hash.new(false)
 
-        ok = -> {
+        ok = lambda {
           called[:ok] = true
           :ok
         }
 
-        error = -> {
+        error = lambda {
           called[:error] = true
           raise 'Oh, no!'
         }
 
-        ignored = ->() {
+        ignored = lambda {
           called[:ignored] = true
           'cherio'
         }

@@ -53,7 +53,6 @@ describe Rackstash::Encoders::Message do
         event = { 'message' => ["\n"], 'tags' => ['foo', 'bar'] }
         expect(encoder.encode(event)).to eql "[foo,bar] \n"
       end
-
     end
   end
 end

@@ -1,6 +1,20 @@
 AllCops:
   TargetRubyVersion: 2.1
 
+# We use a different style where we add the short license header just below the
+# magic comments separated by an empty comment line. Unfortunately, this cop
+# clashes with our style
+Layout/EmptyLineAfterMagicComment:
+  Enabled: false
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+# Multiline indentation is always tricky. Format it as deemed useful in the
+# local method, but try to avoid it at all wherever possible
+Layout/MultilineOperationIndentation:
+  Enabled: false
+
 # Sometimes we want to capture all exceptions. We need to make sure to re-raise
 # these again in any case.
 Lint/RescueException:
@@ -59,14 +73,6 @@ Style/DoubleNegation:
 
 Style/EmptyMethod:
   EnforcedStyle: expanded
-
-Style/MultilineMethodCallIndentation:
-  EnforcedStyle: indented
-
-# Multiline indentation is always tricky. Format it as deemed useful in the
-# local method, but try to avoid it at all wherever possible
-Style/MultilineOperationIndentation:
-  Enabled: false
 
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:

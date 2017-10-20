@@ -21,9 +21,9 @@ describe Rackstash::Rack::Middleware do
 
       # Raise a RuntimeError if a raise parameter was set in the request
       request = ::Rack::Request.new(env)
-      raise RuntimeError, request.params['raise'] if request.params['raise']
+      raise request.params['raise'] if request.params['raise']
 
-      [200, {'Content-Type' => 'text/plain'}, ["Hello, World!"]]
+      [200, { 'Content-Type' => 'text/plain' }, ['Hello, World!']]
     }
   }
 
@@ -31,7 +31,7 @@ describe Rackstash::Rack::Middleware do
   let(:logger) { Rackstash::Logger.new ->(event) { log << event } }
 
   let(:args) { {} }
-  let(:stack) { described_class.new(app, logger, **args)}
+  let(:stack) { described_class.new(app, logger, **args) }
 
   def get(path, opts = {})
     ::Rack::MockRequest.new(::Rack::Lint.new(stack)).get(path, opts)
@@ -73,7 +73,7 @@ describe Rackstash::Rack::Middleware do
     app = lambda do |env|
       called = true
       expect(env['rack.logger']).to equal logger
-      [200, {'Content-Type' => 'text/plain'}, ["Hello, World!"]]
+      [200, { 'Content-Type' => 'text/plain' }, ['Hello, World!']]
     end
 
     ::Rack::MockRequest.new(described_class.new(app, logger)).get('/')
@@ -85,7 +85,7 @@ describe Rackstash::Rack::Middleware do
     app = lambda do |env|
       called = true
       expect(env['rackstash.logger']).to equal logger
-      [200, {'Content-Type' => 'text/plain'}, ["Hello, World!"]]
+      [200, { 'Content-Type' => 'text/plain' }, ['Hello, World!']]
     end
 
     ::Rack::MockRequest.new(described_class.new(app, logger)).get('/')
@@ -95,7 +95,7 @@ describe Rackstash::Rack::Middleware do
   it 'logs basic request data' do
     get('/demo')
 
-    expect(log.last).to match({
+    expect(log.last).to match(
       'method' => 'GET',
       'path' => '/demo',
       'status' => 200,
@@ -105,7 +105,7 @@ describe Rackstash::Rack::Middleware do
 
       '@timestamp' => /\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d.\d{6}Z/,
       'tags' => []
-    })
+    )
   end
 
   context 'with request_fields' do
@@ -181,7 +181,7 @@ describe Rackstash::Rack::Middleware do
       expect(log.last).to include(
         'error' => 'RuntimeError',
         'error_message' => 'Oh noes!',
-        'error_trace' => %r{\A#{__FILE__}:24:in},
+        'error_trace' => %r{\A#{__FILE__}:24:in}
       )
     end
 
@@ -199,7 +199,7 @@ describe Rackstash::Rack::Middleware do
     end
 
     it 'handles errors on setting request_fields' do
-      args[:request_fields] = -> {
+      args[:request_fields] = lambda {
         {
           'foo' => 'bar',
           'error' => -> { raise 'kaputt' }
@@ -222,7 +222,7 @@ describe Rackstash::Rack::Middleware do
     end
 
     it 'handles errors on setting response_fields' do
-      args[:response_fields] = -> {
+      args[:response_fields] = lambda {
         {
           'foo' => 'bar',
           'error' => -> { raise 'kaputt' }

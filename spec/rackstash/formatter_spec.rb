@@ -35,14 +35,14 @@ describe Rackstash::Formatter do
     exception = nil
     begin
       raise StandardError, 'An Error'
-    rescue => e
+    rescue StandardError => e
       exception = e
     end
 
-    checker = Regexp.new <<-EOF.gsub(/^\s+/, '').rstrip, Regexp::MULTILINE
+    checker = Regexp.new <<-REGEXP.gsub(/^\s+/, '').rstrip, Regexp::MULTILINE
       \\AAn Error \\(StandardError\\)
       #{Regexp.escape __FILE__}:#{__LINE__ - 7}:in `block .*`
-    EOF
+    REGEXP
     expect(formatter.call('ERROR', Time.now, 'progname', exception))
       .to match(checker)
       .and be_frozen

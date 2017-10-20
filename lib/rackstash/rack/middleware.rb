@@ -328,7 +328,6 @@ module Rackstash
           (clock_time - began_at).round(ISO8601_PRECISION)
         }
       end
-
     end
   end
 end

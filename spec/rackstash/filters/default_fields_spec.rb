@@ -24,44 +24,44 @@ describe Rackstash::Filters::DefaultFields do
   it 'adds missing normalized fields' do
     filter! 'new' => 'boing', 123 => :number
 
-    expect(event).to eql({
+    expect(event).to eql(
       'foo' => 'v1',
       'bar' => 'v2',
       'new' => 'boing',
       '123' => 'number'
-    })
+    )
   end
 
   it 'retains existing fields' do
     filter! foo: 'ignored'
 
-    expect(event).to eql({
+    expect(event).to eql(
       'foo' => 'v1',
       'bar' => 'v2'
-    })
+    )
   end
 
   it 'deep_merges fields' do
     event['deep'] = { 'key' => [42, { 'foo' => 'bar' }, nil], 'new' => nil }
     filter! 'deep' => { key: [123], new: 'new' }
 
-    expect(event).to eql({
+    expect(event).to eql(
       'foo' => 'v1',
       'bar' => 'v2',
       'deep' => {
         'key' => [42, { 'foo' => 'bar' }, nil, 123],
         'new' => 'new'
       }
-    })
+    )
   end
 
   it 'resolves Procs' do
     filter! -> { { 'beep' => -> { 'boop' } } }
 
-    expect(event).to eql({
+    expect(event).to eql(
       'foo' => 'v1',
       'bar' => 'v2',
       'beep' => 'boop'
-    })
+    )
   end
 end

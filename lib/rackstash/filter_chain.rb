@@ -75,7 +75,6 @@ module Rackstash
 
         @filters[id] = filter
       end
-      filter
     end
 
     # Adds a new filter at the end of the filter chain. You can either give a
