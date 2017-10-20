@@ -59,11 +59,11 @@ module Rackstash
     #
     # * A {Rackstash::Flow} object. For the most control over the flow, you can
     #   create the {Flow} object on your own and pass it here
-    # * A {Rackstash::Adapters::Adapter}. When passing an adapter, we will
+    # * A {Rackstash::Adapter::Adapter}. When passing an adapter, we will
     #   create a new {Flow} from this adapter, using its default encoder and
     #   without any defined filters.
     # * An log device from which we can create an adapter. In this case, we
-    #   first attempt to build an adapter from it using {Rackstash::Adapters.[]}.
+    #   first attempt to build an adapter from it using {Rackstash::Adapter.[]}.
     #   After that, we use it to create a {Flow} as above.
     #
     # When passing a block to this initializer, we will yield the last created
@@ -74,16 +74,16 @@ module Rackstash
     # The following three example to create a custom Logger are thus equivalent:
     #
     #     logger = Rackstash::Logger.new(STDOUT) do
-    #       encoder Rackstash::Encoders::Message.new
+    #       encoder Rackstash::Encoder::Message.new
     #     end
     #
-    #     logger = Rackstash::Logger.new(Rackstash::Adapters::IO.new(STDOUT)) do
-    #       encoder Rackstash::Encoders::Message.new
+    #     logger = Rackstash::Logger.new(Rackstash::Adapter::IO.new(STDOUT)) do
+    #       encoder Rackstash::Encoder::Message.new
     #     end
     #
-    #     adapter = Rackstash::Adapters::IO.new(STDOUT)
+    #     adapter = Rackstash::Adapter::IO.new(STDOUT)
     #     flow = Rackstash::Flows.new(adapter) do
-    #       encoder Rackstash::Encoders::Message.new
+    #       encoder Rackstash::Encoder::Message.new
     #     end
     #     logger = Rackstash::Logger.new(flow)
     #
@@ -92,7 +92,7 @@ module Rackstash
     #
     #     logger = Rackstash::Logger.new(STDOUT)
     #
-    # @param flows [Array<Flow, Object>, Flow, Adapters::Adapter, Object]
+    # @param flows [Array<Flow, Object>, Flow, Adapter::Adapter, Object]
     #   an array of {Flow}s or a single {Flow}, respectivly object which can be
     #   used as a {Flow}'s adapter. See {Flow#initialize}.
     # @param level [Integer] a numeric log level. Normally you'd use one of the

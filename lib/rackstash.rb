@@ -136,7 +136,7 @@ module Rackstash
   FIELD_STATUS = 'status'.freeze
 
   # Returns a {Flow} which is used by the normal logger {Flow}s to write details
-  # about any unexpected errors during interaction with their {Adapters}.
+  # about any unexpected errors during interaction with their {Adapter}s.
   #
   # By default, this Flow logs JSON-formatted messages to `STDERR`
   #
@@ -146,7 +146,7 @@ module Rackstash
   end
 
   # Set a {Flow} which is used bythe normal logger {Flow}s to write details
-  # of any unexpected errors during interaction with their {Adapters}.
+  # of any unexpected errors during interaction with their {Adapter}s.
   #
   # You can set a different `error_flow` for each {Flow} if required. You can
   # also change this flow to match your desired fallback format and log adapter.
@@ -156,7 +156,7 @@ module Rackstash
   # external issues, it is usually desireable to chose a local and mostly
   # relibable log target.
   #
-  # @param flow [Flow, Adapters::Adapter, Object] a single {Flow} or an object
+  # @param flow [Flow, Adapter::Adapter, Object] a single {Flow} or an object
   #   which can be used as a {Flow}'s adapter. See {Flow#initialize}.
   # @return [Rackstash::Flow] the given `flow`
   def self.error_flow=(flow)
@@ -167,8 +167,8 @@ end
 
 require 'rackstash/logger'
 
-require 'rackstash/adapters/callable'
-require 'rackstash/adapters/file'
-require 'rackstash/adapters/logger'
-require 'rackstash/adapters/io'
-require 'rackstash/adapters/null'
+require 'rackstash/adapter/callable'
+require 'rackstash/adapter/file'
+require 'rackstash/adapter/logger'
+require 'rackstash/adapter/io'
+require 'rackstash/adapter/null'

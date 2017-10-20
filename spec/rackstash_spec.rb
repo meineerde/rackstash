@@ -140,8 +140,8 @@ describe Rackstash do
     it 'returns a default Flow' do
       expect(described_class.error_flow).to be_instance_of Rackstash::Flow
 
-      expect(described_class.error_flow.encoder).to be_instance_of Rackstash::Encoders::JSON
-      expect(described_class.error_flow.adapter).to be_instance_of Rackstash::Adapters::IO
+      expect(described_class.error_flow.encoder).to be_instance_of Rackstash::Encoder::JSON
+      expect(described_class.error_flow.adapter).to be_instance_of Rackstash::Adapter::IO
     end
 
     it 'caches the flow' do

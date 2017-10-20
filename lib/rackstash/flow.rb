@@ -5,8 +5,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
-require 'rackstash/adapters'
-require 'rackstash/encoders'
+require 'rackstash/adapter'
+require 'rackstash/encoder'
 require 'rackstash/filters'
 require 'rackstash/filter_chain'
 
@@ -28,17 +28,17 @@ module Rackstash
   #   format suitable for the final log adapter. Most of the time, the encoder
   #   generates a String but can also produce other formats. Be sure to chose
   #   an encoder which matches the adapter's expectations. Usually, this is one
-  #   of the {Encoders}.
+  #   of the {Encoder}s.
   # * And finally the log `Adapter` which is responsible to send the encoded log
   #   event to an external log target, e.g. a file or an external log receiver.
   #   When setting up the flow, you can either provide an existing adapter
   #   object or provide an object which can be wrapped in an adapter. See
-  #   {Adapters} for a list of pre-defined log adapters.
+  #   {Adapter} for a list of pre-defined log adapters.
   #
   # You can build a Flow using a simple DSL:
   #
   #     flow = Rackstash::Flow.new(STDOUT) do
-  #       encoder Rackstash::Encoders::JSON.new
+  #       encoder Rackstash::Encoder::JSON.new
   #
   #       # Anonymize IPs in the remote_ip field.
   #       filter Rackstash::Filters::AnonymizeIPMask.new('remote_ip')
@@ -60,15 +60,15 @@ module Rackstash
   # The event which eventually gets written to the flow is created from a Buffer
   # with {Buffer#to_event}.
   class Flow
-    # @return [Adapters::Adapter] the log adapter
+    # @return [Adapter::Adapter] the log adapter
     attr_reader :adapter
 
     # @return [FilterChain] the mutable filter chain.
     attr_reader :filter_chain
 
-    # @param adapter [Adapters::Adapter, Object] an adapter or an object which
-    #   can be wrapped in an adapter. See {Adapters.[]}
-    # @param encoder [#encode] an encoder, usually one of the {Encoders}. If
+    # @param adapter [Adapter::Adapter, Object] an adapter or an object which
+    #   can be wrapped in an adapter. See {Adapter.[]}
+    # @param encoder [#encode] an encoder, usually one of the {Encoder}s. If
     #   this is not given, the adapter's default_encoder will be used.
     # @param filters [Array<#call>] an array of filters. Can be one of the
     #   pre-defined {Filters}, a `Proc`, or any other object which responds to
@@ -77,7 +77,7 @@ module Rackstash
     #   `self` as a parameter, else, the block is directly executed in the
     #   context of `self`.
     def initialize(adapter, encoder: nil, filters: [], error_flow: nil, &block)
-      @adapter = Rackstash::Adapters[adapter]
+      @adapter = Rackstash::Adapter[adapter]
       self.encoder = encoder || @adapter.default_encoder
       @filter_chain = Rackstash::FilterChain.new(filters)
       self.error_flow = error_flow

@@ -14,7 +14,7 @@ module Rackstash
   # used to write a single log event of a {Buffer} to multiple flows. Each
   # {Logger} object has an associated Flows object to define the logger's flows.
   class Flows
-    # @param flows [::Array<Flow, Adapters::Adapter, Object>] the {Flow} objects
+    # @param flows [::Array<Flow, Adapter::Adapter, Object>] the {Flow} objects
     #   which should be part of the list. If any of the arguments is not a
     #   {Flow} already, we assume it is an adapter and create a new {Flow} for
     #   it.
@@ -28,7 +28,7 @@ module Rackstash
 
     # Add a new flow at the end of the list.
     #
-    # @param flow [Flow, Adapters::Adapter, Object] The flow to add to the end
+    # @param flow [Flow, Adapter::Adapter, Object] The flow to add to the end
     #   of the list. If the argument is not a {Flow}, we assume it is an adapter
     #   and create a new {Flow} with it.
     # @return [self]
@@ -51,7 +51,7 @@ module Rackstash
     # is an adapter and create a new {Flow} for it.
     #
     # @param index [Integer] the index in the list where we set the flow
-    # @param flow [Flow, Adapters::Adapter, Object] The flow to add at `index`.
+    # @param flow [Flow, Adapter::Adapter, Object] The flow to add at `index`.
     #   If the argument is not a {Flow}, we assume it is an adapter and create
     #   a new {Flow} with it.
     # @return [void]

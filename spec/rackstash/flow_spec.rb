@@ -10,14 +10,14 @@ require 'spec_helper'
 require 'rackstash/flow'
 
 describe Rackstash::Flow do
-  let(:adapter) { Rackstash::Adapters::Null.new }
+  let(:adapter) { Rackstash::Adapter::Null.new }
   let(:flow) { described_class.new(adapter) }
   let(:event) { {} }
 
   describe '#initialize' do
     it 'creates an adapter' do
-      expect(Rackstash::Adapters).to receive(:[]).with(nil).and_call_original
-      expect(described_class.new(nil).adapter).to be_a Rackstash::Adapters::Null
+      expect(Rackstash::Adapter).to receive(:[]).with(nil).and_call_original
+      expect(described_class.new(nil).adapter).to be_a Rackstash::Adapter::Null
     end
 
     it 'sets the default encoder from the adapter' do
@@ -28,7 +28,7 @@ describe Rackstash::Flow do
     end
 
     it 'allows to set a custom encoder' do
-      encoder = Rackstash::Encoders::Raw.new
+      encoder = Rackstash::Encoder::Raw.new
       flow = described_class.new(adapter, encoder: encoder)
 
       expect(flow.encoder).to equal encoder
@@ -117,7 +117,7 @@ describe Rackstash::Flow do
     end
 
     it 'allows to set a new encoder' do
-      encoder = Rackstash::Encoders::JSON.new
+      encoder = Rackstash::Encoder::JSON.new
       expect(flow.encoder(encoder)).to equal encoder
 
       # The encoder is persisted and is returned afterwards
@@ -127,7 +127,7 @@ describe Rackstash::Flow do
 
   describe '#encoder=' do
     it 'sets a new encoder' do
-      encoder = Rackstash::Encoders::JSON.new
+      encoder = Rackstash::Encoder::JSON.new
       flow.encoder = encoder
 
       expect(flow.encoder).to equal encoder
