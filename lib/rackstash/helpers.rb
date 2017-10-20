@@ -12,3 +12,4 @@ module Rackstash
 end
 
 require 'rackstash/helpers/utf8'
+require 'rackstash/helpers/time'
