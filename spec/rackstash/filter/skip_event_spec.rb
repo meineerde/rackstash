@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-require 'rackstash/filters/skip_event'
+require 'rackstash/filter/skip_event'
 
-describe Rackstash::Filters::SkipEvent do
+describe Rackstash::Filter::SkipEvent do
   describe '#initialize' do
     it 'expects a condition' do
       expect { described_class.new }.to raise_error TypeError

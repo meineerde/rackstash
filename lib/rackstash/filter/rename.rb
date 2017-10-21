@@ -6,7 +6,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  module Filters
+  module Filter
     # Rename one or more fields in the given event.
     #
     # @example

@@ -5,13 +5,13 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
-require 'rackstash/filters/clear_color'
-require 'rackstash/filters/default_fields'
-require 'rackstash/filters/default_tags'
-require 'rackstash/filters/rename'
-require 'rackstash/filters/replace'
-require 'rackstash/filters/skip_event'
-require 'rackstash/filters/truncate_message'
+require 'rackstash/filter/clear_color'
+require 'rackstash/filter/default_fields'
+require 'rackstash/filter/default_tags'
+require 'rackstash/filter/rename'
+require 'rackstash/filter/replace'
+require 'rackstash/filter/skip_event'
+require 'rackstash/filter/truncate_message'
 
 module Rackstash
   # Filters are part of a {Flow} where they can alter the log event before it is
@@ -28,16 +28,16 @@ module Rackstash
   #
   # A filter can be any object responding to `call`, e.g. a Proc or a concrete
   # class inside this module.
-  module Filters
+  module Filter
     # Create a new filter instance from the specified class and the given
     # arguments. The class can be given as an actual class or as the name of a
     # filter in which case we are resolving it to a class defined inside the
-    # {Rackstash::Filters} namespace.
+    # {Rackstash::Filter} namespace.
     #
     # @param klass [Class, Symbol, String, #call] a description of the class
     #   from which we are creating a new filter object. When giving a `Class`,
     #   we are using it as is. When giving a `String` or `Symbol`, we are
-    #   determining the associated class from the {Rackstash::Filters} module
+    #   determining the associated class from the {Rackstash::Filter} module
     #   and create an instance of that. When giving an object which responds to
     #   `call` already, we return it unchanged, ignoring any additional passed
     #   `args`.
@@ -66,7 +66,7 @@ module Rackstash
     end
 
     # @return [Hash<Symbol => Class>] a Hash with names of filters and their
-    #   respective classes which can be used with {Filters.build} to create a
+    #   respective classes which can be used with {Filter.build} to create a
     #   new filter object
     def self.known
       constants.each_with_object({}) do |const, known|

@@ -22,7 +22,7 @@ module Rackstash
     # standard library. All logs emitted to the given logger will be emitted
     # with the defined severity (`INFO` by default). Since a log event in
     # Rackstash can contain multiple concatenanted messages, you should make
-    # sure to format them properly with {Filters} or a custom encoder if
+    # sure to format them properly with a {Filter} or a custom encoder if
     # required.
     #
     # While most loggers expect Strings as arguments to their `add` method, some

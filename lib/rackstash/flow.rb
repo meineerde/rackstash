@@ -7,7 +7,7 @@
 
 require 'rackstash/adapter'
 require 'rackstash/encoder'
-require 'rackstash/filters'
+require 'rackstash/filter'
 require 'rackstash/filter_chain'
 
 module Rackstash
@@ -19,7 +19,7 @@ module Rackstash
   # In order to transform and persist log events, a Flow uses several
   # components:
   #
-  # * Any number of {Filters} (zero or more). The filters can change the log
+  # * Any number of {Filter}s (zero or more). The filters can change the log
   #   event before it is passed to the adapter by adding, changing, or removing
   #   fields. The filters also have access to the array of {Message} objects in
   #   `event["messages"]` which provide the original severity and timestamp of
@@ -41,7 +41,7 @@ module Rackstash
   #       encoder Rackstash::Encoder::JSON.new
   #
   #       # Anonymize IPs in the remote_ip field.
-  #       filter Rackstash::Filters::AnonymizeIPMask.new('remote_ip')
+  #       filter Rackstash::Filter::AnonymizeIPMask.new('remote_ip')
   #
   #       # Add the maximum severity of any message in the event into the
   #       # severity and severity_label fields.
@@ -70,9 +70,8 @@ module Rackstash
     #   can be wrapped in an adapter. See {Adapter.[]}
     # @param encoder [#encode] an encoder, usually one of the {Encoder}s. If
     #   this is not given, the adapter's default_encoder will be used.
-    # @param filters [Array<#call>] an array of filters. Can be one of the
-    #   pre-defined {Filters}, a `Proc`, or any other object which responds to
-    #   `call`.
+    # @param filters [Array<#call>] an array of filters. Can be a pre-defined
+    #   {Filter}, a `Proc`, or any other object which responds to `call`.
     # @yieldparam flow [self] if the given block accepts an argument, we yield
     #   `self` as a parameter, else, the block is directly executed in the
     #   context of `self`.

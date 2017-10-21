@@ -11,10 +11,10 @@ module Rackstash
   # The FilterChain contains a list of event filters which are used by a {Flow}
   # to mutate an event before it is envoded and sent to the adapter for writing.
   #
-  # A filter is any object responding to `call`, e.g. one of the {Filters} or a
-  # `Proc` object. When running the filters, we call each filter iin turn,
-  # passing the event. The filter can change the event in any way desired but
-  # should make sure that it preserves the basic structure of the event:
+  # A filter is any object responding to `call`, e.g. a {Filter} or a `Proc`
+  # object. When running the filters, we call each filter in turn, passing the
+  # event. The filter can change the event in any way desired but should make
+  # sure that it preserves the basic structure of the event:
   #
   # * Only use basic objects: `Hash`, `Array`, `String`, `Integer`, `Float`.
   # * Hash keys should always be strings
@@ -78,8 +78,8 @@ module Rackstash
     end
 
     # Adds a new filter at the end of the filter chain. You can either give a
-    # callable object (e.g. a `Proc` or one of the {Filters}) or specify the
-    # filter with a given block.
+    # callable object (e.g. a `Proc` or a {Filter}) or specify the filter with
+    # a given block.
     #
     # @param filter_spec (see #build_filter)
     # @raise [TypeError] if no suitable filter could be created from
@@ -236,8 +236,8 @@ module Rackstash
     alias size length
 
     # Prepends a new filter at the beginning of the filter chain. You can either
-    # give a callable object (e.g. a `Proc` or one of the {Filters}) or specify
-    # the filter with a given block.
+    # give a callable object (e.g. a `Proc` or a {Filter}) or specify the filter
+    # with a given block.
     #
     # @param filter_spec (see #build_filter)
     # @raise [TypeError] if we could not build a filter from the given
@@ -296,16 +296,16 @@ module Rackstash
     #   `#call`), we will directly return it. If you give a `Class` plus any
     #   optional initializer arguments, we will return a new instance of that
     #   class. When giving a `String` or `Symbol`, we will resolve it to a
-    #   filter class from the {Rackstash::Filters} module and create a new
+    #   filter class from the {Rackstash::Filter} module and create a new
     #   instance of that class with the additional arguments given to
     #   `initialize`.
     # @return [#call] a filter instance
     def build_filter(filter_spec, &block)
       if filter_spec.empty?
-        return Rackstash::Filters.build(block) if block_given?
+        return Rackstash::Filter.build(block) if block_given?
         raise ArgumentError, 'Need to specify a filter'
       else
-        Rackstash::Filters.build(*filter_spec, &block)
+        Rackstash::Filter.build(*filter_spec, &block)
       end
     end
   end

@@ -337,17 +337,16 @@ module Rackstash
     #
     # Note that the resulting hash still contains an Array of {Message}s in the
     # `"message"` field and a `Time` object in the '@timestamp' field. This
-    # allows the {Flow}'s components (usually the {Filters} or the
-    # {Flow#encoder}) to reject or adapt some messages based on
-    # their original attributes, e.g., their severity or timestamp. It is the
-    # responsibility of the {Flow#encoder} to correctly format the
-    # `"@timestamp"` field.
+    # allows the {Flow}'s components (usually a {Filter} or the {Flow#encoder})
+    # to reject or adapt some messages based on their original attributes, e.g.,
+    # their severity or timestamp. It is the responsibility of the
+    # {Flow#encoder} to correctly format the `"@timestamp"` field.
     #
     # All other fields in the event Hash besides `"message"` and `@timestamp"`
     # are either `Hash`, `Array`, frozen `String`, `Integer` or `Float` objects.
     # All hashes (including nested hashes) use `String` keys.
     #
-    # @return [Hash] the event expected by the event {Filters}.
+    # @return [Hash] the event expected by the event {Filter}s.
     def to_event
       event = fields.to_h
       event[FIELD_TAGS] = tags.to_a

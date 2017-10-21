@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-require 'rackstash/filters/default_tags'
+require 'rackstash/filter/default_tags'
 
-describe Rackstash::Filters::DefaultTags do
+describe Rackstash::Filter::DefaultTags do
   let(:event) {
     {
       'key' => 'value'

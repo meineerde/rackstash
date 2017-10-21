@@ -6,7 +6,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  module Filters
+  module Filter
     # Skip the further processing of the event of the condition is `true`.
     #
     # This filter is a basic example of how you can write filters which abort

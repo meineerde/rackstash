@@ -8,9 +8,9 @@
 require 'spec_helper'
 require 'securerandom'
 
-require 'rackstash/filters'
+require 'rackstash/filter'
 
-describe Rackstash::Filters do
+describe Rackstash::Filter do
   let(:filter_class) { Class.new }
   let(:random) { SecureRandom.hex(6) }
   let(:filter_class_name) { :"FilterClass#{random}" }
@@ -60,7 +60,7 @@ describe Rackstash::Filters do
   end
 
   describe '.known' do
-    it 'returns a Hash with known Filters' do
+    it 'returns a Hash with known filters' do
       expect(described_class.known).not_to be_empty
 
       expect(described_class.known.keys).to all(

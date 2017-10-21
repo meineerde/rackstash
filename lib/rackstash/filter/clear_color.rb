@@ -6,7 +6,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  module Filters
+  module Filter
     # Remove all ANSI color codes from the `"message"` field of the given event
     # `Hash`.
     #

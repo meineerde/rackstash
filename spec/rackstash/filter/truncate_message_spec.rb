@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-require 'rackstash/filters/truncate_message'
+require 'rackstash/filter/truncate_message'
 
-describe Rackstash::Filters::TruncateMessage do
+describe Rackstash::Filter::TruncateMessage do
   let(:max_size) { 36 }
   let(:args) { { selectors: [], cut: :bottom } }
   let(:filter) { described_class.new(max_size, **args) }

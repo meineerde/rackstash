@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-require 'rackstash/filters/rename'
+require 'rackstash/filter/rename'
 
-describe Rackstash::Filters::Rename do
+describe Rackstash::Filter::Rename do
   let(:event) {
     {
       'foo' => 'foo value',

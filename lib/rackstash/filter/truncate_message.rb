@@ -6,7 +6,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  module Filters
+  module Filter
     # The Truncate filter can be used to restrict the size of the emitted
     # message. By selectively deleting parts until the message size fits into
     # the defined limit, you can ensure that log events are properly handled by

@@ -6,7 +6,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  module Filters
+  module Filter
     # Update fields in the given event with new values. A new value can be
     # specified as either a fixed value or as a `Proc` (or any other object
     # responding to `call`). In the latter case, the callable object will be

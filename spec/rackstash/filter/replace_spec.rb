@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-require 'rackstash/filters/update'
+require 'rackstash/filter/replace'
 
-describe Rackstash::Filters::Update do
+describe Rackstash::Filter::Replace do
   let(:event) {
     {
       'foo' => 'foo value',
@@ -31,14 +31,13 @@ describe Rackstash::Filters::Update do
     expect(event).to eql 'foo' => 'foo value', 'bar' => 123
   end
 
-  it 'ignores missing fields' do
-    spec = { 'baz' => 42, 'boing' => ->(_event) { 'quark' } }
-    expect(spec['boing']).not_to receive(:call)
-
-    filter!(spec)
+  it 'always sets fields' do
+    filter!('baz' => 42, 'boing' => ->(_event) { 'quark' })
     expect(event).to eql(
       'foo' => 'foo value',
-      'bar' => 'bar value'
+      'bar' => 'bar value',
+      'baz' => 42,
+      'boing' => 'quark'
     )
   end
 

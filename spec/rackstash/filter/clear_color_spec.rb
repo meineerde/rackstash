@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-require 'rackstash/filters/clear_color'
+require 'rackstash/filter/clear_color'
 
-describe Rackstash::Filters::ClearColor do
+describe Rackstash::Filter::ClearColor do
   let(:filter) { described_class.new }
 
   it 'removes any ANSI color codes from the message' do

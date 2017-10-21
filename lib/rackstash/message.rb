@@ -14,7 +14,7 @@ module Rackstash
   #
   # In the end, only the `message` field will be included in the final log
   # event. However, the stored meta-data can be useful when filtering or
-  # changing the messages of a log event using {Filters} later.
+  # changing the messages of a log event using a {Filter} later.
   #
   # All `Message` objects and their respective data are immutable after
   # initialization.

@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-require 'rackstash/filters/default_fields'
+require 'rackstash/filter/default_fields'
 
-describe Rackstash::Filters::DefaultFields do
+describe Rackstash::Filter::DefaultFields do
   let(:event) {
     {
       'foo' => 'v1',

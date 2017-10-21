@@ -6,7 +6,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 module Rackstash
-  module Filters
+  module Filter
     # The {DefaultTags} filter allows to define tags which should be added
     # to an event if they aren't already explicitly set there. All existing tags
     # on the event are retained.
