@@ -24,7 +24,7 @@ describe Rackstash::Adapter do
   end
 
   let(:adapter) {
-    Class.new(Rackstash::Adapter::Adapter) do
+    Class.new(Rackstash::Adapter::BaseAdapter) do
       def self.from_uri(*args)
         new(*args)
       end
@@ -115,7 +115,7 @@ describe Rackstash::Adapter do
 
         expect(device_class).to receive(:===).with(device).and_call_original
         expect(adapter).to receive(:new).with(device).and_call_original
-        expect(described_class[device]).to be_an Rackstash::Adapter::Adapter
+        expect(described_class[device]).to be_an Rackstash::Adapter::BaseAdapter
       end
 
       it 'creates an adapter if any parent class was found' do
@@ -123,7 +123,7 @@ describe Rackstash::Adapter do
 
         expect(device_class).to receive(:===).with(inherited_device).and_call_original
         expect(adapter).to receive(:new).with(inherited_device).and_call_original
-        expect(described_class[inherited_device]).to be_an Rackstash::Adapter::Adapter
+        expect(described_class[inherited_device]).to be_an Rackstash::Adapter::BaseAdapter
       end
 
       it 'raises if no class was found' do
@@ -149,14 +149,14 @@ describe Rackstash::Adapter do
         device = SpecDevice.new
 
         expect(adapter).to receive(:new).with(device).and_call_original
-        expect(described_class[device]).to be_an Rackstash::Adapter::Adapter
+        expect(described_class[device]).to be_an Rackstash::Adapter::BaseAdapter
       end
 
       it 'creates an adapter if any parent class was found' do
         inherited_device = InheritedSpecDevice.new
 
         expect(adapter).to receive(:new).with(inherited_device).and_call_original
-        expect(described_class[inherited_device]).to be_an Rackstash::Adapter::Adapter
+        expect(described_class[inherited_device]).to be_an Rackstash::Adapter::BaseAdapter
       end
 
       it 'raises if no class was found' do
@@ -174,7 +174,7 @@ describe Rackstash::Adapter do
         device = Struct.new(:foo).new('foo')
 
         expect(adapter).to receive(:new).with(device).and_call_original
-        expect(described_class[device]).to be_an Rackstash::Adapter::Adapter
+        expect(described_class[device]).to be_an Rackstash::Adapter::BaseAdapter
       end
 
       it 'raises if it does not respond to the registered method' do
@@ -194,7 +194,7 @@ describe Rackstash::Adapter do
 
         expect(checker).to receive(:===).with(device).and_call_original
         expect(adapter).to receive(:new).with(device).and_call_original
-        expect(described_class[device]).to be_an Rackstash::Adapter::Adapter
+        expect(described_class[device]).to be_an Rackstash::Adapter::BaseAdapter
       end
 
       it 'does not create an adapter if the proc returns false' do
@@ -215,11 +215,11 @@ describe Rackstash::Adapter do
       it 'creates an adapter from the scheme' do
         raw_uri = 'dummy://example.com'
         expect(adapter).to receive(:from_uri).with(URI(raw_uri)).and_call_original
-        expect(described_class[raw_uri]).to be_an Rackstash::Adapter::Adapter
+        expect(described_class[raw_uri]).to be_an Rackstash::Adapter::BaseAdapter
       end
 
       it 'calls adapter.new if adapter.from_uri is not available' do
-        plain_adapter = Class.new(Rackstash::Adapter::Adapter)
+        plain_adapter = Class.new(Rackstash::Adapter::BaseAdapter)
         described_class.register plain_adapter, 'dummy'
 
         raw_uri = 'dummy://example.com'
@@ -231,7 +231,7 @@ describe Rackstash::Adapter do
       it 'creates an adapter from a URI' do
         uri = URI('dummy://example.com')
         expect(adapter).to receive(:from_uri).with(uri).and_call_original
-        expect(described_class[uri]).to be_an Rackstash::Adapter::Adapter
+        expect(described_class[uri]).to be_an Rackstash::Adapter::BaseAdapter
       end
 
       it 'raises if no scheme was found' do
@@ -254,7 +254,7 @@ describe Rackstash::Adapter do
           expect(adapter).to_not receive(:from_uri)
           # from the fallback
           expect(adapter).to receive(:new).with(invalid_uri).and_call_original
-          expect(described_class[invalid_uri]).to be_an Rackstash::Adapter::Adapter
+          expect(described_class[invalid_uri]).to be_an Rackstash::Adapter::BaseAdapter
         end
 
         it 'falls though if no scheme was found' do
@@ -262,7 +262,7 @@ describe Rackstash::Adapter do
 
           expect(adapter).to_not receive(:from_uri)
           expect(adapter).to receive(:new).with(unknown_uri).and_call_original
-          expect(described_class[unknown_uri]).to be_an Rackstash::Adapter::Adapter
+          expect(described_class[unknown_uri]).to be_an Rackstash::Adapter::BaseAdapter
         end
       end
     end

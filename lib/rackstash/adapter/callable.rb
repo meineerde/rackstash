@@ -5,7 +5,7 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
-require 'rackstash/adapter/adapter'
+require 'rackstash/adapter/base_adapter'
 require 'rackstash/encoder/hash'
 
 module Rackstash
@@ -27,7 +27,7 @@ module Rackstash
     #     Rackstash::Adapter::Callable.new do |log|
     #       # handle the log as required
     #     end
-    class Callable < Adapter
+    class Callable < BaseAdapter
       register_for ::Proc, :call
 
       # Create a new Callable adapter by wrapping a proc. You can pass the proc

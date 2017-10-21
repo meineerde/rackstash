@@ -20,7 +20,7 @@ module Rackstash
     #
     # @abstract Subclasses need to override at least {#write_single} to
     #   implement a concrete log adapter.
-    class Adapter
+    class BaseAdapter
       # Register the current class as an adapter for the provided matchers.
       #
       # This is a convenience method intended to be used by sub-classes of this

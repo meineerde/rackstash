@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-require 'rackstash/adapter/adapter'
+require 'rackstash/adapter/base_adapter'
 
-describe Rackstash::Adapter::Adapter do
+describe Rackstash::Adapter::BaseAdapter do
   let(:adapter) { described_class.new }
 
   describe '#initialize' do

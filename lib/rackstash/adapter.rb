@@ -41,12 +41,12 @@ module Rackstash
       # @param matchers [Array<String, Symbol, #===>] a list of specifications
       #   for log devices the `adapter_class` can forward logs to.
       # @raise [TypeError] if the passed adapter_class is not a class
-      #   inheriting from {Adapter::Adapter}
+      #   inheriting from {BaseAdapter}
       # @return [Class] the `adapter_class`
       def register(adapter_class, *matchers)
-        unless adapter_class.is_a?(Class) && adapter_class < Rackstash::Adapter::Adapter
+        unless adapter_class.is_a?(Class) && adapter_class < BaseAdapter
           raise TypeError, 'adapter_class must be a class and inherit from ' \
-            'Rackstash::Adapter::Adapter'
+            'Rackstash::Adapter::BaseAdapter'
         end
 
         matchers.flatten.each do |matcher|
@@ -85,14 +85,14 @@ module Rackstash
       #
       # if no suitable adapter can be found, we raise an `ArgumentError`.
       #
-      # @param device [Adapter::Adapter, Object] a log device which should be
-      #   wrapped in an {Adapter}. If it is already an adapter, the `device` is
-      #   returned unchanged.
+      # @param device [BaseAdapter, Object] a log device which should be
+      #   wrapped in an adapter object. If it is already an adapter, the
+      #   `device` is returned unchanged.
       # @raise [ArgumentError] if no suitable adapter could be found for the
       #   provided `device`
       # @return [Adapter::Adapter] the resolved adapter instance
       def [](device)
-        return device if device.is_a?(Rackstash::Adapter::Adapter)
+        return device if device.is_a?(BaseAdapter)
 
         adapter   = adapter_by_uri(device)
         adapter ||= adapter_by_type(device)

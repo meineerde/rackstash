@@ -9,7 +9,7 @@ require 'fileutils'
 require 'pathname'
 require 'thread'
 
-require 'rackstash/adapter/adapter'
+require 'rackstash/adapter/base_adapter'
 
 module Rackstash
   module Adapter
@@ -56,7 +56,7 @@ module Rackstash
     # Since the {File} adapter automatically reopens the logfile after the
     # file was moved, you don't need to create the new file there nor should you
     # use the (potentially destructive) `copytruncate` option of logrotate.
-    class File < Adapter
+    class File < BaseAdapter
       register_for ::String, ::Pathname
 
       # @return [String] the absolute path to the log file

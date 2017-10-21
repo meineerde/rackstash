@@ -7,7 +7,7 @@
 
 require 'logger'
 
-require 'rackstash/adapter/adapter'
+require 'rackstash/adapter/base_adapter'
 
 module Rackstash
   module Adapter
@@ -34,7 +34,7 @@ module Rackstash
     # `STDERR`), you should use the {File} encoder respectively the {IO} encoder
     # instead which usally provide stronger consistency guarantees and are
     # faster.
-    class Logger < Adapter
+    class Logger < BaseAdapter
       register_for ::Logger, 'Syslog::Logger'
 
       # @param logger [#add] A base logger to send log lines to. We only expect

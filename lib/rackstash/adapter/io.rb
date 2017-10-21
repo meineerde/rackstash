@@ -7,7 +7,7 @@
 
 require 'thread'
 
-require 'rackstash/adapter/adapter'
+require 'rackstash/adapter/base_adapter'
 
 module Rackstash
   module Adapter
@@ -31,7 +31,7 @@ module Rackstash
     # different adapter to ensure consistent logs. Suitable adapters for this
     # use-case include {Rackstash::Adapter::File} or
     # {Rackstash::Adapter::TCP}.
-    class IO < Adapter
+    class IO < BaseAdapter
       # This module is by default included into all objects passed to
       # {Adapter::IO#initialize}. It allows to synchronize all write accesses
       # against this object, even when writing to the same object from multiple

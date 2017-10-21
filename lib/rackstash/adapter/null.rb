@@ -5,7 +5,7 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
-require 'rackstash/adapter/adapter'
+require 'rackstash/adapter/base_adapter'
 require 'rackstash/encoder/raw'
 
 module Rackstash
@@ -14,7 +14,7 @@ module Rackstash
     #
     # It is probably not very useful for production use but can be used to test
     # the {Flow} pipeline.
-    class Null < Adapter
+    class Null < BaseAdapter
       register_for NilClass
 
       # Create a new black hole adapter. Any logs written to it will be
