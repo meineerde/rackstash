@@ -53,7 +53,7 @@ describe Rackstash::Encoder::Helper::Timestamp do
       event['@timestamp'] = Time.parse('2016-10-17 13:37:00 +03:00')
       event['custom'] = Time.parse('2016-10-17 20:42:00 +07:00')
 
-      expect(helper.normalize_timestamp(event, field: 'custom')).to match(
+      expect(helper.normalize_timestamp(event, 'custom')).to match(
         '@timestamp' => instance_of(Time),
         'custom' => '2016-10-17T13:42:00.000000Z'
       )

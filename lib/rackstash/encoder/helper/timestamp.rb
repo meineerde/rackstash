@@ -28,7 +28,7 @@ module Rackstash
         #   hash. By default, we use the `"@timestamp"` field.
         # @return [Hash] the given event with the `field` key set as an ISO 8601
         #   formatted time string.
-        def normalize_timestamp(event, field: FIELD_TIMESTAMP) #:doc:
+        def normalize_timestamp(event, field = FIELD_TIMESTAMP) #:doc:
           time = event[field]
 
           if time.is_a?(Time) || time.is_a?(DateTime)
