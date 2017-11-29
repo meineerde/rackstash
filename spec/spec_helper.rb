@@ -22,6 +22,16 @@ if ENV['COVERAGE']
     project_name 'Rackstash'
     add_filter '/spec/'
   end
+
+  # Load `rackstash/version.rb` again to get proper coverage data. This file is
+  # already loaded by bundler before SimpleCov starts during evaluation of the
+  # the `rackstash.gemspec` file
+  begin
+    warn_level, $VERBOSE = $VERBOSE, nil
+    load File.expand_path('../lib/rackstash/version.rb', __dir__)
+  ensure
+    $VERBOSE = warn_level
+  end
 end
 
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
