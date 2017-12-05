@@ -92,6 +92,19 @@ describe Rackstash::Rack::Middleware do
     expect(called).to be true
   end
 
+  it 'sets rack.errors environment variable' do
+    called = false
+    app = lambda do |env|
+      called = true
+      expect(env['rack.errors']).to be_instance_of Rackstash::Rack::Errors
+      expect(env['rack.errors'].logger).to equal logger
+      [200, { 'Content-Type' => 'text/plain' }, ['Hello, World!']]
+    end
+
+    ::Rack::MockRequest.new(described_class.new(app, logger)).get('/')
+    expect(called).to be true
+  end
+
   it 'logs basic request data' do
     get('/demo')
 

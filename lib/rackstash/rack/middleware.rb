@@ -7,6 +7,7 @@
 require 'rack'
 
 require 'rackstash/helpers/time'
+require 'rackstash/rack/errors'
 
 module Rackstash
   module Rack
@@ -199,6 +200,7 @@ module Rackstash
         began_at = clock_time
         env['rackstash.logger'.freeze] = @logger
         env['rack.logger'.freeze] = @logger
+        env['rack.errors'.freeze] = Rackstash::Rack::Errors.new(@logger)
 
         @logger.push_buffer(buffering: @buffering, allow_silent: true)
         begin
