@@ -364,6 +364,7 @@ module Rackstash
     def add_exception(exception, force: true)
       buffer.add_exception(exception, force: force)
     end
+    alias add_error add_exception
 
     # Create a new {Buffer} and put it on the {BufferStack} for the current
     # Thread. Until it is poped again with {#pop_buffer}, all newly logged

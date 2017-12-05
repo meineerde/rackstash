@@ -483,6 +483,10 @@ describe Rackstash::Logger do
       expect(Rackstash::Buffer.instance_method(:add_exception).parameters)
         .to eql logger.method(:add_exception).parameters
     end
+
+    it 'can be called as #add_error' do
+      expect(logger.method(:add_error)).to eql logger.method(:add_exception)
+    end
   end
 
   describe '#push_buffer' do
