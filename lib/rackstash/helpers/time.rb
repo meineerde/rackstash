@@ -23,7 +23,7 @@ module Rackstash
         #
         # @return [Float] the current timestamp
         def clock_time
-          Time.now.to_f
+          ::Time.now.to_f
         end
       end
     end

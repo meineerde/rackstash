@@ -20,11 +20,34 @@ describe Rackstash::Helpers::Time do
     end
 
     it 'returns the numeric timestamp' do
+      expect(::Process::CLOCK_MONOTONIC).to_not be_nil
+      expect(::Time).not_to receive(:now)
       expect(clock_time).to be_a Float
     end
 
     it 'is monotinically increasing' do
       expect(clock_time).to be < clock_time
+    end
+
+    context 'without a monotonic clock' do
+      around do |example|
+        clock_monotic = ::Process.send(:remove_const, :CLOCK_MONOTONIC)
+        verbose, $VERBOSE = $VERBOSE, false
+        load File.expand_path('../../../lib/rackstash/helpers/time.rb', __dir__)
+        $VERBOSE = verbose
+
+        example.run
+
+        ::Process::CLOCK_MONOTONIC = clock_monotic
+        verbose, $VERBOSE = $VERBOSE, false
+        load File.expand_path('../../../lib/rackstash/helpers/time.rb', __dir__)
+        $VERBOSE = verbose
+      end
+
+      it 'returns a float' do
+        expect(::Time).to receive(:now).and_call_original
+        expect(clock_time).to be_a Float
+      end
     end
   end
 end
