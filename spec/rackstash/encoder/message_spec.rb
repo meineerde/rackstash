@@ -39,6 +39,18 @@ describe Rackstash::Encoder::Message do
         expect(encoder.encode(event)).to eql "[foo,bar] line1\n[foo,bar] line2\n"
       end
 
+      it 'normalizes the timestamp' do
+        time = Time.parse('2016-10-17 13:37:00 +03:00')
+        event = { 'message' => ["line1\n", "line2\n"], '@timestamp' => time }
+
+        tagged << '@timestamp'
+
+        expect(encoder.encode(event)).to eql [
+          "[2016-10-17T10:37:00.000000Z] line1\n",
+          "[2016-10-17T10:37:00.000000Z] line2\n"
+        ].join
+      end
+
       it 'ignores missing fields' do
         event = { 'message' => ["line1\n", "line2\n"] }
         expect(encoder.encode(event)).to eql "line1\nline2\n"

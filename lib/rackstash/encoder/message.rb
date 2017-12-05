@@ -30,6 +30,7 @@ module Rackstash
     #     # Logs "[foo,123] [127.0.0.1] Hello\n[foo,123] [127.0.0.1] World\n"
     class Message
       include Rackstash::Encoder::Helper::Message
+      include Rackstash::Encoder::Helper::Timestamp
 
       # @param tagged [Array<#to_s>] An array of field names whose values are
       #   added in front of each message line on encode
@@ -46,7 +47,10 @@ module Rackstash
         message = event[FIELD_MESSAGE]
 
         unless message.empty?
-          tags = @tagged_fields.map { |key| format_tag event[key] }.compact.join
+          tags = @tagged_fields.map { |key|
+            normalize_timestamp(event, key)
+            format_tag event[key]
+          }.compact.join
           message = message.gsub(/^/) { tags } unless tags.empty?
         end
 
