@@ -230,6 +230,34 @@ module Rackstash
         @raw.empty?
       end
 
+      # Returns a value from the hash for the given `key`. If the key can't be
+      # found, there are several options: With no other arguments, it will raise
+      # a `KeyError` exception; if `default` is given, then that value will be
+      # returned; if the optional code block is specified, then it will be
+      # called and its result returned.
+      #
+      # Note that neither `default` nor the block's return value are normalized
+      # before being returned.
+      #
+      # @param key [#to_s] the key name. We will always use it as a
+      #   frozen UTF-8 String.
+      # @param default [Object] a value to return if there is no value at `key`
+      #   in the hash
+      # @yield [key] if no value was set at `key`, no `default` value was given
+      #   and a block was given, we call the block and return its value
+      # @yieldparam key [String] the hash key
+      # @return [Object] the current value of the field if present. If the key
+      #   was not found, we return the `default` value or the value of the given
+      #   block.
+      def fetch(key, default = UNDEFINED, &block)
+        key = utf8_encode(key)
+        if UNDEFINED.equal? default
+          @raw.fetch(key, &block)
+        else
+          @raw.fetch(key, default)
+        end
+      end
+
       # @param key [String] The name of a key to check. This MUST be a correctly
       #   encoded String in order to return valid results
       # @return [Boolean] `true` if the key is forbidden from being added

@@ -393,6 +393,45 @@ describe Rackstash::Fields::Hash do
     end
   end
 
+  describe '#fetch' do
+    it 'fetches an existing value' do
+      hash['key'] = 'value'
+      hash['nil'] = nil
+
+      expect(hash.fetch('key')).to eql 'value'
+      expect(hash.fetch('nil')).to be_nil
+    end
+
+    it 'normalizes keys' do
+      hash['42'] = 'value'
+
+      expect(hash['42']).to eql 'value'
+      expect(hash[:'42']).to eql 'value'
+      expect(hash[42]).to eql 'value'
+    end
+
+    it 'raises if the key does not exist' do
+      expect { hash.fetch('missing') }.to raise_error KeyError
+    end
+
+    it 'returns the default value for a missing key' do
+      hash['key'] = 'value'
+
+      expect(hash.fetch('key', :default)).to eql 'value'
+      expect(hash.fetch('missing', :default)).to eql :default
+    end
+
+    it 'returns the block value for a missing key' do
+      hash['key'] = 'value'
+      called_with = []
+
+      expect(hash.fetch('key') { |key| called_with << key; :default }).to eql 'value'
+      expect(hash.fetch('missing') { |key| called_with << key; :default }).to eql :default
+
+      expect(called_with).to eql ['missing']
+    end
+  end
+
   describe '#forbidden_key?' do
     let(:forbidden_keys) { ['forbidden', :foo] }
 
