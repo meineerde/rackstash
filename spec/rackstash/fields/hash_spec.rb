@@ -495,6 +495,24 @@ describe Rackstash::Fields::Hash do
     end
   end
 
+  describe '#length' do
+    it 'returns the length of the hash' do
+      expect(hash.length).to eql 0
+
+      hash['foo'] = 'bar'
+      expect(hash.length).to eql 1
+
+      hash.clear
+      expect(hash.length).to eql 0
+    end
+
+    it 'can use size as an alias' do
+      expect(hash.size).to eql 0
+      hash['foo'] = 'bar'
+      expect(hash.size).to eql 1
+    end
+  end
+
   describe '#merge!' do
     it 'rejects not hash-convertible arguments' do
       expect { hash.merge!(nil) }.to raise_error TypeError

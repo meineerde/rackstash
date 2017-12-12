@@ -290,6 +290,12 @@ module Rackstash
         @raw.keys
       end
 
+      # @return [Integer] the number of key-value pairs in the hash
+      def length
+        @raw.length
+      end
+      alias size length
+
       # Returns a new {Hash} containing the contents of `hash` and of
       # `self`. If no block is specified, the value for entries with duplicate
       # keys will be that of `hash`. Otherwise the value for each duplicate key
