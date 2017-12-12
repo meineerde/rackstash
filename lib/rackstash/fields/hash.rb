@@ -10,6 +10,8 @@ require 'rackstash/fields/abstract_collection'
 module Rackstash
   module Fields
     class Hash < AbstractCollection
+      include ::Enumerable
+
       # @return [Set<String>] a frozen list of strings which are not allowed to
       #   be used as keys in this hash.
       attr_reader :forbidden_keys
@@ -222,6 +224,59 @@ module Rackstash
       def deep_merge!(hash, force: true, scope: nil, &block)
         resolver = deep_merge_resolver(:merge!, force: force, scope: scope, &block)
         merge!(hash, force: force, scope: scope, &resolver)
+      end
+
+      # Calls the given block once for each key in the hash, passing the
+      # key-value pair as parameters.
+      #
+      # If no block is given, an `Enumerator` is returned instead.
+      #
+      # @yield [key, value] calls the given block once for each key in the hash
+      # @yieldparam key [String] the yielded key
+      # @yieldparam value [Object] the yielded value
+      # @return [Enumerator, self] `self` if a block was given or an
+      #   `Enumerator` if no block was given.
+      def each
+        return enum_for(__method__) unless block_given?
+        @raw.each_pair do |key, value|
+          yield key, value
+        end
+        self
+      end
+      alias each_pair each
+
+      # Calls the given block once for each key in the hash, passing the key as
+      # a parameter.
+      #
+      # If no block is given, an `Enumerator` is returned instead.
+      #
+      # @yield [key] calls the given block once for each key in the hash
+      # @yieldparam key [String] the yielded key
+      # @return [Enumerator, self] `self` if a block was given or an
+      #   `Enumerator` if no block was given.
+      def each_key
+        return enum_for(__method__) unless block_given?
+        @raw.each_key do |key|
+          yield key
+        end
+        self
+      end
+
+      # Calls the given block once for each key in the hash, passing the value
+      # at the respective key as a parameter.
+      #
+      # If no block is given, an `Enumerator` is returned instead.
+      #
+      # @yield [value] calls the given block once for each key in the hash
+      # @yieldparam value [Object] the yielded value of the key
+      # @return [Enumerator, self] `self` if a block was given or an
+      #   `Enumerator` if no block was given.
+      def each_value
+        return enum_for(__method__) unless block_given?
+        @raw.each_value do |value|
+          yield value
+        end
+        self
       end
 
       # @return [Boolean] `true` if the Hash contains no ley-value pairs,

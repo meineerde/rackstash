@@ -13,6 +13,12 @@ describe Rackstash::Fields::Hash do
   let(:forbidden_keys) { Set.new }
   let(:hash) { Rackstash::Fields::Hash.new(forbidden_keys: forbidden_keys) }
 
+  it 'is an Enumerable' do
+    expect(described_class).to be < Enumerable
+    expect(::Enumerable.public_instance_methods - hash.methods)
+      .to be_empty
+  end
+
   describe '#initialize' do
     it 'can be initialized without any arguments' do
       Rackstash::Fields::Hash.new
@@ -380,6 +386,71 @@ describe Rackstash::Fields::Hash do
       hash.deep_merge!({ 'key' => 'new' }, scope: 123) { |_key, _old, _new| -> { self } }
 
       expect(hash['key']).to eql 123
+    end
+  end
+
+  describe '#each' do
+    it 'yields each key-value pair' do
+      hash['foo'] = 'string'
+      hash[:bar] = 42
+
+      expect { |b| hash.each(&b) }
+        .to yield_successive_args(['foo', 'string'], ['bar', 42])
+    end
+
+    it 'returns the hash if a block was provided' do
+      hash['foo'] = 'bar'
+      expect(hash.each {}).to equal hash
+    end
+
+    it 'returns an Enumerator if no block was provided' do
+      hash['foo'] = 'bar'
+      expect(hash.each).to be_instance_of Enumerator
+    end
+
+    it 'can use the alias #each_pair' do
+      expect(hash.method(:each_pair)).to eql hash.method(:each)
+    end
+  end
+
+  describe '#each_key' do
+    it 'yields each key' do
+      hash['foo'] = 'string'
+      hash[:bar] = 42
+
+      expect { |b| hash.each_key(&b) }
+        .to yield_successive_args('foo', 'bar')
+    end
+
+    it 'returns the hash if a block was provided' do
+      hash['foo'] = 'bar'
+      expect(hash.each_key {}).to equal hash
+    end
+
+    it 'returns an Enumerator if no block was provided' do
+      hash['foo'] = 'bar'
+      expect(hash.each_key).to be_instance_of Enumerator
+    end
+  end
+
+  describe '#each_value' do
+    it 'yields each value' do
+      hash['foo'] = 'string'
+      hash[:bar] = 42
+      hash['double'] = 'string'
+
+      expect { |b| hash.each_value(&b) }
+        .to yield_successive_args('string', 42, 'string')
+    end
+
+    it 'returns the hash if a block was provided' do
+      hash['foo'] = 'bar'
+      expect(hash.each_value {}).to equal hash
+    end
+
+    it 'returns an Enumerator if no block was provided' do
+      hash['foo'] = 'bar'
+      expect(hash.each_value).to be_instance_of Enumerator
     end
   end
 
