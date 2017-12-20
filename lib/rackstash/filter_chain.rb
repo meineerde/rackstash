@@ -251,6 +251,7 @@ module Rackstash
       end
       self
     end
+    alias prepend unshift
 
     # Returns an Array representation of the filter chain.
     #

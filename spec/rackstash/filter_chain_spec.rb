@@ -455,6 +455,11 @@ describe Rackstash::FilterChain do
 
       expect { filter_chain.unshift }.to raise_error ArgumentError
     end
+
+    it 'can use #prepend alias' do
+      filter_chain.prepend filter
+      expect(filter_chain[0]).to eql filter
+    end
   end
 
   describe '#to_a' do
