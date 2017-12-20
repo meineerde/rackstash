@@ -5,6 +5,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/filter'
+
 module Rackstash
   module Filter
     # The {DefaultTags} filter allows to define tags which should be added
@@ -50,5 +52,7 @@ module Rackstash
         event
       end
     end
+
+    register DefaultTags, :default_tags
   end
 end

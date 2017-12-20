@@ -5,6 +5,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/filter'
+
 module Rackstash
   module Filter
     # Update fields in the given event with new values. A new value can be
@@ -53,5 +55,7 @@ module Rackstash
         event
       end
     end
+
+    register Update, :update
   end
 end

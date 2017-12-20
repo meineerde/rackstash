@@ -5,6 +5,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/filter'
+
 module Rackstash
   module Filter
     # Rename one or more fields in the given event.
@@ -38,5 +40,7 @@ module Rackstash
         event
       end
     end
+
+    register Rename, :rename
   end
 end

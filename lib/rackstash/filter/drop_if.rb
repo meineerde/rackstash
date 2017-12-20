@@ -5,6 +5,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/filter'
+
 module Rackstash
   module Filter
     # Skip the further processing of the event if the provided condition is
@@ -50,5 +52,7 @@ module Rackstash
         event
       end
     end
+
+    register DropIf, :drop_if
   end
 end

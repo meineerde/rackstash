@@ -11,17 +11,23 @@ require 'securerandom'
 require 'rackstash/filter'
 
 describe Rackstash::Filter do
-  let(:filter_class) { Class.new }
-  let(:random) { SecureRandom.hex(6) }
-  let(:filter_class_name) { :"FilterClass#{random}" }
+  let(:registry) { Rackstash::ClassRegistry.new('filter') }
 
-  around(:each) do |example|
-    described_class.const_set(filter_class_name, filter_class)
-    example.run
-    described_class.send(:remove_const, filter_class_name)
-  end
+  let(:filter_class) {
+    Class.new do
+      def call(event)
+        'filtered'
+      end
+    end
+  }
+  let(:filter_name) { :"filter_class_#{SecureRandom.hex(6)}" }
 
   describe '.build' do
+    before do
+      allow(described_class).to receive(:registry).and_return(registry)
+      described_class.register(filter_class, filter_name)
+    end
+
     it 'builds a filter from a class' do
       args = ['arg1', foo: 'bar']
       expect(filter_class).to receive(:new).with(*args)
@@ -33,45 +39,44 @@ describe Rackstash::Filter do
       args = ['arg1', foo: 'bar']
       expect(filter_class).to receive(:new).with(*args)
 
-      described_class.build(:"filter_class#{random}", *args)
+      described_class.build(filter_name.to_sym, *args)
     end
 
     it 'builds a filter from a String' do
       args = ['arg1', foo: 'bar']
       expect(filter_class).to receive(:new).with(*args)
 
-      described_class.build("filter_class#{random}", *args)
+      described_class.build(filter_name.to_s, *args)
     end
 
     it 'returns an existing filter' do
       filter = -> {}
+
       expect(described_class.build(filter)).to equal filter
       expect(described_class.build(filter, :ignored, 42)).to equal filter
     end
 
-    it 'raises a TypeError with different arguments' do
-      expect { described_class.build(123) }.to raise_error(TypeError)
-      expect { described_class.build(nil) }.to raise_error(TypeError)
-      expect { described_class.build(true) }.to raise_error(TypeError)
+    it 'raises a TypeError with invalid spec types' do
+      expect { described_class.build(123) }
+        .to raise_error(TypeError, '123 can not be used to describe filters')
+      expect { described_class.build(nil) }
+        .to raise_error(TypeError, 'nil can not be used to describe filters')
+      expect { described_class.build(true) }
+        .to raise_error(TypeError, 'true can not be used to describe filters')
+    end
 
-      expect { described_class.build('MissingFilter') }.to raise_error(NameError)
-      expect { described_class.build(:missing_filter) }.to raise_error(NameError)
+    it 'raises a KeyError for undefined filters' do
+      expect { described_class.build('MissingFilter') }
+        .to raise_error(KeyError, 'No filter was registered for "MissingFilter"')
+      expect { described_class.build(:missing_filter) }
+        .to raise_error(KeyError, 'No filter was registered for :missing_filter')
     end
   end
 
-  describe '.known' do
-    it 'returns a Hash with known filters' do
-      expect(described_class.known).not_to be_empty
-
-      expect(described_class.known.keys).to all(
-        be_a(Symbol)
-        .and match(/\A[a-z0-9_]+\z/)
-      )
-      expect(described_class.known.values).to all be_a(Class)
-    end
-
-    it 'includes Filter classes' do
-      expect(described_class.known[:"filter_class#{random}"]).to equal filter_class
+  describe 'registry' do
+    it 'returns the filter registry' do
+      expect(described_class.registry).to be_instance_of Rackstash::ClassRegistry
+      expect(described_class.registry.object_type).to eql 'filter'
     end
   end
 end

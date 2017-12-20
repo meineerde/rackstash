@@ -5,6 +5,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/filter'
+
 module Rackstash
   module Filter
     # The Truncate filter can be used to restrict the size of the emitted
@@ -150,5 +152,7 @@ module Rackstash
         messages.inject(0) { |sum, msg| sum + msg.size }
       end
     end
+
+    register TruncateMessage, :truncate_message
   end
 end

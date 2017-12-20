@@ -5,6 +5,8 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/filter'
+
 module Rackstash
   module Filter
     # The {DefaultFields} filter allows to define fields which should be added
@@ -56,5 +58,7 @@ module Rackstash
         event.merge!(fields, &resolver)
       end
     end
+
+    register DefaultFields, :default_fields
   end
 end

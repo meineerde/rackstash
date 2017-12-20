@@ -142,8 +142,9 @@ describe Rackstash::FilterChain do
       expect { filter_chain.append(false) }.to raise_error TypeError
       expect { filter_chain.append(42) }.to raise_error TypeError
 
-      expect { filter_chain.append(:foo) }.to raise_error NameError
-      expect { filter_chain.append('Foo') }.to raise_error NameError
+      # Registered filter was not found
+      expect { filter_chain.append(:foo) }.to raise_error KeyError
+      expect { filter_chain.append('Foo') }.to raise_error KeyError
 
       expect { filter_chain.append }.to raise_error ArgumentError
     end
@@ -341,8 +342,9 @@ describe Rackstash::FilterChain do
       expect { filter_chain.insert_before(1, false) }.to raise_error TypeError
       expect { filter_chain.insert_before(1, 42) }.to raise_error TypeError
 
-      expect { filter_chain.insert_before(1, :foo) }.to raise_error NameError
-      expect { filter_chain.insert_before(1, 'Foo') }.to raise_error NameError
+      # Registered filter was not found
+      expect { filter_chain.insert_before(1, :foo) }.to raise_error KeyError
+      expect { filter_chain.insert_before(1, 'Foo') }.to raise_error KeyError
 
       expect { filter_chain.insert_before(1) }.to raise_error ArgumentError
     end
@@ -398,8 +400,9 @@ describe Rackstash::FilterChain do
       expect { filter_chain.insert_after(1, false) }.to raise_error TypeError
       expect { filter_chain.insert_after(1, 42) }.to raise_error TypeError
 
-      expect { filter_chain.insert_after(1, :foo) }.to raise_error NameError
-      expect { filter_chain.insert_after(1, 'Foo') }.to raise_error NameError
+      # Registered filter was not found
+      expect { filter_chain.insert_after(1, :foo) }.to raise_error KeyError
+      expect { filter_chain.insert_after(1, 'Foo') }.to raise_error KeyError
 
       expect { filter_chain.insert_after(1) }.to raise_error ArgumentError
     end
@@ -455,8 +458,9 @@ describe Rackstash::FilterChain do
       expect { filter_chain.unshift(false) }.to raise_error TypeError
       expect { filter_chain.unshift(42) }.to raise_error TypeError
 
-      expect { filter_chain.unshift(:foo) }.to raise_error NameError
-      expect { filter_chain.unshift('Foo') }.to raise_error NameError
+      # Registered filter was not found
+      expect { filter_chain.unshift(:foo) }.to raise_error KeyError
+      expect { filter_chain.unshift('Foo') }.to raise_error KeyError
 
       expect { filter_chain.unshift }.to raise_error ArgumentError
     end
