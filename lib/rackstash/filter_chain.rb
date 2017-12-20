@@ -94,6 +94,7 @@ module Rackstash
       self
     end
     alias << append
+    alias push append
 
     # Filter the given event by calling each defined filter with it. Each filter
     # will be called with the current event and can manipulate it in any way.

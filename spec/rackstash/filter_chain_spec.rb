@@ -152,6 +152,11 @@ describe Rackstash::FilterChain do
       expect(filter_chain << filter).to equal filter_chain
       expect(filter_chain[0]).to eql filter
     end
+
+    it 'can use #push alias' do
+      expect(filter_chain.push(filter)).to equal filter_chain
+      expect(filter_chain[0]).to eql filter
+    end
   end
 
   describe '#call' do
