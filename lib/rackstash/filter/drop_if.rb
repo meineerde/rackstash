@@ -7,38 +7,40 @@
 
 module Rackstash
   module Filter
-    # Skip the further processing of the event of the condition is `true`.
+    # Skip the further processing of the event if the provided condition is
+    # truethy. In that case, the event will be dropped and not be written to the
+    # log adapter.
     #
     # This filter is a basic example of how you can write filters which abort
     # further processing of an event. You can write your own filters which
     # provide similar (but probably more useful) behavior.
-    class SkipEvent
-      # @param skip_if [#call] a callable object (e.g. a `Proc`) which returns a
+    class DropIf
+      # @param drop_if [#call] a callable object (e.g. a `Proc`) which returns a
       #  truethy or falsey value on `call` with an `event` hash. If it returns
       #  something truethy, we abort any further processing of the event. If the
-      #  `skip_if` filter is not given, we expect a block to be provided which
+      #  `drop_if` filter is not given, we expect a block to be provided which
       #  is used instead.
-      def initialize(skip_if = nil, &block)
-        if skip_if.respond_to?(:call)
-          @skip_if = skip_if
+      def initialize(drop_if = nil, &block)
+        if drop_if.respond_to?(:call)
+          @drop_if = drop_if
         elsif block_given?
-          @skip_if = block
+          @drop_if = block
         else
-          raise TypeError, 'must provide a skip condition'
+          raise ArgumentError, 'must provide a condition when to drop the event'
         end
       end
 
       # Run the filter against the passed `event` hash.
       #
-      # We fill call the `skip_if` object with the passed event. If the return
+      # We will call the `drop_if` object with the passed event. If the return
       # value is truethy, we abort any further processing of the event. This
       # filter does not change the `event` hash in any way on its own.
       #
       # @param event [Hash] an event hash
-      # @return [Hash, false] the given `event` or `false` if the `skip_if`
+      # @return [Hash, false] the given `event` or `false` if the `drop_if`
       #   condition was evaluated
       def call(event)
-        return false if @skip_if.call(event)
+        return false if @drop_if.call(event)
         event
       end
     end

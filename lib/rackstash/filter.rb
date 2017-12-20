@@ -8,9 +8,9 @@
 require 'rackstash/filter/clear_color'
 require 'rackstash/filter/default_fields'
 require 'rackstash/filter/default_tags'
+require 'rackstash/filter/drop_if'
 require 'rackstash/filter/rename'
 require 'rackstash/filter/replace'
-require 'rackstash/filter/skip_event'
 require 'rackstash/filter/truncate_message'
 
 module Rackstash

@@ -7,12 +7,12 @@
 
 require 'spec_helper'
 
-require 'rackstash/filter/skip_event'
+require 'rackstash/filter/drop_if'
 
-describe Rackstash::Filter::SkipEvent do
+describe Rackstash::Filter::DropIf do
   describe '#initialize' do
     it 'expects a condition' do
-      expect { described_class.new }.to raise_error TypeError
+      expect { described_class.new }.to raise_error ArgumentError
     end
 
     it 'accepts a callable object' do
