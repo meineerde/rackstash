@@ -128,12 +128,12 @@ describe Rackstash::FilterChain do
 
   describe '#append' do
     it 'appends a filter' do
-      filter_chain.append filter
+      expect(filter_chain.append(filter)).to equal filter_chain
       expect(filter_chain[0]).to eql filter
     end
 
     it 'appends a block as the filter' do
-      filter_chain.append { :foo }
+      expect(filter_chain.append { :foo }).to equal filter_chain
       expect(filter_chain[0]).to be_instance_of(Proc)
     end
 
@@ -149,7 +149,7 @@ describe Rackstash::FilterChain do
     end
 
     it 'can use #<< alias' do
-      filter_chain << filter
+      expect(filter_chain << filter).to equal filter_chain
       expect(filter_chain[0]).to eql filter
     end
   end
