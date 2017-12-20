@@ -14,6 +14,8 @@ module Rackstash
   # used to write a single log event of a {Buffer} to multiple flows. Each
   # {Logger} object has an associated Flows object to define the logger's flows.
   class Flows
+    include ::Enumerable
+
     # @param flows [::Array<Flow, Adapter::Adapter, Object>] the {Flow} objects
     #   which should be part of the list. If any of the arguments is not a
     #   {Flow} already, we assume it is an adapter and create a new {Flow} for

@@ -19,6 +19,14 @@ describe Rackstash::Flows do
     flow
   end
 
+  it 'is an Enumerable' do
+    expect(described_class).to be < Enumerable
+    expect(::Enumerable.public_instance_methods - flows.methods)
+      .to be_empty
+
+    expect(flows.map {}).to eql []
+  end
+
   describe '#initialize' do
     it 'accepts a single flow' do
       list = described_class.new(a_flow)
