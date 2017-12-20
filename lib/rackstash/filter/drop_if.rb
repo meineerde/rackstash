@@ -14,6 +14,12 @@ module Rackstash
     # This filter is a basic example of how you can write filters which abort
     # further processing of an event. You can write your own filters which
     # provide similar (but probably more useful) behavior.
+    #
+    # @example
+    #   Rackstash::Flow.new(STDOUT) do
+    #     # Drop the event if it has the 'debug' tag
+    #     filter :drop_if, ->(event) { event['tags'].include?('debug') }
+    #   end
     class DropIf
       # @param drop_if [#call] a callable object (e.g. a `Proc`) which returns a
       #  truethy or falsey value on `call` with an `event` hash. If it returns
