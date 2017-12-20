@@ -7,6 +7,7 @@
 
 require 'json'
 
+require 'rackstash/encoder'
 require 'rackstash/encoder/helper/message'
 require 'rackstash/encoder/helper/timestamp'
 
@@ -29,5 +30,7 @@ module Rackstash
         ::JSON.dump(event)
       end
     end
+
+    register JSON, :json, :JSON
   end
 end
