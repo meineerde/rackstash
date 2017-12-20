@@ -97,36 +97,54 @@ module Rackstash
         end
         return event if messages.size <= 1
 
+        truncate(messages)
+
+        event
+      end
+
+      private
+
+      def truncate(messages)
         overall_size = overall_size_of(messages)
         ellipsis = nil
+
         until overall_size <= @max_size || messages.size <= 1
-          case @cut
-          when :top
-            msg = messages.shift
-          when :middle
-            msg = messages.delete_at(messages.size / 2)
-          when :bottom
-            msg = messages.pop
-          end
+          msg =
+            case @cut
+            when :top
+              messages.shift
+            when :middle
+              messages.delete_at(messages.size / 2)
+            when :bottom
+              messages.pop
+            end
+
           overall_size -= msg.size
+
           unless ellipsis || @ellipsis.nil?
             ellipsis = Rackstash::Message.new(@ellipsis)
             overall_size += ellipsis.size
           end
         end
 
-        if ellipsis
-          case @cut
-          when :top then messages.unshift(ellipsis)
-          when :middle then messages.insert((messages.size + 1) / 2, ellipsis)
-          when :bottom then messages.push(ellipsis)
-          end
-        end
+        # Insert the ellipsis message if we have truncated any messages
+        insert_into(messages, ellipsis) if ellipsis
 
-        event
+        messages
       end
 
-      private
+      def insert_into(messages, msg)
+        case @cut
+        when :top
+          messages.unshift(msg)
+        when :middle
+          messages.insert((messages.size + 1) / 2, msg)
+        when :bottom
+          messages.push(msg)
+        end
+
+        messages
+      end
 
       def overall_size_of(messages)
         messages.inject(0) { |sum, msg| sum + msg.size }
