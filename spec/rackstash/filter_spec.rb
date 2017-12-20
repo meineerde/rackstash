@@ -56,6 +56,83 @@ describe Rackstash::Filter do
       expect(described_class.build(filter, :ignored, 42)).to equal filter
     end
 
+    context 'with conditionals' do
+      let(:event) { Object.new }
+
+      it 'applies the only_if conditional for new filters' do
+        only_if = -> {}
+        filter = described_class.build(filter_name, only_if: only_if)
+
+        expect(only_if).to receive(:call).and_return false
+        expect { filter.call({}) }.not_to raise_error
+      end
+
+      it 'applies the not_if conditional for new filters' do
+        not_if = -> {}
+        filter = described_class.build(filter_name, not_if: not_if)
+
+        expect(not_if).to receive(:call).and_return true
+        expect(filter.call(event)).to equal event
+      end
+
+      it 'applies both conditionals for new filters' do
+        only_if = -> {}
+        not_if = -> {}
+
+        filter = described_class.build(filter_name, only_if: only_if, not_if: not_if)
+
+        expect(only_if).to receive(:call).and_return true
+        expect(not_if).to receive(:call).and_return false
+        expect(filter.call(event)).to eql 'filtered'
+      end
+
+      it 'keeps the class hierarchy unchanged' do
+        filter = described_class.build(filter_name, only_if: ->(event){ false })
+
+        expect(filter).to be_instance_of(filter_class)
+      end
+
+      it 'ignores the conditional for existing filters' do
+        filter = filter_class.new
+        only_if = -> {}
+
+        expect(described_class.build(filter, only_if: only_if))
+          .to equal filter
+
+        expect(only_if).not_to receive(:call)
+        expect(described_class.build(filter, only_if: only_if).call(event))
+          .to eql 'filtered'
+      end
+
+      it 'passes keyword arguments to the initializer' do
+        filter_class.class_eval do
+          def initialize(mandatory:)
+            @mandatory = mandatory
+          end
+
+          attr_reader :mandatory
+        end
+
+        filter = described_class.build(filter_name, only_if: ->{}, mandatory: 'foo')
+        expect(filter.mandatory).to eql 'foo'
+      end
+    end
+
+    context 'without conditionals' do
+      it 'passes keyword arguments to the initializer' do
+        filter_class.class_eval do
+          def initialize(mandatory:)
+            @mandatory = mandatory
+          end
+
+          attr_reader :mandatory
+        end
+
+        filter = described_class.build(filter_name, mandatory: 'foo')
+        expect(filter.mandatory).to eql 'foo'
+      end
+    end
+
     it 'raises a TypeError with invalid spec types' do
       expect { described_class.build(123) }
         .to raise_error(TypeError, '123 can not be used to describe filters')
