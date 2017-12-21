@@ -26,6 +26,10 @@ module Rackstash
   # deal with events on their own.
   module Encoder
     class << self
+      # Register an encoder with one or more given names. These names can then
+      # be used in {.build} to fetch the registered class and build a new
+      # encoder object for it.
+      #
       # @param encoder_class [Class] a class from which a new encoder can be
       #   created. Filter objects must respond to `encode` and accept an event
       #   hash.

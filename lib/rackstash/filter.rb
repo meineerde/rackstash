@@ -24,6 +24,10 @@ module Rackstash
   # class inside this module.
   module Filter
     class << self
+      # Register a filter with one or more given names. These names can then be
+      # used in {.build} to fetch the registered class and build a new filter
+      # object for it.
+      #
       # @param filter_class [Class] a class from which a new filter can be
       #   created. Filter objects must respond to `call` and accept an event
       #   hash.
