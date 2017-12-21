@@ -574,7 +574,8 @@ describe Rackstash::Fields::AbstractCollection do
           expect(obj).to receive(method).and_raise('foo').ordered.once
         end
 
-        expect(obj).to receive(:inspect).and_return 'finally'
+        expect(obj).to receive(:inspect).ordered.and_return 'finally'
+
         expect(normalize(obj)).to eql 'finally'
       end
 
@@ -583,6 +584,12 @@ describe Rackstash::Fields::AbstractCollection do
         expect(obj).to receive(:inspect).and_return('an object')
 
         expect(normalize(obj)).to eql 'an object'
+      end
+
+      it 'inspects objects without their own inspect' do
+        basic = Class.new(BasicObject).new
+        expect(normalize(basic))
+          .to match %r{\A#<#<Class:0x[a-f0-9]+>:0x[a-f0-9]+>\z}
       end
     end
   end

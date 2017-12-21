@@ -103,7 +103,7 @@ module Rackstash
       end
 
       def resolve_value(value, scope: nil)
-        return value unless value.is_a?(Proc)
+        return value unless Proc === value
 
         return value.call if scope.nil?
         value.arity == 0 ? scope.instance_exec(&value) : value.call(scope)
@@ -116,15 +116,18 @@ module Rackstash
 
         case value
         when ::String
-          return utf8_encode(value)
+          utf8_encode(value)
         when ::Symbol
-          return utf8_encode(value.to_s.freeze)
+          utf8_encode(value.to_s.freeze)
         when ::Integer, ::Float
-          return value
+          value
         when true, false, nil
-          return value
+          value
+        when ::Proc
+          resolved = resolve_value(value)
+          normalize(resolved, scope: scope, wrap: wrap)
         when Rackstash::Fields::Hash, Rackstash::Fields::Array
-          return wrap ? value : value.raw
+          wrap ? value : value.raw
         when ::Hash
           hash = {}
           value.each_pair do |k, v|
@@ -135,7 +138,7 @@ module Rackstash
               hash_field.raw = hash
             end
           end
-          return hash
+          hash
         when ::Array, ::Set, ::Enumerator
           array = value.map { |e| normalize(e, scope: scope) }
           if wrap
@@ -143,49 +146,74 @@ module Rackstash
               array_field.raw = array
             end
           end
-          return array
+          array
         when ::Time
-          return value.getutc.iso8601(ISO8601_PRECISION).freeze
+          value.getutc.iso8601(ISO8601_PRECISION).freeze
         when ::DateTime
-          return value.to_time.utc.iso8601(ISO8601_PRECISION).freeze
+          value.to_time.utc.iso8601(ISO8601_PRECISION).freeze
         when ::Date
-          return value.iso8601.encode!(Encoding::UTF_8).freeze
+          value.iso8601.encode!(Encoding::UTF_8).freeze
         when ::Regexp, ::Range, ::URI::Generic, ::Pathname
-          return utf8_encode(value.to_s.freeze)
+          utf8_encode(value.to_s.freeze)
         when Exception
           exception = "#{value.message} (#{value.class})"
           exception = [exception, *value.backtrace].join("\n") if value.backtrace
-          return utf8_encode(exception.freeze)
-        when ::Proc
-          return normalize(value, scope: scope, wrap: wrap)
+          utf8_encode(exception.freeze)
         when ::BigDecimal
           # A BigDecimal would be naturally represented as a JSON number. Most
           # libraries, however, parse non-integer JSON numbers directly as
           # floats. Clients using those libraries would get in general a wrong
           # number and no way to recover other than manually inspecting the
           # string with the JSON code itself.
-          return value.to_s('F').encode!(Encoding::UTF_8).freeze
+          value.to_s('F').encode!(Encoding::UTF_8).freeze
         when ::Complex, ::Rational
           # A complex number can not reliably converted to a float or rational,
           # thus we always transform it to a String
-          return utf8_encode(value)
+          utf8_encode(value)
+        else
+          # Try to convert the value to a known basic type and recurse
+          converted = UNDEFINED
+          %i[
+            as_json
+            to_hash to_ary to_h to_a
+            to_time to_datetime to_date
+            to_f to_i
+          ].each do |method|
+            # Try to convert the value to a base type but ignore any errors
+            begin
+              next unless value.respond_to?(method)
+              break converted = value.public_send(method)
+            rescue
+              next
+            end
+          end
+
+          if UNDEFINED.equal?(converted)
+            # The object doesn't seem to respond to any of the common converter
+            # methods. As a final effort, we try to inspect the object and use
+            # this value. If even inspecting fails (w.g. for BasicObjects), we
+            # try to force-inspect the object using our own inspect
+            # implementation.
+            converted = value.inspect rescue force_inspect(value)
+          end
+
+          normalize(converted, scope: scope, wrap: wrap)
+        end
+      end
+
+      def force_inspect(value)
+        obj_id_str_width = 0.size == 4 ? 7 : 14
+        obj_id = value.__id__ rescue 0
+
+        id_str = (obj_id << 1).to_s(16).rjust(obj_id_str_width, '0')
+
+        class_name = begin
+          value.class.name
+        rescue
+          Kernel.instance_method(:class).bind(value).call
         end
 
-        # Try to convert the value to a known basic type and recurse
-        %i[
-          as_json
-          to_hash to_ary to_h to_a
-          to_time to_datetime to_date
-          to_f to_i
-        ].each do |method|
-          # Try to convert the value to a base type but ignore any errors
-          next unless value.respond_to?(method)
-          value = value.public_send(method) rescue next
-
-          return normalize(value, scope: scope, wrap: wrap)
-        end
-
-        utf8_encode(value.inspect.freeze)
+        "#<#{class_name}:0x#{id_str}>".freeze
       end
     end
   end
