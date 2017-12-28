@@ -38,10 +38,9 @@ module Rackstash
   # You can build a Flow using a simple DSL:
   #
   #     flow = Rackstash::Flow.new(STDOUT) do
-  #       encoder Rackstash::Encoder::JSON.new
-  #
-  #       # Anonymize IPs in the remote_ip field.
-  #       filter Rackstash::Filter::AnonymizeIPMask.new('remote_ip')
+  #       # Anonymize IPs in the remote_ip field using the
+  #       # Rackstash::Filter::AnonymizeIPMask filter.
+  #       filter :anonymize_ip_mask, 'remote_ip'
   #
   #       # Add the maximum severity of any message in the event into the
   #       # severity and severity_label fields.
@@ -52,6 +51,10 @@ module Rackstash
   #         event['severity'] = severity
   #         event['severity_label'] = severity_label
   #       end
+  #
+  #       # Encode logs as JSON using a Rackstash::Encoder::JSON encoder
+  #       # This is usually the default encoder.
+  #       encoder :json
   #     end
   #
   #     # Write an event. This is normally done by a Rackstash::Buffer
