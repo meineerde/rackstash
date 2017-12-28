@@ -294,13 +294,13 @@ module Rackstash
     # Build a new filter instance from the given specification.
     #
     # @param filter_spec [Array] the description of a filter to create. If you
-    #   give a single `Proc` or a block (or another object which responds to
-    #   `#call`), we will directly return it. If you give a `Class` plus any
-    #   optional initializer arguments, we will return a new instance of that
-    #   class. When giving a `String` or `Symbol`, we will resolve it to a
-    #   filter class from the {Rackstash::Filter} module and create a new
-    #   instance of that class with the additional arguments given to
-    #   `initialize`.
+    #   give a single `Proc` (or any other object which responds to `#call`) or
+    #   simply a proc, we will directly return it. If you give a `Class` plus
+    #   any optional initializer arguments, we will return a new instance of
+    #   that class. When giving a `String` or `Symbol`, we first use the
+    #   {Filter.registry} to find the matching filter class. With that class,
+    #   we then create a filter object as before using the additional arguments
+    #   given to `initialize`.
     # @return [#call] a filter instance
     def build_filter(filter_spec, &block)
       if filter_spec.empty?

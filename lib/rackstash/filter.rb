@@ -43,8 +43,8 @@ module Rackstash
         filter_class
       end
 
-      # @return [ClassRegistry] the registry object which allows to register and
-      #   retrieve available filter classes
+      # @return [ClassRegistry] the {ClassRegistry} object which allows to
+      #   register and retrieve available filter classes
       def registry
         @registry ||= Rackstash::ClassRegistry.new('filter'.freeze)
       end
@@ -58,7 +58,7 @@ module Rackstash
       #   class from which we are creating a new filter object. When giving a
       #   `Class`, we are using it as is to create a new filter object with the
       #   supplied `args` and `block`. When giving a `String` or `Symbol`, we
-      #   first use the filter registry to find the matching class. With that,
+      #   first use the filter {.registry} to find the matching class. With that
       #   we then create a filter object as before. When giving an object which
       #   responds to `call` already (e.g. a `Proc`, we return it unchanged,
       #   ignoring any additional passed `args`.
