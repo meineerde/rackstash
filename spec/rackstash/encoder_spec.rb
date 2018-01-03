@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -79,10 +79,36 @@ describe Rackstash::Encoder do
     end
   end
 
-  describe 'registry' do
+  describe '.registry' do
     it 'returns the encoder registry' do
       expect(described_class.registry).to be_instance_of Rackstash::ClassRegistry
       expect(described_class.registry.object_type).to eql 'encoder'
+    end
+  end
+
+  describe '.register' do
+    let(:encoder_class) {
+      Class.new do
+        def encode; end
+      end
+    }
+
+    it 'registers an encoder class' do
+      expect(described_class.registry).to receive(:[]=).with(:foo, encoder_class).ordered
+      expect(described_class.registry).to receive(:[]=).with(:bar, encoder_class).ordered
+
+      described_class.register(encoder_class, :foo, :bar)
+    end
+
+    it 'rejects invalid classes' do
+      expect(described_class.registry).not_to receive(:[]=)
+
+      expect { described_class.register(:not_a_class, :foo) }.to raise_error TypeError
+      expect { described_class.register(Class.new, :foo) }.to raise_error TypeError
+    end
+
+    it 'rejects invalid names' do
+      expect { described_class.register(encoder_class, 123) }.to raise_error TypeError
     end
   end
 end

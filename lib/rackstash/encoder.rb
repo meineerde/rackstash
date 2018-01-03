@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -31,12 +31,13 @@ module Rackstash
       # encoder object for it.
       #
       # @param encoder_class [Class] a class from which a new encoder can be
-      #   created. Filter objects must respond to `encode` and accept an event
-      #   hash.
+      #   created. Encoder classes must implement the `encode` instance method
+      #   which accepts an event hash and returns encoded event.
       # @param names [Array<String,Symbol>] one or more names for the
       #   registered `encoder_class`. Using these names, the user can create a
       #   new encoder object from the registered class in {.build}.
-      # @raise [TypeError] if objects of type were passed
+      # @raise [TypeError] if invalid arguments were passed, e.g. an unsuitable
+      #   class or invalid names
       # @return [Class] the passed `filter_class`
       def register(encoder_class, *names)
         unless encoder_class.is_a?(Class) &&

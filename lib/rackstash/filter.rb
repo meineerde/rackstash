@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -29,14 +29,20 @@ module Rackstash
       # object for it.
       #
       # @param filter_class [Class] a class from which a new filter can be
-      #   created. Filter objects must respond to `call` and accept an event
-      #   hash.
+      #   created. Filter classes must implement the `call` instance method
+      #   which accepts an event hash.
       # @param filter_names [Array<String,Symbol>] one or more names for the
       #   registered `filter_class`. Using these names, the user can create a
       #   new filter object from the registered class in {.build}.
-      # @raise [TypeError] if objects of type were passed
+      # @raise [TypeError] if invalid arguments were passed, e.g. an unsuitable
+      #   class or invalid names
       # @return [Class] the passed `filter_class`
       def register(filter_class, *filter_names)
+        unless filter_class.is_a?(Class) &&
+               filter_class.instance_methods.include?(:call)
+          raise TypeError, 'Can only register filter classes'
+        end
+
         filter_names.flatten.each do |name|
           registry[name] = filter_class
         end
