@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -180,6 +180,7 @@ require 'rackstash/encoder/logstash'
 require 'rackstash/encoder/message'
 require 'rackstash/encoder/raw'
 
+require 'rackstash/filter/anonymize_ip_mask'
 require 'rackstash/filter/clear_color'
 require 'rackstash/filter/default_fields'
 require 'rackstash/filter/default_tags'
