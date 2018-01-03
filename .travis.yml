@@ -11,12 +11,13 @@ cache: bundler
 
 rvm:
   # Latest Rubies on top
-  - 2.4.2
-  - jruby-9.1.13.0
+  - 2.5.0
+  - jruby-9.1.15.0
 
   # Older versions
-  - 2.3.5
-  - 2.2.8
+  - 2.4.2
+  - 2.3.6
+  - 2.2.9
   - 2.1.10
   - jruby-9.0.5.0
 
@@ -26,7 +27,7 @@ rvm:
 
 matrix:
   include:
-    - rvm: 2.4.2
+    - rvm: 2.5.0
       env: COVERAGE=1
 
     # An older Ruby/Rack combination as used by Rails 3.2. As long as it works
