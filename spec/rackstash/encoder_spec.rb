@@ -39,8 +39,6 @@ describe Rackstash::Encoder do
       args = ['arg1', foo: 'bar']
       expect(encoder_class).to receive(:new).with(*args)
 
-      p described_class.registry
-
       described_class.build(encoder_name.to_sym, *args)
     end
 
