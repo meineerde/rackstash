@@ -75,6 +75,9 @@ module Rackstash
     #   this is not given, the adapter's default_encoder will be used.
     # @param filters [Array<#call>] an array of filters. Can be a pre-defined
     #   {Filter}, a `Proc`, or any other object which responds to `call`.
+    # @param error_flow [Flow] a special flow which is used to write details
+    #   about any occured errors during writing. By default, we use the global
+    #   {Rackstash.error_flow} which logs JSON-formatted messages to `STDERR`.
     # @yieldparam flow [self] if the given block accepts an argument, we yield
     #   `self` as a parameter, else, the block is directly executed in the
     #   context of `self`.
