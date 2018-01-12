@@ -220,6 +220,18 @@ module Rackstash
     end
     alias filter_prepend filter_unshift
 
+    # Get or set the raise_on_error setting. Only if set to `true`, we will
+    # re-raise errors occuring during logging. If set to `false` (the default),
+    # we will only log the exception to the {#error_flow} and swallow it.
+    #
+    # @param bool [Bool] the value to set. If omitted, we just return the
+    #   current setting
+    # @return [Bool] the updated or current `raise_on_error` setting
+    def raise_on_error(bool = UNDEFINED)
+      self.raise_on_error = bool unless UNDEFINED.equal? bool
+      raise_on_error?
+    end
+
     # @return [Bool] `true` if we re-raise any occured errors after logging them
     #   to the {#error_flow}. This can aid in debugging. By default, i.e., with
     #   {#raise_on_error?} being `false`, we swallow errors  after logging them

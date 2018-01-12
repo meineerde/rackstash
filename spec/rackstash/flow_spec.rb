@@ -298,19 +298,24 @@ describe Rackstash::Flow do
   describe '#raise_on_error?' do
     it 'defaults to false' do
       expect(flow.raise_on_error?).to eql false
+      expect(flow.raise_on_error).to eql false
     end
 
-    it 'can set a boolean' do
-      flow.raise_on_error = 'something'
+    it 'can set to true or false' do
+      expect(flow.raise_on_error 'something').to eql true
+      expect(flow.raise_on_error).to eql true
       expect(flow.raise_on_error?).to eql true
 
-      flow.raise_on_error = nil
+      expect(flow.raise_on_error nil).to eql false
+      expect(flow.raise_on_error).to eql false
       expect(flow.raise_on_error?).to eql false
 
-      flow.raise_on_error = true
+      expect(flow.raise_on_error true).to eql true
+      expect(flow.raise_on_error).to eql true
       expect(flow.raise_on_error?).to eql true
 
-      flow.raise_on_error = false
+      expect(flow.raise_on_error false).to eql false
+      expect(flow.raise_on_error).to eql false
       expect(flow.raise_on_error?).to eql false
     end
   end
