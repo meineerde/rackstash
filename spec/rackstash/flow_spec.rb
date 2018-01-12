@@ -11,7 +11,8 @@ require 'rackstash/flow'
 
 describe Rackstash::Flow do
   let(:adapter) { Rackstash::Adapter::Null.new }
-  let(:flow) { described_class.new(adapter) }
+  let(:flow_args) { {} }
+  let(:flow) { described_class.new(adapter, **flow_args) }
   let(:event) { {} }
 
   describe '#initialize' do
@@ -81,32 +82,72 @@ describe Rackstash::Flow do
       flow.close
     end
 
-    it 'rescues any exception thrown by the adapter' do
-      error_flow = instance_double(described_class)
-      expect(error_flow).to receive(:write!)
-        .with(
-          'error' => 'RuntimeError',
-          'error_message' => 'ERROR',
-          'error_trace' => instance_of(String),
+    context 'with raise_on_error: false' do
+      before do
+        flow_args[:raise_on_error] = false
+      end
 
-          'tags' => [],
-          'message' => [instance_of(Rackstash::Message)],
+      it 'rescues any exception thrown by the adapter' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!)
+          .with(
+            'error' => 'RuntimeError',
+            'error_message' => 'ERROR',
+            'error_trace' => instance_of(String),
 
-          '@timestamp' => instance_of(Time)
-        )
-      expect(flow).to receive(:error_flow).and_return(error_flow)
+            'tags' => [],
+            'message' => [instance_of(Rackstash::Message)],
 
-      expect(flow).to receive(:close!).and_raise('ERROR')
-      expect(flow.close).to be nil
+            '@timestamp' => instance_of(Time)
+          )
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:close!).and_raise('ERROR')
+        expect(flow.close).to be nil
+      end
+
+      it 'rescues errors thrown by the error_flow' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:close!).and_raise('ERROR')
+        expect(flow.close).to be nil
+      end
     end
 
-    it 'rescues errors thrown by the error_flow' do
-      error_flow = instance_double(described_class)
-      expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-      expect(flow).to receive(:error_flow).and_return(error_flow)
+    context 'with raise_on_error: true' do
+      before do
+        flow_args[:raise_on_error] = true
+      end
 
-      expect(flow).to receive(:close!).and_raise('ERROR')
-      expect(flow.close).to be nil
+      it 'rescues any exception thrown by the adapter' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!)
+          .with(
+            'error' => 'RuntimeError',
+            'error_message' => 'ERROR',
+            'error_trace' => instance_of(String),
+
+            'tags' => [],
+            'message' => [instance_of(Rackstash::Message)],
+
+            '@timestamp' => instance_of(Time)
+          )
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:close!).and_raise('ERROR')
+        expect { flow.close }.to raise_error RuntimeError, 'ERROR'
+      end
+
+      it 'rescues errors thrown by the error_flow' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:close!).and_raise('ERROR')
+        expect { flow.close }.to raise_error RuntimeError, 'DOUBLE ERROR'
+      end
     end
   end
 
@@ -254,6 +295,26 @@ describe Rackstash::Flow do
     end
   end
 
+  describe '#raise_on_error?' do
+    it 'defaults to false' do
+      expect(flow.raise_on_error?).to eql false
+    end
+
+    it 'can set a boolean' do
+      flow.raise_on_error = 'something'
+      expect(flow.raise_on_error?).to eql true
+
+      flow.raise_on_error = nil
+      expect(flow.raise_on_error?).to eql false
+
+      flow.raise_on_error = true
+      expect(flow.raise_on_error?).to eql true
+
+      flow.raise_on_error = false
+      expect(flow.raise_on_error?).to eql false
+    end
+  end
+
   describe '#reopen' do
     it 'calls adapter#reopen' do
       expect(adapter).to receive(:reopen).and_return(true)
@@ -267,32 +328,72 @@ describe Rackstash::Flow do
       flow.reopen
     end
 
-    it 'rescues any exception thrown by the adapter' do
-      error_flow = instance_double(described_class)
-      expect(error_flow).to receive(:write!)
-        .with(
-          'error' => 'RuntimeError',
-          'error_message' => 'ERROR',
-          'error_trace' => instance_of(String),
+    context 'with raise_on_error: false' do
+      before do
+        flow_args[:raise_on_error] = false
+      end
 
-          'tags' => [],
-          'message' => [instance_of(Rackstash::Message)],
+      it 'rescues any exception thrown by the adapter' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!)
+          .with(
+            'error' => 'RuntimeError',
+            'error_message' => 'ERROR',
+            'error_trace' => instance_of(String),
 
-          '@timestamp' => instance_of(Time)
-        )
-      expect(flow).to receive(:error_flow).and_return(error_flow)
+            'tags' => [],
+            'message' => [instance_of(Rackstash::Message)],
 
-      expect(flow).to receive(:reopen!).and_raise('ERROR')
-      expect(flow.reopen).to be nil
+            '@timestamp' => instance_of(Time)
+          )
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:reopen!).and_raise('ERROR')
+        expect(flow.reopen).to be nil
+      end
+
+      it 'rescues errors thrown by the error_flow' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:reopen!).and_raise('ERROR')
+        expect(flow.reopen).to be nil
+      end
     end
 
-    it 'rescues errors thrown by the error_flow' do
-      error_flow = instance_double(described_class)
-      expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-      expect(flow).to receive(:error_flow).and_return(error_flow)
+    context 'with raise_on_error: true' do
+      before do
+        flow_args[:raise_on_error] = true
+      end
 
-      expect(flow).to receive(:reopen!).and_raise('ERROR')
-      expect(flow.reopen).to be nil
+      it 'rescues any exception thrown by the adapter' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!)
+          .with(
+            'error' => 'RuntimeError',
+            'error_message' => 'ERROR',
+            'error_trace' => instance_of(String),
+
+            'tags' => [],
+            'message' => [instance_of(Rackstash::Message)],
+
+            '@timestamp' => instance_of(Time)
+          )
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:reopen!).and_raise('ERROR')
+        expect { flow.reopen }.to raise_error RuntimeError, 'ERROR'
+      end
+
+      it 'rescues errors thrown by the error_flow' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:reopen!).and_raise('ERROR')
+        expect { flow.reopen }.to raise_error RuntimeError, 'DOUBLE ERROR'
+      end
     end
   end
 
@@ -336,32 +437,72 @@ describe Rackstash::Flow do
       flow.write(event)
     end
 
-    it 'rescues any exception thrown by the adapter' do
-      error_flow = instance_double(described_class)
-      expect(error_flow).to receive(:write!)
-        .with(
-          'error' => 'RuntimeError',
-          'error_message' => 'ERROR',
-          'error_trace' => instance_of(String),
+    context 'with raise_on_error: false' do
+      before do
+        flow_args[:raise_on_error] = false
+      end
 
-          'tags' => [],
-          'message' => [instance_of(Rackstash::Message)],
+      it 'rescues any exception thrown by the adapter' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!)
+          .with(
+            'error' => 'RuntimeError',
+            'error_message' => 'ERROR',
+            'error_trace' => instance_of(String),
 
-          '@timestamp' => instance_of(Time)
-        )
-      expect(flow).to receive(:error_flow).and_return(error_flow)
+            'tags' => [],
+            'message' => [instance_of(Rackstash::Message)],
 
-      expect(flow).to receive(:write!).and_raise('ERROR')
-      expect(flow.write(event)).to be false
+            '@timestamp' => instance_of(Time)
+          )
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:write!).and_raise('ERROR')
+        expect(flow.write(event)).to be false
+      end
+
+      it 'rescues errors thrown by the error_flow' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:write!).and_raise('ERROR')
+        expect(flow.write(event)).to be false
+      end
     end
 
-    it 'rescues errors thrown by the error_flow' do
-      error_flow = instance_double(described_class)
-      expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-      expect(flow).to receive(:error_flow).and_return(error_flow)
+    context 'with raise_on_error: true' do
+      before do
+        flow_args[:raise_on_error] = true
+      end
 
-      expect(flow).to receive(:write!).and_raise('ERROR')
-      expect(flow.write(event)).to be false
+      it 'rescues any exception thrown by the adapter' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!)
+          .with(
+            'error' => 'RuntimeError',
+            'error_message' => 'ERROR',
+            'error_trace' => instance_of(String),
+
+            'tags' => [],
+            'message' => [instance_of(Rackstash::Message)],
+
+            '@timestamp' => instance_of(Time)
+          )
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:write!).and_raise('ERROR')
+        expect { flow.write(event) }.to raise_error RuntimeError, 'ERROR'
+      end
+
+      it 'rescues errors thrown by the error_flow' do
+        error_flow = instance_double(described_class)
+        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
+        expect(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(flow).to receive(:write!).and_raise('ERROR')
+        expect { flow.write(event) }.to raise_error RuntimeError, 'DOUBLE ERROR'
+      end
     end
   end
 end

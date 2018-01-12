@@ -78,14 +78,23 @@ module Rackstash
     # @param error_flow [Flow] a special flow which is used to write details
     #   about any occured errors during writing. By default, we use the global
     #   {Rackstash.error_flow} which logs JSON-formatted messages to `STDERR`.
+    # @param raise_on_error [Bool] set to `true` to re-raise any occured errors
+    #   after logging them to the {#error_flow}. This can aid in debugging. By
+    #   default, we swallow errors after having logging them to not cause
+    #   additional issues to the production application just because the logger
+    #   doesn't work.
     # @yieldparam flow [self] if the given block accepts an argument, we yield
     #   `self` as a parameter, else, the block is directly executed in the
     #   context of `self`.
-    def initialize(adapter, encoder: nil, filters: [], error_flow: nil, &block)
+    def initialize(adapter, encoder: nil, filters: [],
+      error_flow: nil, raise_on_error: false,
+      &block
+    )
       @adapter = Rackstash::Adapter[adapter]
       self.encoder = encoder || @adapter.default_encoder
       @filter_chain = Rackstash::FilterChain.new(filters)
       self.error_flow = error_flow
+      self.raise_on_error = raise_on_error
 
       if block_given?
         if block.arity == 0
@@ -115,6 +124,8 @@ module Rackstash
     rescue Exception => exception
       log_error("close failed for adapter #{adapter.inspect}", exception)
       raise unless exception.is_a?(StandardError)
+      raise if raise_on_error?
+      nil
     end
 
     # Get or set the encoder for the log {#adapter}. If this value is not
@@ -209,6 +220,22 @@ module Rackstash
     end
     alias filter_prepend filter_unshift
 
+    # @return [Bool] `true` if we re-raise any occured errors after logging them
+    #   to the {#error_flow}. This can aid in debugging. By default, i.e., with
+    #   {#raise_on_error?} being `false`, we swallow errors  after logging them
+    #   to not cause  additional issues to the production application just
+    #   because Rackstash doesn't work.
+    def raise_on_error?
+      @raise_on_error
+    end
+
+    # @param bool [Bool] `true` to cause occured errors to be re-raised after
+    #   logging them to the {#error_flow}, `false` to swallow them after
+    #   logging.
+    def raise_on_error=(bool)
+      @raise_on_error = !!bool
+    end
+
     # Re-open the log adapter if supported. This might be a no-op if the adapter
     # does not support reopening.
     #
@@ -228,6 +255,8 @@ module Rackstash
     rescue Exception => exception
       log_error("reopen failed for adapter #{adapter.inspect}", exception)
       raise unless exception.is_a?(StandardError)
+      raise if raise_on_error?
+      nil
     end
 
     # Filter, encode and write the given `event` to the configured {#adapter}.
@@ -263,7 +292,9 @@ module Rackstash
       write!(event)
     rescue Exception => exception
       log_error("write failed for adapter #{adapter.inspect}", exception)
-      exception.is_a?(StandardError) ? false : raise
+      raise unless exception.is_a?(StandardError)
+      raise if raise_on_error?
+      false
     end
 
     private
@@ -286,8 +317,10 @@ module Rackstash
       # place to be in and there is very little we can sensibly do now.
       #
       # To aid in availability of the app using Rackstash, we swallow any
-      # StandardErrors here and just continue, hoping that things will turn out
-      # to be okay in the end.
+      # StandardErrors by default and just continue, hoping that things will
+      # turn out to be okay in the end.
+
+      raise if raise_on_error?
     end
   end
 end
