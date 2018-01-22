@@ -210,10 +210,17 @@ describe Rackstash::Adapter do
     context 'with a registered scheme' do
       before do
         described_class.register adapter, 'dummy'
+        described_class.register adapter, 'foo+dummy'
       end
 
       it 'creates an adapter from the scheme' do
         raw_uri = 'dummy://example.com'
+        expect(adapter).to receive(:from_uri).with(URI(raw_uri)).and_call_original
+        expect(described_class[raw_uri]).to be_an Rackstash::Adapter::BaseAdapter
+      end
+
+      it 'can use a complex scheme' do
+        raw_uri = 'foo+dummy://example.com'
         expect(adapter).to receive(:from_uri).with(URI(raw_uri)).and_call_original
         expect(described_class[raw_uri]).to be_an Rackstash::Adapter::BaseAdapter
       end

@@ -53,7 +53,7 @@ module Rackstash
           case matcher
           when String
             matcher = matcher.to_s
-            if matcher =~ /\A[a-z0-9]+\z/
+            if matcher =~ /\A[a-z0-9]/
               # If the matcher is a lower-case string, we assume it is a URL
               # scheme.
               adapter_schemes[matcher.downcase] = adapter_class
