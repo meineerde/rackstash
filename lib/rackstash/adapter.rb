@@ -110,7 +110,9 @@ module Rackstash
         scheme = uri.scheme || uri.opaque
 
         return unless scheme
-        adapter_class = adapter_schemes.fetch(scheme.to_s.downcase) { return }
+        adapter_class = adapter_schemes.fetch(scheme.to_s.downcase) {
+          raise ArgumentError, "No log adapter found for URI #{uri}"
+        }
 
         if adapter_class.respond_to?(:from_uri)
           adapter_class.from_uri(uri)

@@ -261,8 +261,9 @@ describe Rackstash::Adapter do
           unknown_uri = 'unknown://example.com'
 
           expect(adapter).to_not receive(:from_uri)
-          expect(adapter).to receive(:new).with(unknown_uri).and_call_original
-          expect(described_class[unknown_uri]).to be_an Rackstash::Adapter::BaseAdapter
+          expect(adapter).not_to receive(:new)
+          expect { described_class[unknown_uri] }
+            .to raise_error ArgumentError, "No log adapter found for URI unknown://example.com"
         end
       end
     end
