@@ -5,6 +5,9 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'cgi'
+require 'uri'
+
 require 'rackstash/adapter'
 require 'rackstash/encoder/json'
 
@@ -32,6 +35,30 @@ module Rackstash
       # @see Adapter.register
       def self.register_for(*matchers)
         Rackstash::Adapter.register(self, *matchers)
+      end
+
+      class << self
+        private
+
+        def parse_uri_options(uri)
+          options = {}
+          (uri.query || EMPTY_STRING).split(/[&;] */n).each do |option|
+            next if option.empty?
+            k, v = option.split('='.freeze, 2).map! { |s| CGI.unescape(s) }
+            k = k.to_sym
+
+            if cur = options[k]
+              if cur.class == Array
+                options[k] << v
+              else
+                options[k] = [cur, v]
+              end
+            else
+              options[k] = v
+            end
+          end
+          options
+        end
       end
 
       # Create a new adapter instance.
