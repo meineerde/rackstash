@@ -11,7 +11,7 @@ require 'rackstash/class_registry'
 
 describe Rackstash::ClassRegistry do
   let(:registry) { described_class.new('value') }
-  let(:klass) { Class.new}
+  let(:klass) { Class.new }
 
   describe '#initialize' do
     it 'sets the object_type' do

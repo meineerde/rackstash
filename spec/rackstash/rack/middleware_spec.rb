@@ -113,9 +113,7 @@ describe Rackstash::Rack::Middleware do
       'path' => '/demo',
       'status' => 200,
       'duration' => be_a(Float).and(be > 0),
-
       'message' => "Request started\nNothing to do...\n",
-
       '@timestamp' => /\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d.\d{6}Z/,
       'tags' => []
     )
@@ -247,10 +245,8 @@ describe Rackstash::Rack::Middleware do
         'error' => 'RuntimeError',
         'error_message' => 'kaputt',
         'error_trace' => %r{\A#{__FILE__}:#{__LINE__ - 8}:in},
-
         # The app did its thing
         'message' => "Request started\nNothing to do...\n",
-
         # We explicitly override the logged status, even if the app returned a
         # successful response earlier
         'status' => 500

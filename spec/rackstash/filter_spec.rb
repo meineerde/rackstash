@@ -15,7 +15,7 @@ describe Rackstash::Filter do
 
   let(:filter_class) {
     Class.new do
-      def call(event)
+      def call(_event)
         'filtered'
       end
     end
@@ -87,7 +87,7 @@ describe Rackstash::Filter do
       end
 
       it 'keeps the class hierarchy unchanged' do
-        filter = described_class.build(filter_name, only_if: ->(event){ false })
+        filter = described_class.build(filter_name, only_if: ->(_event) { false })
 
         expect(filter).to be_instance_of(filter_class)
       end
@@ -113,7 +113,7 @@ describe Rackstash::Filter do
           attr_reader :mandatory
         end
 
-        filter = described_class.build(filter_name, only_if: ->{}, mandatory: 'foo')
+        filter = described_class.build(filter_name, only_if: -> {}, mandatory: 'foo')
         expect(filter.mandatory).to eql 'foo'
       end
     end
@@ -160,7 +160,8 @@ describe Rackstash::Filter do
   describe '.register' do
     let(:filter_class) {
       Class.new do
-        def call; end
+        def call
+        end
       end
     }
 

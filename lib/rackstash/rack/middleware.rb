@@ -297,11 +297,13 @@ module Rackstash
         }
         buffer.fields.merge!(fields, force: false)
 
-        buffer.fields.deep_merge!(
-          @response_fields,
-          scope: headers,
-          force: false
-        ) unless @response_fields.nil?
+        unless @response_fields.nil?
+          buffer.fields.deep_merge!(
+            @response_fields,
+            scope: headers,
+            force: false
+          )
+        end
         buffer.tag(@response_tags, scope: headers) unless @response_tags.nil?
       end
 

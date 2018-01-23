@@ -87,7 +87,6 @@ describe Rackstash::Filter::AnonymizeIPMask do
     expect(event).not_to include 'ignored'
   end
 
-
   it 'anonymizes arrays' do
     filter_spec['array'] = 'anonymized'
     filter.call(event)

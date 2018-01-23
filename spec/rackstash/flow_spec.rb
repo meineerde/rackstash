@@ -94,10 +94,8 @@ describe Rackstash::Flow do
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
             'error_trace' => instance_of(String),
-
             'tags' => [],
             'message' => [instance_of(Rackstash::Message)],
-
             '@timestamp' => instance_of(Time)
           )
         expect(flow).to receive(:error_flow).and_return(error_flow)
@@ -128,10 +126,8 @@ describe Rackstash::Flow do
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
             'error_trace' => instance_of(String),
-
             'tags' => [],
             'message' => [instance_of(Rackstash::Message)],
-
             '@timestamp' => instance_of(Time)
           )
         expect(flow).to receive(:error_flow).and_return(error_flow)
@@ -302,19 +298,19 @@ describe Rackstash::Flow do
     end
 
     it 'can set to true or false' do
-      expect(flow.raise_on_error 'something').to eql true
+      expect(flow.raise_on_error('something')).to eql true
       expect(flow.raise_on_error).to eql true
       expect(flow.raise_on_error?).to eql true
 
-      expect(flow.raise_on_error nil).to eql false
+      expect(flow.raise_on_error(nil)).to eql false
       expect(flow.raise_on_error).to eql false
       expect(flow.raise_on_error?).to eql false
 
-      expect(flow.raise_on_error true).to eql true
+      expect(flow.raise_on_error(true)).to eql true
       expect(flow.raise_on_error).to eql true
       expect(flow.raise_on_error?).to eql true
 
-      expect(flow.raise_on_error false).to eql false
+      expect(flow.raise_on_error(false)).to eql false
       expect(flow.raise_on_error).to eql false
       expect(flow.raise_on_error?).to eql false
     end
@@ -345,10 +341,8 @@ describe Rackstash::Flow do
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
             'error_trace' => instance_of(String),
-
             'tags' => [],
             'message' => [instance_of(Rackstash::Message)],
-
             '@timestamp' => instance_of(Time)
           )
         expect(flow).to receive(:error_flow).and_return(error_flow)
@@ -379,10 +373,8 @@ describe Rackstash::Flow do
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
             'error_trace' => instance_of(String),
-
             'tags' => [],
             'message' => [instance_of(Rackstash::Message)],
-
             '@timestamp' => instance_of(Time)
           )
         expect(flow).to receive(:error_flow).and_return(error_flow)
@@ -454,10 +446,8 @@ describe Rackstash::Flow do
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
             'error_trace' => instance_of(String),
-
             'tags' => [],
             'message' => [instance_of(Rackstash::Message)],
-
             '@timestamp' => instance_of(Time)
           )
         expect(flow).to receive(:error_flow).and_return(error_flow)
@@ -488,10 +478,8 @@ describe Rackstash::Flow do
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
             'error_trace' => instance_of(String),
-
             'tags' => [],
             'message' => [instance_of(Rackstash::Message)],
-
             '@timestamp' => instance_of(Time)
           )
         expect(flow).to receive(:error_flow).and_return(error_flow)

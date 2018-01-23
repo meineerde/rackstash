@@ -496,8 +496,19 @@ describe Rackstash::Fields::Hash do
       hash['key'] = 'value'
       called_with = []
 
-      expect(hash.fetch('key') { |key| called_with << key; :default }).to eql 'value'
-      expect(hash.fetch('missing') { |key| called_with << key; :default }).to eql :default
+      expect(
+        hash.fetch('key') { |key|
+          called_with << key
+          :default
+        }
+      ).to eql 'value'
+
+      expect(
+        hash.fetch('missing') { |key|
+          called_with << key;
+          :default
+        }
+      ).to eql :default
 
       expect(called_with).to eql ['missing']
     end
