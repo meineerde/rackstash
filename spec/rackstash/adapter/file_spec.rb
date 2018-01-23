@@ -22,6 +22,27 @@ describe Rackstash::Adapter::File do
     logfile.unlink
   end
 
+  describe 'from_uri' do
+    it 'creates a File adapter instance' do
+      expect(described_class.from_uri('file:/tmp/file_spec.log'))
+        .to be_instance_of described_class
+      expect(described_class.from_uri('file:///tmp/file_spec.log'))
+        .to be_instance_of described_class
+    end
+
+    it 'sets the filename from the URI path' do
+      expect(described_class.from_uri('file:/tmp/file_spec.log').filename)
+        .to eql '/tmp/file_spec.log'
+      expect(described_class.from_uri('file:///tmp/file_spec.log').filename)
+        .to eql '/tmp/file_spec.log'
+    end
+
+    it 'sets optional attributes' do
+      expect(described_class.from_uri('file:/tmp/file_spec.log?auto_reopen=false').auto_reopen?)
+        .to eql false
+    end
+  end
+
   describe '#initialize' do
     it 'accepts a String' do
       expect(described_class.new(logfile.path).filename)
@@ -35,7 +56,7 @@ describe Rackstash::Adapter::File do
         .and be_a String
     end
 
-    it 'rejects non-IO objects' do
+    it 'rejects other objects' do
       expect { described_class.new(nil) }.to raise_error TypeError
       expect { described_class.new(Object.new) }.to raise_error TypeError
       expect { described_class.new(23) }.to raise_error TypeError

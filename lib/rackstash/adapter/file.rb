@@ -57,10 +57,25 @@ module Rackstash
     # file was moved, you don't need to create the new file there nor should you
     # use the (potentially destructive) `copytruncate` option of logrotate.
     class File < BaseAdapter
-      register_for ::String, ::Pathname
+      register_for ::String, ::Pathname, 'file'
 
       # @return [String] the absolute path to the log file
       attr_reader :filename
+
+      def self.from_uri(uri)
+        uri = URI(uri)
+
+        if (uri.scheme || uri.opaque) == 'file'.freeze
+          file_options = parse_uri_options(uri)
+          if file_options[:auto_reopen] =~ /\A(:?false|0)?\z/i
+            file_options[:auto_reopen] = false
+          end
+
+          new(uri.path, **file_options)
+        else
+          raise ArgumentError, "Invalid URI: #{uri}"
+        end
+      end
 
       # Create a new file adapter instance which writes logs to the log file
       # specified in `filename`.
