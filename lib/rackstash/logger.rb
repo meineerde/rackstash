@@ -320,7 +320,7 @@ module Rackstash
     # base logger immediately.
     #
     # @param severity [Integer] The log severity. One of the {SEVERITIES}
-    #   consants.
+    #   constants.
     # @param msg [#to_s, ::Hash, Exception, nil] The log message. If unset, we
     #   try, to use the return value of the optional block. If we get a `String`
     #   or `Exception`, we log a new {Message}. If it's a Hash, we deep_merge it
