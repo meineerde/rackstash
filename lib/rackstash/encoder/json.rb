@@ -14,9 +14,13 @@ require 'rackstash/encoder/helper/timestamp'
 module Rackstash
   module Encoder
     # The JSON encoder formats the log event as a single-line JSON string. The
-    # resulting JSON string contains all data exposed by the buffer.
+    # resulting JSON string contains all data exposed by the buffer. With a
+    # suitable adapter (like {Adapter::File} or {Adapter::TCP}), you can use
+    # this encoder to write logs in the standard
+    # [JSON Lines](http://jsonlines.org/) format.
     #
-    # Most adapters default to use this encoder.
+    # Most adapters default to use this encoder. See the documentation of the
+    # specific adapter's `default_encoder` instance method for details.
     class JSON
       include Rackstash::Encoder::Helper::Message
       include Rackstash::Encoder::Helper::Timestamp
