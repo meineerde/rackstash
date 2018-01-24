@@ -479,7 +479,7 @@ describe Rackstash::Fields::AbstractCollection do
     end
 
     it 'transforms BigDecimal to String' do
-      bigdecimal = BigDecimal.new('123.987653')
+      bigdecimal = BigDecimal('123.987653')
 
       expect(normalize(bigdecimal)).to eql '123.987653'
       expect(normalize(bigdecimal).encoding).to eql Encoding::UTF_8

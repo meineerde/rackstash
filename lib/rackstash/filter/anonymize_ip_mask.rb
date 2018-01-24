@@ -140,15 +140,28 @@ module Rackstash
           return nil
         end
 
-        if ip.ipv4?
-          masked_ip = ip.mask(32 - @ipv4_mask)
-        elsif ip.ipv4_compat? || ip.ipv4_mapped?
-          masked_ip = ip.mask(128 - @ipv4_mask)
-        elsif ip.ipv6?
-          masked_ip = ip.mask(128 - @ipv6_mask)
+        native = ip.native
+        if native.ipv4?
+          masked = native.mask(32 - @ipv4_mask)
+          # Check whether the original IP address was an IPv4 address embedded
+          # into the IPv6 format. If the original IP was either an
+          # IPv4-compatible IPv6 addresses or an IPv4-mapped IPv6 addresses, we
+          # transform the resulting mapped IP address back into that format.
+          if ip.ipv6?
+            masked = if ip.ipv4_mapped?
+              masked.ipv4_mapped
+            else
+              # This is a bit awkward. Howeverm since Ruby 2.5.0 deprecated
+              # IPAddr#ipv4_compat, we have to do the transformation manually
+              # to avoid the associated warning.
+              IPAddr.new(masked, ::Socket::AF_INET6)
+            end
+          end
+        else
+          masked = native.mask(128 - @ipv6_mask)
         end
 
-        masked_ip.to_s.force_encoding(Encoding::UTF_8)
+        masked.to_s.force_encoding(Encoding::UTF_8)
       end
     end
 
