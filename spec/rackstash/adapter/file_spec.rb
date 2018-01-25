@@ -41,6 +41,14 @@ describe Rackstash::Adapter::File do
       expect(described_class.from_uri('file:/tmp/file_spec.log?auto_reopen=false').auto_reopen?)
         .to eql false
     end
+
+    it 'only accepts file URIs' do
+      expect { described_class.from_uri('http://example.com') }
+        .to raise_error ArgumentError, 'Invalid URI: http://example.com'
+
+      expect { described_class.from_uri('') }
+        .to raise_error ArgumentError, 'Invalid URI: '
+    end
   end
 
   describe '#initialize' do
