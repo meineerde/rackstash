@@ -8,6 +8,7 @@
 require 'ipaddr'
 
 require 'rackstash/filter'
+require 'rackstash/helpers/utf8'
 
 module Rackstash
   module Filter
@@ -41,6 +42,8 @@ module Rackstash
     #     filter :anonymize_ip_mask, {'source_ip' => 'source_ip'}
     #   end
     class AnonymizeIPMask
+      include Rackstash::Helpers::UTF8
+
       # @param field_spec [Hash<#to_s => #to_s>] a `Hash` specifying which
       #   fields should be anonymized and where the result should be stored. The
       #   key described the name of the existing source field and the value the
@@ -54,7 +57,7 @@ module Rackstash
       def initialize(field_spec, ipv4_mask: 8, ipv6_mask: 80)
         @fields = {}
         Hash(field_spec).each_pair do |key, value|
-          @fields[key.to_s] = value.to_s
+          @fields[utf8_encode(key)] = utf8_encode(value)
         end
 
         @ipv4_mask = Integer(ipv4_mask)
