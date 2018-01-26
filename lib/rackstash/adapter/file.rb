@@ -129,7 +129,7 @@ module Rackstash
 
         @mutex.synchronize do
           auto_reopen
-          @file.write(line)
+          @file.syswrite(line)
         end
         nil
       end
@@ -180,8 +180,7 @@ module Rackstash
 
         file = ::File.new(
           filename,
-          ::File::WRONLY | ::File::APPEND | ::File::CREAT,
-          external_encoding: Encoding::UTF_8
+          ::File::WRONLY | ::File::APPEND | ::File::CREAT
         )
         file.binmode
         file.sync = true
