@@ -32,5 +32,13 @@ describe Rackstash::Encoder::JSON do
       event = { 'foo' => 'bar' }
       expect(encoder.encode(event)).to eql '{"foo":"bar"}'
     end
+
+    it 'normalizes the timestamp' do
+      time = Time.parse('2016-10-17 13:37:00 +03:00')
+      event = { 'message' => ["line1\n", "line2\n"], '@timestamp' => time }
+
+      expect(encoder.encode(event))
+        .to eql '{"message":"line1\nline2\n","@timestamp":"2016-10-17T10:37:00.000000Z"}'
+    end
   end
 end
