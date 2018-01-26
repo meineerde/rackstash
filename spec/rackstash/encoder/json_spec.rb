@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -21,6 +21,16 @@ describe Rackstash::Encoder::JSON do
     it 'formats newlines as \n' do
       event = { 'message' => "text\nwith\nnewlines" }
       expect(encoder.encode(event)).to eql '{"message":"text\nwith\nnewlines"}'
+    end
+
+    it 'passes the message as nil' do
+      event = { 'message' => nil, 'foo' => 'bar' }
+      expect(encoder.encode(event)).to eql '{"message":null,"foo":"bar"}'
+    end
+
+    it 'omits a missing message' do
+      event = { 'foo' => 'bar' }
+      expect(encoder.encode(event)).to eql '{"foo":"bar"}'
     end
   end
 end
