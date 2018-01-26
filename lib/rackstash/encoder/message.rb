@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -15,7 +15,7 @@ module Rackstash
     # where the added fields are not required, mostly during development where
     # (debug) logs are directly consumed by humans.
     #
-    # If any `prefix_fields` are given in the initializer, we gather their
+    # If any `tagged` fields are given in the initializer, we gather their
     # values from the event and prefix them to each line in the message if the
     # current event contains a value at the given field names.
     #
