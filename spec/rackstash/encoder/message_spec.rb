@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -17,6 +17,17 @@ describe Rackstash::Encoder::Message do
     it 'gets the message from the event hash' do
       event = { 'hello' => 'world', 'message' => ["\n\t \nline1\n", "line2\n  \n\t\n"] }
       expect(encoder.encode(event)).to eql "\n\t \nline1\nline2\n  \n\t\n"
+    end
+
+    it 'returns an empty with an empty message' do
+      event = { 'message' => [], 'foo' => 'bar' }
+      expect(encoder.encode(event)).to eql ''
+
+      event = { 'message' => '', 'foo' => 'bar' }
+      expect(encoder.encode(event)).to eql ''
+
+      event = { 'message' => nil, 'foo' => 'bar' }
+      expect(encoder.encode(event)).to eql ''
     end
 
     context 'with prefix_fields' do
@@ -56,7 +67,18 @@ describe Rackstash::Encoder::Message do
         expect(encoder.encode(event)).to eql "line1\nline2\n"
       end
 
+      it 'adds the prefix to a single string' do
+        event = { 'message' => 'msg', 'field' => 'BXC' }
+        expect(encoder.encode(event)).to eql '[BXC] msg'
+      end
+
       it 'does not prefix fields on an empty message' do
+        event = { 'message' => [], 'tags' => ['foo', 'bar'] }
+        expect(encoder.encode(event)).to eql ''
+
+        event = { 'message' => [], 'tags' => ['foo', 'bar'] }
+        expect(encoder.encode(event)).to eql ''
+
         event = { 'message' => [], 'tags' => ['foo', 'bar'] }
         expect(encoder.encode(event)).to eql ''
       end
