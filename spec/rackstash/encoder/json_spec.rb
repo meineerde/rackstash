@@ -40,5 +40,13 @@ describe Rackstash::Encoder::JSON do
       expect(encoder.encode(event))
         .to eql '{"message":"line1\nline2\n","@timestamp":"2016-10-17T10:37:00.000000Z"}'
     end
+
+    it 'omits a missing timestamp' do
+      event = { 'foo' => 'bar' }
+
+      expect(encoder.encode(event))
+        .to eql '{"foo":"bar"}'
+    end
+
   end
 end
