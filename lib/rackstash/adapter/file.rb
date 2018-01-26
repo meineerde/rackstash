@@ -13,18 +13,23 @@ require 'rackstash/adapter/base_adapter'
 
 module Rackstash
   module Adapter
-    # This log adapter allows to write logs to a file acessible on the local
-    # filesystem. We assume filesystem semantics of the usual local filesystems
-    # used on Linux, macOS, BSDs, or Windows. Here, we can ensure that even
-    # concurrent writes of multiple processes (e.g. multiple worker processes of
-    # an application server) don't produce interleaved log lines.
+    # This log adapter allows to write logs to a file accessible on the local
+    # filesystem. Written log lines are delimited by a newline character (`\n`).
+    # A suitable encoders should ensure that single logs do not contain any
+    # verbatim newline characters themselves. All Rackstash encoders producing
+    # JSON formatted logs are suitable in this regard.
     #
-    # When using a remote filesystem (e.g. NFS or most FUSE filesystems but not
-    # for SMB) it might be possible that concurrent log writes to the same file
-    # are interleaved on disk, resulting on probable log corruption. If this is
-    # a concern, you should make sure that only one log adapter of one process
-    # write to a log file at a time or (preferrably) write to a local file
-    # instead.
+    # When writing the logs, we assume filesystem semantics of the usual local
+    # filesystems used on Linux, macOS, BSDs, or Windows. Here, we can ensure
+    # that even concurrent writes of multiple processes (e.g. multiple worker
+    # processes of an application server) don't produce interleaved log lines.
+    #
+    # When using a remote filesystem it might be possible that concurrent log
+    # writes to the same file are interleaved on disk, resulting on probable
+    # log corruption. If this is a concern, you should make sure that only one
+    # log adapter of one process write to a log file at a time or (preferrably)
+    # write to a local file instead. This restriction applies to NFS and most
+    # FUSE filesystems like sshfs. SMB is likely safe to use here.
     #
     # When reading the log file, the reader might still see incomplete writes
     # depending on the OS and filesystem. Since we are only writing complete
