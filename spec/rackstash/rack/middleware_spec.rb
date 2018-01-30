@@ -137,6 +137,22 @@ describe Rackstash::Rack::Middleware do
         'method' => 'GET'
       )
     end
+
+    context 'on merge errors' do
+      it 'raises an error' do
+        args[:request_fields] = ->(_request){ raise 'Oh No!' }
+
+        expect { get('/stuff') }.to raise_error RuntimeError, 'Oh No!'
+        expect(log.last).to include(
+          'path' => '/stuff',
+          'method' => 'GET',
+          'status' => 500,
+          'error' => 'RuntimeError',
+          'error_message' => 'Oh No!',
+          'error_trace' => %r{\A#{__FILE__}:#{__LINE__ - 9}:in}
+        )
+      end
+    end
   end
 
   context 'with request_tags' do
@@ -147,6 +163,22 @@ describe Rackstash::Rack::Middleware do
       get('/stuff')
 
       expect(log.last).to include('tags' => ['foo', 'STUFF'])
+    end
+
+    context 'on merge errors' do
+      it 'raises an error' do
+        args[:request_tags] = ->(_request){ raise 'Oh No!' }
+
+        expect { get('/stuff') }.to raise_error RuntimeError, 'Oh No!'
+        expect(log.last).to include(
+          'path' => '/stuff',
+          'method' => 'GET',
+          'status' => 500,
+          'error' => 'RuntimeError',
+          'error_message' => 'Oh No!',
+          'error_trace' => %r{\A#{__FILE__}:#{__LINE__ - 9}:in}
+        )
+      end
     end
   end
 
@@ -171,6 +203,22 @@ describe Rackstash::Rack::Middleware do
       get('/stuff')
 
       expect(log.last).to include 'path' => '/stuff'
+    end
+
+    context 'on merge errors' do
+      it 'raises an error' do
+        args[:response_fields] = ->(_headers){ raise 'Oh No!' }
+
+        expect { get('/stuff') }.to raise_error RuntimeError, 'Oh No!'
+        expect(log.last).to include(
+          'path' => '/stuff',
+          'method' => 'GET',
+          'status' => 500,
+          'error' => 'RuntimeError',
+          'error_message' => 'Oh No!',
+          'error_trace' => %r{\A#{__FILE__}:#{__LINE__ - 9}:in}
+        )
+      end
     end
   end
 
