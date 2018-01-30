@@ -203,28 +203,23 @@ module Rackstash
         env['rack.logger'.freeze] = @logger
         env['rack.errors'.freeze] = Rackstash::Rack::Errors.new(@logger)
 
-        @logger.push_buffer(buffering: @buffering, allow_silent: true)
         begin
-          @logger.timestamp
-          on_request(env)
+          @logger.push_buffer(buffering: @buffering, allow_silent: true)
+          begin
+            @logger.timestamp
+            on_request(env)
 
-          response = @app.call(env)
-        rescue Exception => exception
-          buffer = @logger.pop_buffer
-          if buffer
-            begin
-              on_error(buffer, env, began_at, exception)
-            ensure
-              buffer.flush
+            @app.call(env).tap do |response|
+              on_response(env, began_at, response)
             end
+          rescue Exception => exception
+            on_error(env, began_at, exception)
+            raise
           end
-          raise
+        ensure
+          buffer = @logger.pop_buffer
+          buffer.flush if buffer
         end
-
-        buffer = @logger.pop_buffer
-        on_response(buffer, env, began_at, response) if buffer
-
-        response
       end
 
       private
@@ -250,8 +245,6 @@ module Rackstash
         @logger.tag(@request_tags, scope: request) unless @request_tags.nil?
       end
 
-      # @param buffer [Rackstash::Buffer] the log {Buffer} which was captured
-      #   the logs during the request in the lower layers.
       # @param env [Hash] the Rack environment
       # @param began_at [Float] a timestamp denoting the start of the request.
       #   It can be used to get a request duration by subtracting it from
@@ -261,55 +254,36 @@ module Rackstash
       #   the response `headers`, and the response `body`.
       #
       # @return [void]
-      def on_response(buffer, env, began_at, response)
+      def on_response(env, began_at, response)
         response[1] = ::Rack::Utils::HeaderHash.new(response[1])
-        response[2] = ::Rack::BodyProxy.new(response[2]) do
-          begin
-            log_response(buffer, env, began_at, response[0], response[1])
-          rescue Exception => exception
-            on_error(buffer, env, began_at, exception)
-            raise
-          ensure
-            buffer.flush
-          end
-        end
+        log_response(env, began_at, response[0], response[1])
 
         response
       end
 
-      # Log data from the response to the buffer for the request.
+      # Log data from the response to the log buffer of the request.
       #
-      # Note that we are directly writing to the `buffer` here, not the
-      # `@logger`. This is necessary because `log_response` is called very late
-      # during response processing by the application server where the buffer is
-      # already poped from the stack.
-      #
-      # @param buffer (see #on_response)
       # @param env (see #on_response)
       # @param began_at (see #on_response)
       # @param status [Integer] the numeric response status
       # @param headers [::Rack::Utils::HeaderHash] the response headers
       #
       # @return [void]
-      def log_response(buffer, env, began_at, status, headers)
+      def log_response(env, began_at, status, headers)
         fields = {
           FIELD_STATUS => ::Rack::Utils.status_code(status),
           FIELD_DURATION => (clock_time - began_at).round(ISO8601_PRECISION)
         }
-        buffer.fields.merge!(fields, force: false)
+        @logger.fields.merge!(fields, force: false)
+        @logger.fields.deep_merge!(
+          @response_fields,
+          scope: headers,
+          force: false
+        ) unless @response_fields.nil?
 
-        unless @response_fields.nil?
-          buffer.fields.deep_merge!(
-            @response_fields,
-            scope: headers,
-            force: false
-          )
-        end
-        buffer.tag(@response_tags, scope: headers) unless @response_tags.nil?
+        @logger.tag(@response_tags, scope: headers) unless @response_tags.nil?
       end
 
-      # @param buffer [Rackstash::Buffer] the log {Buffer} which was captured
-      #   the logs during the request in the lower layers.
       # @param env [Hash] The Rack environment
       # @param began_at [Float] a timestamp denoting the start of the request.
       #   It can be used to get a request duration by subtracting it from
@@ -317,19 +291,19 @@ module Rackstash
       # @param exception [Exception] a rescued exception
       #
       # @return [void]
-      def on_error(buffer, env, began_at, exception)
-        log_error(buffer, env, began_at, exception)
+      def on_error(env, began_at, exception)
+        log_error(env, began_at, exception)
       end
 
       # (see #on_error)
-      def log_error(buffer, env, began_at, exception)
-        buffer.add_exception(exception, force: false)
+      def log_error(env, began_at, exception)
+        @logger.add_exception(exception, force: false)
 
         # Always set the status to 500, even if the app returned a successful
         # status. This is necessary to reflect the true status upsteam in case
         # there was an exception on adding request fields
-        buffer.fields[FIELD_STATUS] = 500
-        buffer.fields.set(FIELD_DURATION, force: false) {
+        @logger.fields[FIELD_STATUS] = 500
+        @logger.fields.set(FIELD_DURATION, force: false) {
           (clock_time - began_at).round(ISO8601_PRECISION)
         }
       end

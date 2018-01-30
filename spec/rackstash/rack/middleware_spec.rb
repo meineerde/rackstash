@@ -31,7 +31,8 @@ describe Rackstash::Rack::Middleware do
   let(:logger) { Rackstash::Logger.new ->(event) { log << event } }
 
   let(:args) { {} }
-  let(:stack) { described_class.new(app, logger, **args) }
+  let(:middleware) { described_class.new(app, logger, **args) }
+  let(:stack) { middleware }
 
   def get(path, opts = {})
     ::Rack::MockRequest.new(::Rack::Lint.new(stack)).get(path, opts)
@@ -182,9 +183,25 @@ describe Rackstash::Rack::Middleware do
 
       expect(log.last).to include('tags' => ['foo', 'text'])
     end
+
+    context 'on merge errors' do
+      it 'raises an error' do
+        args[:response_tags] = ->(_headers){ raise 'Oh No!' }
+
+        expect { get('/stuff') }.to raise_error RuntimeError, 'Oh No!'
+        expect(log.last).to include(
+          'path' => '/stuff',
+          'method' => 'GET',
+          'status' => 500,
+          'error' => 'RuntimeError',
+          'error_message' => 'Oh No!',
+          'error_trace' => %r{\A#{__FILE__}:#{__LINE__ - 9}:in}
+        )
+      end
+    end
   end
 
-  describe 'on errors' do
+  describe 'on application errors' do
     it 'logs errors' do
       expect { get('/error', params: { raise: 'Oh noes!' }) }
         .to raise_error(RuntimeError, 'Oh noes!')
@@ -254,6 +271,26 @@ describe Rackstash::Rack::Middleware do
 
       # None of the response fields are set if normalization fails
       expect(log.last).to_not include 'foo'
+    end
+  end
+
+  describe 'on late middleware errors' do
+    let(:failing_middleware) {
+      lambda do |env|
+        middleware.call(env)
+        raise 'NEIN!'
+      end
+    }
+    let(:stack) { failing_middleware }
+
+    it 'logs even if a late middleware raises' do
+      expect { get('/foo') }.to raise_error(RuntimeError, 'NEIN!')
+
+      expect(log.last).to include(
+        'path' => '/foo',
+        'message' => "Request started\nNothing to do...\n"
+      )
+      expect(log.last).to_not include('error', 'error_message', 'error_trace')
     end
   end
 end
