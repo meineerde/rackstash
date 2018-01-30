@@ -84,14 +84,16 @@ module Rackstash
       private
 
       def format_error(event)
-        error = event[FIELD_ERROR]
-        error_message = event.delete(FIELD_ERROR_MESSAGE)
+        error = event[FIELD_ERROR] || nil
+        error_message = event.delete(FIELD_ERROR_MESSAGE) || nil
 
         event[FIELD_ERROR] =
-          if error.nil?
-            error_message.nil? ? nil : "'#{error_message}'"
+          if error && error_message
+            "'#{error}: #{error_message}'"
+          elsif error || error_message
+            "'#{error || error_message}'"
           else
-            error_message.nil? ? "'#{error}'" : "'#{error}: #{error_message}'"
+            nil
           end
       end
 
@@ -101,40 +103,34 @@ module Rackstash
         end
       end
 
-      def serialize_hash(hash, prefix: nil)
-        hash.map { |key, value|
-          serialize_pair(key, value, prefix)
-        }.compact.join(' '.freeze)
-      end
-
-      def serialize_array(array, prefix: nil)
-        array.each_with_index.map { |value, index|
-          serialize_pair(index.to_s, value, prefix)
-        }.compact.join(' '.freeze)
-      end
-
-      def serialize_pair(key, value, prefix)
-        if prefix
-          key = "#{prefix}.#{key}"
-        elsif key == FIELD_TIMESTAMP
+      def serialize_hash(hash)
+        serialized_hash = {}
+        hash.each_pair do |key, value|
           # Use 'timestamp' instead of '@timestamp' on the top-level
-          key = 'timestamp'
+          key = 'timestamp'.freeze if key == FIELD_TIMESTAMP
+          add_serialized_field(serialized_hash, key.to_s, value)
         end
 
+        serialized_hash.map { |key, value| "#{key}=#{value}" }.join(' '.freeze)
+      end
+
+      def add_serialized_field(result, key, value)
         case value
         when nil
-          return
+          # Don't add nil values anywhere.
         when ::Hash
-          return if value.empty?
-          return serialize_hash(value, prefix: key)
+          value.each_pair do |hash_key, hash_value|
+            add_serialized_field(result, "#{key}.#{hash_key}".freeze, hash_value)
+          end
         when ::Array
-          return if value.empty?
-          return serialize_array(value, prefix: key)
-        when Float
-          value = Kernel.format('%.2f'.freeze, value)
+          value.each_with_index do |array_value, index|
+            add_serialized_field(result, "#{key}.#{index}".freeze, array_value)
+          end
+        when ::Float
+          result[key] = Kernel.format('%.2f'.freeze, value)
+        else
+          result[key] = value
         end
-
-        "#{key}=#{value}"
       end
     end
 
