@@ -65,7 +65,7 @@ module Rackstash
       register_for ::String, ::Pathname, 'file'
 
       # @return [String] the absolute path to the log file
-      attr_reader :filename
+      attr_reader :path
 
       def self.from_uri(uri)
         uri = URI(uri)
@@ -83,21 +83,21 @@ module Rackstash
       end
 
       # Create a new file adapter instance which writes logs to the log file
-      # specified in `filename`.
+      # specified in `path`.
       #
-      # We will always resolve `filename` to an absolute path once during
+      # We will always resolve the `path` to an absolute path once during
       # initialization. When passing a relative path, it will be resolved
       # according to the current working directory. See
       # [`::File.expand_path`](https://ruby-doc.org/core/File.html#method-c-expand_path)
       # for details.
       #
-      # @param filename [String, Pathname] the path to the logfile
+      # @param path [String, Pathname] the path to the logfile
       # @param auto_reopen [Boolean] set to `true` to automatically reopen the
       #   log file (and potentially create a new one) if we detect that the
       #   current log file was moved or deleted, e.g. due to an external
       #   logrotate run
-      def initialize(filename, auto_reopen: true)
-        @filename = ::File.expand_path(filename).freeze
+      def initialize(path, auto_reopen: true)
+        @path = ::File.expand_path(path).freeze
         @auto_reopen = !!auto_reopen
 
         @mutex = Mutex.new
@@ -149,7 +149,7 @@ module Rackstash
       end
 
       # Reopen the logfile. We will open the file located at the original
-      # {#filename} or create a new one if it does not exist.
+      # {#path} or create a new one if it does not exist.
       #
       # If the file can not be opened, an exception will be raised.
       # @return [nil]
@@ -162,24 +162,23 @@ module Rackstash
 
       private
 
-      # Reopen the log file if the original filename does not reference the
+      # Reopen the log file if the original {#path} does not reference the
       # opened file anymore (e.g. because it was moved or deleted)
       def auto_reopen
         return unless @auto_reopen
 
         return if @file.closed?
-        return if ::File.identical?(@file, @filename)
+        return if ::File.identical?(@file, @path)
 
         reopen_file
       end
 
       def open_file
-        unless ::File.exist? ::File.dirname(@filename)
-          FileUtils.mkdir_p ::File.dirname(@filename)
-        end
+        dirname = ::File.dirname(path)
+        FileUtils.mkdir_p(dirname) unless ::File.exist?(dirname)
 
         file = ::File.new(
-          filename,
+          path,
           ::File::WRONLY | ::File::APPEND | ::File::CREAT
         )
         file.binmode

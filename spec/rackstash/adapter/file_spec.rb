@@ -30,10 +30,10 @@ describe Rackstash::Adapter::File do
         .to be_instance_of described_class
     end
 
-    it 'sets the filename from the URI path' do
-      expect(described_class.from_uri('file:/tmp/file_spec.log').filename)
+    it 'sets the path from the URI path' do
+      expect(described_class.from_uri('file:/tmp/file_spec.log').path)
         .to eql '/tmp/file_spec.log'
-      expect(described_class.from_uri('file:///tmp/file_spec.log').filename)
+      expect(described_class.from_uri('file:///tmp/file_spec.log').path)
         .to eql '/tmp/file_spec.log'
     end
 
@@ -53,13 +53,13 @@ describe Rackstash::Adapter::File do
 
   describe '#initialize' do
     it 'accepts a String' do
-      expect(described_class.new(logfile.path).filename)
+      expect(described_class.new(logfile.path).path)
         .to eql(logfile.path)
         .and be_a String
     end
 
     it 'accepts a Pathname' do
-      expect(described_class.new(Pathname.new(logfile.path)).filename)
+      expect(described_class.new(Pathname.new(logfile.path)).path)
         .to eql(logfile.path)
         .and be_a String
     end
@@ -76,7 +76,7 @@ describe Rackstash::Adapter::File do
 
         adapter = described_class.new File.join(base, 'dir', 'sub', 'test.log')
 
-        expect(adapter.filename).to eql File.join(base, 'dir', 'sub', 'test.log')
+        expect(adapter.path).to eql File.join(base, 'dir', 'sub', 'test.log')
         expect(File.directory?(File.join(base, 'dir'))).to be true
         expect(File.file?(File.join(base, 'dir', 'sub', 'test.log'))).to be true
       end
