@@ -25,17 +25,40 @@ module Rackstash
     #
     # @param spec [Class,String,Symbol] Either a class (in which case it is
     #   returned directly) or the name of a registered class.
-    # @raise [KeyError] when giving a `String` or `Symbol` but no registered
-    #   class was found for it
     # @raise [TypeError] when giving an invalid object
+    # @return [Class, nil] the registered class (when giving a `String` or
+    #   `Symbol`) or the given class (when giving a `Class`) or `nil` if no
+    #   registered class could be found
+    # @see #fetch
+    def [](spec)
+      fetch(spec, nil)
+    end
+
+    # Retrieve the registered class for a given name. If the argument is already
+    # a class, we return it unchanged.
+    #
+    # @param spec [Class,String,Symbol] either a class (in which case it is
+    #   returned directly) or the name of a registered class
+    # @param default [Object] the default value that is returned if no
+    #   registered class could be found for the given `spec` and no block was
+    #   given.
+    # @yield if no registered class could be found for the given `spec`, we will
+    #   run the optional block and return its result
+    # @yieldparam spec [Symbol] the requested class specification as a `Symbol`
+    # @raise [KeyError] when giving a `String` or `Symbol` but no registered
+    #   class was found for it and no default was specified
+    # @raise [TypeError] when giving an invalid `spec` object
     # @return [Class] the registered class (when giving a `String` or `Symbol`)
     #   or the given class (when giving a `Class`)
-    def [](spec)
+    def fetch(spec, default = UNDEFINED)
       case spec
       when Class
         spec
       when String, Symbol, ->(s) { s.respond_to?(:to_sym) }
-        @registry.fetch(spec.to_sym) do
+        @registry.fetch(spec.to_sym) do |key|
+          next yield(key) if block_given?
+          next default unless UNDEFINED.equal? default
+
           raise KeyError, "No #{@object_type} was registered for #{spec.inspect}"
         end
       else

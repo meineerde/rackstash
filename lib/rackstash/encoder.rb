@@ -81,7 +81,7 @@ module Rackstash
         if encoder_spec.respond_to?(:encode) && !encoder_spec.is_a?(String)
           encoder_spec
         else
-          registry[encoder_spec].new(*args, &block)
+          registry.fetch(encoder_spec).new(*args, &block)
         end
       end
     end

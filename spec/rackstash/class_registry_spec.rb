@@ -37,19 +37,53 @@ describe Rackstash::ClassRegistry do
       expect(registry[String]).to equal String
     end
 
+    it 'returns nil on unknown names' do
+      expect(registry[:unknown]).to be nil
+      expect(registry['invalid']).to be nil
+    end
+  end
+
+  describe '#fetch' do
+    before do
+      registry[:class] = klass
+    end
+
+    it 'returns the class for a String' do
+      expect(registry.fetch('class')).to equal klass
+    end
+
+    it 'returns the class for a Symbol' do
+      expect(registry.fetch(:class)).to equal klass
+    end
+
+    it 'returns an actual class' do
+      expect(registry.fetch(klass)).to equal klass
+      expect(registry.fetch(String)).to equal String
+    end
+
     it 'raises a KeyError on unknown names' do
-      expect { registry[:unknown] }
+      expect { registry.fetch(:unknown) }
         .to raise_error(KeyError, 'No value was registered for :unknown')
-      expect { registry['invalid'] }
+      expect { registry.fetch('invalid') }
         .to raise_error(KeyError, 'No value was registered for "invalid"')
     end
 
+    it 'returns the default value with unknown names' do
+      expect(registry.fetch(:unknown, 'Hello World')).to eql 'Hello World'
+      expect(registry.fetch('invalid', 'Hello World')).to eql 'Hello World'
+    end
+
+    it 'calls the block and returns its value with unknown names' do
+      expect { |b| registry.fetch('invalid', &b) }.to yield_with_args(:invalid)
+      expect(registry.fetch('invalid') { |e| e.upcase }).to eql :INVALID
+    end
+
     it 'raises a TypeError on invalid names' do
-      expect { registry[0] }
+      expect { registry.fetch(0) }
         .to raise_error(TypeError, '0 can not be used to describe values')
-      expect { registry[nil] }
+      expect { registry.fetch(nil) }
         .to raise_error(TypeError, 'nil can not be used to describe values')
-      expect { registry[true] }
+      expect { registry.fetch(true) }
         .to raise_error(TypeError, 'true can not be used to describe values')
     end
   end
@@ -88,7 +122,7 @@ describe Rackstash::ClassRegistry do
       expect(registry[:class]).to equal klass
 
       expect(registry.clear).to equal registry
-      expect { registry[:class] }.to raise_error(KeyError)
+      expect(registry[:class]).to be nil
     end
   end
 
@@ -147,7 +181,7 @@ describe Rackstash::ClassRegistry do
       hash = registry.to_h
       hash[:alias] = klass
 
-      expect { registry[:alias] }.to raise_error(KeyError)
+      expect(registry[:alias]).to be nil
     end
   end
 end

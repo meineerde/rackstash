@@ -94,7 +94,7 @@ module Rackstash
         else
           args << kwargs unless kwargs.empty?
 
-          filter = registry[filter_spec].new(*args, &block)
+          filter = registry.fetch(filter_spec).new(*args, &block)
           conditional_filter(filter, only_if: only_if, not_if: not_if)
         end
       end
