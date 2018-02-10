@@ -283,8 +283,9 @@ module Rackstash
         index.to_int
       when Class
         @filters.index { |filter| filter.is_a?(index) }
-      when Symbol, String
-        index = index.to_s
+      when Symbol
+        index_at Filter.registry[index]
+      when String
         @filters.index { |filter| filter.class.ancestors.map(&:name).include?(index) }
       else
         @filters.index { |filter| filter == index }

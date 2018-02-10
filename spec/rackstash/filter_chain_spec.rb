@@ -10,8 +10,6 @@ require 'spec_helper'
 require 'rackstash/filter_chain'
 
 describe Rackstash::FilterChain do
-  let(:filter_chain) { described_class.new }
-
   Struct.new('MyFilter') do
     def call(event)
       event
@@ -23,6 +21,13 @@ describe Rackstash::FilterChain do
   end
 
   let(:filter) { a_filter }
+  let(:filter_chain) { described_class.new }
+
+  let(:filter_registry) { Rackstash::ClassRegistry.new('filter') }
+  before do
+    allow(Rackstash::Filter).to receive(:registry).and_return(filter_registry)
+    Rackstash::Filter.register(Struct::MyFilter, :my_filter)
+  end
 
   describe '#initialize' do
     it 'accepts a single filter' do
@@ -63,6 +68,12 @@ describe Rackstash::FilterChain do
       expect(filter_chain['Integer']).to be_nil
     end
 
+    it 'returns the filter by registered name' do
+      filter_chain << filter
+
+      expect(filter_chain[:my_filter]).to equal filter
+    end
+
     it 'returns the filter by equivalence' do
       filter_chain << filter
 
@@ -101,6 +112,11 @@ describe Rackstash::FilterChain do
       expect(filter_chain[1]).to equal new_filter
 
       filter_chain['Struct'] = new_filter
+      expect(filter_chain[0]).to equal new_filter
+    end
+
+    it 'sets a filter by class or ancestor' do
+      filter_chain[:my_filter] = new_filter
       expect(filter_chain[0]).to equal new_filter
     end
 
@@ -216,6 +232,11 @@ describe Rackstash::FilterChain do
       expect(filter_chain.count).to eql 1
     end
 
+    it 'deletes by registered name' do
+      expect(filter_chain.delete(:my_filter)).to equal filter
+      expect(filter_chain.count).to eql 1
+    end
+
     it 'deletes by reference' do
       expect(filter_chain.delete(filter)).to equal filter
       expect(filter_chain.count).to eql 1
@@ -225,6 +246,7 @@ describe Rackstash::FilterChain do
       expect(filter_chain.delete(nil)).to be_nil
       expect(filter_chain.delete(true)).to be_nil
       expect(filter_chain.delete(false)).to be_nil
+      expect(filter_chain.delete(:foo)).to be_nil
       expect(filter_chain.delete('Blar')).to be_nil
       expect(filter_chain.delete(Object.new)).to be_nil
       expect(filter_chain.delete(Class.new)).to be_nil
@@ -284,12 +306,14 @@ describe Rackstash::FilterChain do
       expect(filter_chain.index(Struct)).to eql 0
       expect(filter_chain.index('Struct')).to eql 0
       expect(filter_chain.index(filter)).to eql 0
+      expect(filter_chain.index(:my_filter)).to eql 0
     end
 
     it 'returns nil if the filter was not found' do
       expect(filter_chain.index(nil)).to be_nil
       expect(filter_chain.index(true)).to be_nil
       expect(filter_chain.index(false)).to be_nil
+      expect(filter_chain.index(:foo)).to be_nil
       expect(filter_chain.index('Blar')).to be_nil
       expect(filter_chain.index(Object.new)).to be_nil
       expect(filter_chain.index(Class.new)).to be_nil
@@ -322,6 +346,12 @@ describe Rackstash::FilterChain do
       expect(filter_chain[2]).to equal filter
     end
 
+    it 'inserts before registered name' do
+      expect(filter_chain.insert_before(:my_filter, inserted)).to equal filter_chain
+      expect(filter_chain[1]).to equal inserted
+      expect(filter_chain[2]).to equal filter
+    end
+
     it 'inserts before reference' do
       expect(filter_chain.insert_before(filter, inserted)).to equal filter_chain
       expect(filter_chain[1]).to equal inserted
@@ -332,6 +362,7 @@ describe Rackstash::FilterChain do
       expect { filter_chain.insert_before(nil, inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_before(true, inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_before(false, inserted) }.to raise_error ArgumentError
+      expect { filter_chain.insert_before(:foo, inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_before('Blar', inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_before(Object.new, inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_before(Class.new, inserted) }.to raise_error ArgumentError
@@ -379,6 +410,13 @@ describe Rackstash::FilterChain do
       expect(filter_chain[2]).to be_instance_of(Proc)
     end
 
+    it 'inserts after registered name' do
+      expect(filter_chain.insert_after(:my_filter, inserted)).to equal filter_chain
+      expect(filter_chain[0]).to equal filter
+      expect(filter_chain[1]).to equal inserted
+      expect(filter_chain[2]).to be_instance_of(Proc)
+    end
+
     it 'inserts after reference' do
       expect(filter_chain.insert_after(filter, inserted)).to equal filter_chain
       expect(filter_chain[0]).to equal filter
@@ -390,6 +428,7 @@ describe Rackstash::FilterChain do
       expect { filter_chain.insert_after(nil, inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_after(true, inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_after(false, inserted) }.to raise_error ArgumentError
+      expect { filter_chain.insert_after(:foo, inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_after('Blar', inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_after(Object.new, inserted) }.to raise_error ArgumentError
       expect { filter_chain.insert_after(Class.new, inserted) }.to raise_error ArgumentError
