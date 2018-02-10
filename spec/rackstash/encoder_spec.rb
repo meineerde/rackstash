@@ -62,11 +62,11 @@ describe Rackstash::Encoder do
 
     it 'raises a TypeError with invalid spec types' do
       expect { described_class.build(123) }
-        .to raise_error(TypeError, '123 can not be used to describe encoders')
+        .to raise_error(TypeError, '123 can not be used to describe encoder classes')
       expect { described_class.build(nil) }
-        .to raise_error(TypeError, 'nil can not be used to describe encoders')
+        .to raise_error(TypeError, 'nil can not be used to describe encoder classes')
       expect { described_class.build(true) }
-        .to raise_error(TypeError, 'true can not be used to describe encoders')
+        .to raise_error(TypeError, 'true can not be used to describe encoder classes')
     end
 
     it 'raises a KeyError for undefined encoders' do

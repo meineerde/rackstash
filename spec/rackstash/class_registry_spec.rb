@@ -80,11 +80,11 @@ describe Rackstash::ClassRegistry do
 
     it 'raises a TypeError on invalid names' do
       expect { registry.fetch(0) }
-        .to raise_error(TypeError, '0 can not be used to describe values')
+        .to raise_error(TypeError, '0 can not be used to describe value classes')
       expect { registry.fetch(nil) }
-        .to raise_error(TypeError, 'nil can not be used to describe values')
+        .to raise_error(TypeError, 'nil can not be used to describe value classes')
       expect { registry.fetch(true) }
-        .to raise_error(TypeError, 'true can not be used to describe values')
+        .to raise_error(TypeError, 'true can not be used to describe value classes')
     end
   end
 

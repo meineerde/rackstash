@@ -62,7 +62,8 @@ module Rackstash
           raise KeyError, "No #{@object_type} was registered for #{spec.inspect}"
         end
       else
-        raise TypeError, "#{spec.inspect} can not be used to describe #{@object_type}s"
+        raise TypeError, "#{spec.inspect} can not be used to describe " \
+          "#{@object_type} classes"
       end
     end
 
