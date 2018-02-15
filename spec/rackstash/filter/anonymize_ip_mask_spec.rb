@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/filter/anonymize_ip_mask'
 
-describe Rackstash::Filter::AnonymizeIPMask do
+RSpec.describe Rackstash::Filter::AnonymizeIPMask do
   let(:event) {
     {
       'ipv4' => '10.123.42.65',

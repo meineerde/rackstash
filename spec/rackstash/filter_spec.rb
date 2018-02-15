@@ -10,7 +10,7 @@ require 'securerandom'
 
 require 'rackstash/filter'
 
-describe Rackstash::Filter do
+RSpec.describe Rackstash::Filter do
   let(:registry) { Rackstash::ClassRegistry.new('filter') }
 
   let(:filter_class) {

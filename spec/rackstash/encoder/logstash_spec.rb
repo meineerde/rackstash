@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/encoder/logstash'
 
-describe Rackstash::Encoder::Logstash do
+RSpec.describe Rackstash::Encoder::Logstash do
   let(:encoder) { described_class.new }
 
   describe '#encode' do

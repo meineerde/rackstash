@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -11,7 +11,7 @@ require 'rackstash/fields/abstract_collection'
 require 'rackstash/fields/array'
 require 'rackstash/fields/hash'
 
-describe Rackstash::Fields::AbstractCollection do
+RSpec.describe Rackstash::Fields::AbstractCollection do
   let(:collection) { described_class.new }
 
   def normalize(*args)

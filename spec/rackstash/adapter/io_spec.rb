@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -11,7 +11,7 @@ require 'tempfile'
 
 require 'rackstash/adapter/io'
 
-describe Rackstash::Adapter::IO do
+RSpec.describe Rackstash::Adapter::IO do
   let(:io) { StringIO.new }
   let(:adapter) { described_class.new(io) }
 

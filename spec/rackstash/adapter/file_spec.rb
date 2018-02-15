@@ -11,7 +11,7 @@ require 'tmpdir'
 
 require 'rackstash/adapter/file'
 
-describe Rackstash::Adapter::File do
+RSpec.describe Rackstash::Adapter::File do
   let!(:logfile) { Tempfile.new('') }
 
   let(:adapter_args) { {} }

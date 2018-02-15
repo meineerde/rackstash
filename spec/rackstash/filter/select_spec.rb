@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/filter/select'
 
-describe Rackstash::Filter::Select do
+RSpec.describe Rackstash::Filter::Select do
   let(:event) {
     {
       'foo' => 'foo value',

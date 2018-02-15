@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/flow'
 
-describe Rackstash::Flow do
+RSpec.describe Rackstash::Flow do
   let(:adapter) { Rackstash::Adapter::Null.new }
   let(:flow_args) { {} }
   let(:flow) { described_class.new(adapter, **flow_args) }

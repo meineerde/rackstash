@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/encoder/json'
 
-describe Rackstash::Encoder::JSON do
+RSpec.describe Rackstash::Encoder::JSON do
   let(:encoder) { described_class.new }
 
   describe '#encode' do

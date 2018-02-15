@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/adapter/base_adapter'
 
-describe Rackstash::Adapter::BaseAdapter do
+RSpec.describe Rackstash::Adapter::BaseAdapter do
   let(:adapter) { described_class.new }
 
   describe '.parse_uri_options' do

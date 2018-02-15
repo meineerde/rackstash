@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/encoder/message'
 
-describe Rackstash::Encoder::Message do
+RSpec.describe Rackstash::Encoder::Message do
   let(:tagged) { [] }
   let(:encoder) { described_class.new(tagged: tagged) }
 

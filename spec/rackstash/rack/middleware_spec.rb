@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/rack/middleware'
 
-describe Rackstash::Rack::Middleware do
+RSpec.describe Rackstash::Rack::Middleware do
   let(:app) {
     lambda { |env|
       logger = env['rack.logger']

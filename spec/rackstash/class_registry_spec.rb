@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/class_registry'
 
-describe Rackstash::ClassRegistry do
+RSpec.describe Rackstash::ClassRegistry do
   let(:registry) { described_class.new('value') }
   let(:klass) { Class.new }
 

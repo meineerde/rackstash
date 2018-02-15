@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/filter/remove'
 
-describe Rackstash::Filter::Remove do
+RSpec.describe Rackstash::Filter::Remove do
   let(:event) {
     {
       'foo' => 'foo value',

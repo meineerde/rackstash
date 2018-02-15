@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/fields/hash'
 
-describe Rackstash::Fields::Hash do
+RSpec.describe Rackstash::Fields::Hash do
   let(:forbidden_keys) { Set.new }
   let(:hash) { Rackstash::Fields::Hash.new(forbidden_keys: forbidden_keys) }
 

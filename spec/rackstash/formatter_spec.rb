@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -10,7 +10,7 @@ require 'spec_helper'
 require 'time'
 require 'rackstash/formatter'
 
-describe Rackstash::Formatter do
+RSpec.describe Rackstash::Formatter do
   let(:formatter) { described_class.new }
 
   it 'formats plain strings' do
@@ -59,7 +59,7 @@ describe Rackstash::Formatter do
   end
 end
 
-describe Rackstash::RawFormatter do
+RSpec.describe Rackstash::RawFormatter do
   let(:formatter) { described_class.new }
 
   it 'returns the message' do

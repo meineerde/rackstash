@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -11,7 +11,7 @@ require 'digest'
 require 'json'
 require 'rackstash/message'
 
-describe Rackstash::Message do
+RSpec.describe Rackstash::Message do
   let(:message_args) { {} }
   let(:msg) { 'message' }
   let(:message) { described_class.new msg, **message_args }

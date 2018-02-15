@@ -10,7 +10,7 @@ require 'securerandom'
 
 require 'rackstash/encoder'
 
-describe Rackstash::Encoder do
+RSpec.describe Rackstash::Encoder do
   let(:registry) { Rackstash::ClassRegistry.new('encoder') }
 
   let(:encoder_class) {

@@ -9,7 +9,7 @@ require 'spec_helper'
 
 require 'rackstash/adapter'
 
-describe Rackstash::Adapter do
+RSpec.describe Rackstash::Adapter do
   around(:each) do |example|
     types = described_class.send(:adapter_types)
     schemes = described_class.send(:adapter_schemes)

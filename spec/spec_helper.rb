@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -38,6 +38,9 @@ $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'rackstash'
 
 RSpec.configure do |config|
+  # Disable RSpec exposing methods globally on `Module` and `main`
+  config.disable_monkey_patching!
+
   config.mock_with :rspec do |mocks|
     # This option should be set when all dependencies are being loaded
     # before a spec run, as is the case in a typical spec helper. It will
