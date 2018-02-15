@@ -41,6 +41,10 @@ RSpec.configure do |config|
   # Disable RSpec exposing methods globally on `Module` and `main`
   config.disable_monkey_patching!
 
+  config.expect_with :rspec do |c|
+    c.syntax = :expect
+  end
+
   config.mock_with :rspec do |mocks|
     # This option should be set when all dependencies are being loaded
     # before a spec run, as is the case in a typical spec helper. It will
