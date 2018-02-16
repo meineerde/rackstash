@@ -360,12 +360,11 @@ RSpec.describe Rackstash::Buffer do
         buffer.add_message(message)
 
         # We might call Buffer#flush during the following tests
-        allow(buffer).to receive(:to_event).and_return(event)
-        allow(flows).to receive(:write).with(event).once
+        allow(flows).to receive(:write).with(buffer).once
       end
 
       it 'flushes the buffer to the flows' do
-        expect(flows).to receive(:write).with(event).once
+        expect(flows).to receive(:write).with(buffer).once
         buffer.flush
       end
 
@@ -563,7 +562,7 @@ RSpec.describe Rackstash::Buffer do
     end
   end
 
-  describe '#to_event' do
+  describe '#to_h' do
     it 'creates an event hash' do
       message = double(message: 'Hello World', time: Time.now)
       allow(message)
@@ -571,7 +570,7 @@ RSpec.describe Rackstash::Buffer do
       buffer.fields[:foo] = 'bar'
       buffer.tags << 'some_tag'
 
-      expect(buffer.to_event).to match(
+      expect(buffer.to_h).to match(
         'foo' => 'bar',
         'message' => [message],
         'tags' => ['some_tag'],

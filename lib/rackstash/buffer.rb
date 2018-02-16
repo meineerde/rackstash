@@ -222,18 +222,15 @@ module Rackstash
       @fields ||= Rackstash::Fields::Hash.new(forbidden_keys: FORBIDDEN_FIELDS)
     end
 
-    # Flush the current buffer to the {#flows} if it is pending.
-    #
-    # After the flush, the existing buffer should not be used anymore. You
-    # should either call {#clear} to remove all volatile data or create a new
-    # buffer instance instead.
+    # Flush the current buffer to the {#flows} if it is pending. All data in the
+    # buffer will be preserved. You might call {#clear} to start anew.
     #
     # @return [self,nil] returns `self` if the buffer was flushed, `nil`
     #   otherwise
     def flush
       return unless pending?
 
-      @flows.write(self.to_event)
+      @flows.write(self)
       self
     end
 
@@ -347,7 +344,7 @@ module Rackstash
     # All hashes (including nested hashes) use `String` keys.
     #
     # @return [Hash] the event expected by the event {Filter}s.
-    def to_event
+    def to_h
       event = fields.to_h
       event[FIELD_TAGS] = tags.to_a
       event[FIELD_MESSAGE] = messages

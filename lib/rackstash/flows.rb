@@ -179,6 +179,7 @@ module Rackstash
       flows = to_a
       flows_size = flows.size
 
+      event = event.to_h
       flows.each_with_index do |flow, index|
         # If we have more than one flow, we provide a fresh copy of the event
         # to each flow. The flow's filters and encoder can then mutate the event
