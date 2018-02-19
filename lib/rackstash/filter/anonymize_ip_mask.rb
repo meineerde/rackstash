@@ -158,7 +158,7 @@ module Rackstash
           masked_ip = ip.mask(128 - @ipv6_mask)
         end
 
-        masked_ip.to_s.force_encoding(Encoding::UTF_8)
+        masked_ip.to_s.force_encoding(Encoding::UTF_8) if masked_ip
       end
     end
 
