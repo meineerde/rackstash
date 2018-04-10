@@ -48,12 +48,12 @@ RSpec.describe Rackstash::BufferStack do
 
     it 'pushes a buffering buffer by default' do
       stack.push
-      expect(stack.current.buffering).to eql :full
+      expect(stack.current.buffering?).to eql true
     end
 
     it 'allows to set options on the new buffer' do
-      stack.push(buffering: :data)
-      expect(stack.current.buffering).to eql :data
+      stack.push(buffering: false)
+      expect(stack.current.buffering?).to eql false
     end
   end
 

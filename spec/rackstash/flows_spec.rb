@@ -13,9 +13,11 @@ require 'rackstash/flow'
 RSpec.describe Rackstash::Flows do
   let(:flows) { described_class.new }
 
-  def a_flow
+  def a_flow(auto_flush: false)
     flow = instance_double('Rackstash::Flow')
     allow(flow).to receive(:is_a?).with(Rackstash::Flow).and_return(true)
+    allow(flow).to receive(:auto_flush?).and_return(auto_flush)
+
     flow
   end
 
@@ -323,8 +325,8 @@ RSpec.describe Rackstash::Flows do
     end
   end
 
-  describe '#write' do
-    it 'flushes the buffer to all flows' do
+  describe '#flush' do
+    it 'writes the event to the flows' do
       event_spec = {
         'foo' => 'bar',
         'tags' => [],
@@ -344,7 +346,75 @@ RSpec.describe Rackstash::Flows do
 
       # During flush, we create a single event, duplicate it and write each to
       # each of the flows.
-      flows.write('foo' => 'bar', 'tags' => [], '@timestamp' => Time.now.utc)
+      flows.flush('foo' => 'bar', 'tags' => [], '@timestamp' => Time.now.utc)
+    end
+
+    it 'writes only to normal flows' do
+      normal_flow = a_flow(auto_flush: false)
+      expect(normal_flow).to receive(:write).with('foo' => 'bar')
+      flows << normal_flow
+
+      auto_flush_flow = a_flow(auto_flush: true)
+      expect(auto_flush_flow).not_to receive(:write)
+      flows << auto_flush_flow
+
+      flows.flush('foo' => 'bar')
+    end
+
+    it 'accepts a block' do
+      normal_flow = a_flow(auto_flush: false)
+      expect(normal_flow).to receive(:write).with('foo' => 'bar')
+      flows << normal_flow
+
+      auto_flush_flow = a_flow(auto_flush: true)
+      expect(auto_flush_flow).not_to receive(:write)
+      flows << auto_flush_flow
+
+      flows.flush { { 'foo' => 'bar'} }
+    end
+
+    it 'does nothing if there is no normal flow' do
+      auto_flush_flow = a_flow(auto_flush: true)
+      expect(auto_flush_flow).not_to receive(:write)
+      flows << auto_flush_flow
+
+      expect(flows.flush('foo' => 'bar')).to be_nil
+      expect { |b| flows.flush(&b) }.not_to yield_control
+    end
+  end
+
+  describe '#auto_flush' do
+    it 'writes only to auto_flush flows' do
+      normal_flow = a_flow(auto_flush: false)
+      expect(normal_flow).not_to receive(:write)
+      flows << normal_flow
+
+      auto_flush_flow = a_flow(auto_flush: true)
+      expect(auto_flush_flow).to receive(:write).with('foo' => 'bar')
+      flows << auto_flush_flow
+
+      flows.auto_flush('foo' => 'bar')
+    end
+
+    it 'accepts a block' do
+      normal_flow = a_flow(auto_flush: false)
+      expect(normal_flow).not_to receive(:write)
+      flows << normal_flow
+
+      auto_flush_flow = a_flow(auto_flush: true)
+      expect(auto_flush_flow).to receive(:write).with('foo' => 'bar')
+      flows << auto_flush_flow
+
+      flows.auto_flush { { 'foo' => 'bar'} }
+    end
+
+    it 'does nothing if there is no auto_flushing flow' do
+      normal_flow = a_flow(auto_flush: false)
+      expect(normal_flow).not_to receive(:write)
+      flows << normal_flow
+
+      expect(flows.auto_flush('foo' => 'bar')).to be_nil
+      expect { |b| flows.auto_flush(&b) }.not_to yield_control
     end
   end
 end

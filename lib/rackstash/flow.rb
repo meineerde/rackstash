@@ -60,8 +60,8 @@ module Rackstash
   #     # Write an event. This is normally done by a Rackstash::Buffer
   #     flow.write(an_event)
   #
-  # The event which eventually gets written to the flow is created from a Buffer
-  # with {Buffer#to_event}.
+  # The event which eventually gets written to the flow is usually created from
+  # a {Buffer} with its pending data.
   class Flow
     # @return [Adapter::Adapter] the log adapter
     attr_reader :adapter
@@ -83,11 +83,18 @@ module Rackstash
     #   default, we swallow errors after having logging them to not cause
     #   additional issues to the production application just because the logger
     #   doesn't work.
+    # @param auto_flush [Bool] set to `true` to write added fields or messages
+    #   added to a {Buffer} to this flow immediately. With each write, this flow
+    #   will then receive all current fields of the {Buffer} but only the
+    #   currently added message (if any). When set to `false`, the flow will
+    #   receive the full event with all fields and messages of the Buffer after
+    #   an explicit call to {Buffer#flush} for a buffering Buffer or after each
+    #   added message or fields for a non-bufering Buffer.
     # @yieldparam flow [self] if the given block accepts an argument, we yield
     #   `self` as a parameter, else, the block is directly executed in the
     #   context of `self`.
     def initialize(adapter, encoder: nil, filters: [],
-      error_flow: nil, raise_on_error: false,
+      error_flow: nil, raise_on_error: false, auto_flush: false,
       &block
     )
       @adapter = Rackstash::Adapter[adapter]
@@ -95,6 +102,7 @@ module Rackstash
       @filter_chain = Rackstash::FilterChain.new(filters)
       self.error_flow = error_flow
       self.raise_on_error = raise_on_error
+      self.auto_flush = auto_flush
 
       if block_given?
         if block.arity == 0
@@ -103,6 +111,37 @@ module Rackstash
           yield self
         end
       end
+    end
+
+    # Get or set the `auto_flush` setting. If set to `true`, new messages and
+    # fields added to a {Buffer} will be written directly to this flow,
+    # regardless of the buffering setting of the {Buffer}. This can be useful
+    # during development or testing of an application where the developer might
+    # want to directly watch the low-cardinality log as the messages are logged.
+    #
+    # If set to `false` (the default), buffering Buffers will only be written
+    # after explicitly calling {Buffer#flush} on them.
+    #
+    # @param bool [Bool, nil] the value to set. If omitted, we return the
+    #   current setting.
+    # @return [Bool] the updated or current `auto_flush` setting
+    # @see #auto_flush=
+    def auto_flush(bool = nil)
+      self.auto_flush = bool unless bool.nil?
+      auto_flush?
+    end
+
+    # @return [Bool] the current value of the `auto_flush` setting.
+    # @see #auto_flush
+    def auto_flush?
+      @auto_flush
+    end
+
+    # @param bool [Bool] `true` to cause buffering Buffers to write their added
+    #   messages and fields to the flow as soon as they are logged, `false` to
+    #   write the whole event only on an explicit call to {Buffer#flush}.
+    def auto_flush=(bool)
+      @auto_flush = !!bool
     end
 
     # Close the log adapter if supported. This might be a no-op if the adapter

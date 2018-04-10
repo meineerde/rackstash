@@ -164,33 +164,49 @@ module Rackstash
       nil
     end
 
-    # Write an event `Hash` to each of the defined flows. The event is usually
-    # created from {Buffer#to_event}.
+    # Write an event `Hash` to each of the defined normal (that is: non
+    # `auto_flush`'ing) flows. The event is usually created from {Buffer#event}.
     #
     # We write a fresh deep-copy of the event hash to each defined {Flow}.
     # This allows each flow to alter the event in any way without affecting the
     # others.
     #
-    # @param event [Hash] an event `Hash`
-    # @return [Hash] the given `event`
-    def write(event)
-      # Memoize the current list of flows for the rest of the method to make
-      # sure it doesn't change while we work with it.
-      flows = to_a
-      flows_size = flows.size
+    # @param event [Hash, nil] the event `Hash`. See {Buffer#event} for details
+    # @yield [flow] If `event` is `nil`, we call the goven block and use its
+    #   return value as the event. The block is expected to return an event
+    #   `Hash`.
+    # @return [Hash, nil] the flushed event or `nil` if nothing was flushed
+    def flush(event = nil)
+      flows = to_a.delete_if(&:auto_flush?)
+      return unless flows.any?
 
-      event = event.to_h
-      flows.each_with_index do |flow, index|
-        # If we have more than one flow, we provide a fresh copy of the event
-        # to each flow. The flow's filters and encoder can then mutate the event
-        # however it pleases without affecting later flows. We don't need to
-        # duplicate the event for the last flow since it won't be re-used
-        # after that anymore.
-        current_event = (index == flows_size - 1) ? event : deep_dup_event(event)
-        flow.write(current_event)
-      end
+      event ||= yield if block_given?
+      return unless event
 
-      event
+      write_to(flows, event.to_h)
+    end
+
+    # Write an event `Hash` to each of the defined `auto_flush`'ing flows.
+    # The event is usually created from {Buffer#auto_event} as the buffer is
+    # automatically flushed after a message or fields were logged to it.
+    #
+    # We write a fresh deep-copy of the event hash to each defined {Flow}.
+    # This allows each flow to alter the event in any way without affecting the
+    # others.
+    #
+    # @param event [Hash, nil] the event `Hash`. See {Buffer#event} for details
+    # @yield [flow] If `event` is `nil`, we call the goven block and use its
+    #   return value as the event. The block is expected to return an event
+    #   `Hash`.
+    # @return [Hash, nil] the flushed event or `nil` if nothing was flushed
+    def auto_flush(event = nil)
+      flows = to_a.select!(&:auto_flush?)
+      return unless flows.any?
+
+      event ||= yield if block_given?
+      return unless event
+
+      write_to(flows, event.to_h)
     end
 
     # @return [Array<Flow>] an array of all flow elements without any `nil`
@@ -240,6 +256,20 @@ module Rackstash
         # dupable. They can be used as is. See {AbstractCollection#normalize}
         obj
       end
+    end
+
+    def write_to(flows, event)
+      flows.each_with_index do |flow, index|
+        # If we have more than one flow, we provide a fresh copy of the event
+        # to each flow. The flow's filters and encoder can then mutate the event
+        # however it pleases without affecting later flows. We don't need to
+        # duplicate the event for the last flow since it won't be re-used
+        # after that anymore.
+        current_event = (index == flows.size - 1) ? event : deep_dup_event(event)
+        flow.write(current_event)
+      end
+
+      event
     end
   end
 end

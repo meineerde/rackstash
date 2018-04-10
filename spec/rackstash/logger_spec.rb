@@ -531,7 +531,7 @@ RSpec.describe Rackstash::Logger do
     end
 
     it 'buffers multiple messages' do
-      expect(logger.flows).to receive(:write).once
+      expect(logger.flows).to receive(:flush).once
 
       logger.with_buffer do
         logger.add 1, 'Hello World'

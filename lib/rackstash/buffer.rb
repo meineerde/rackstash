@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2018 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -57,53 +57,23 @@ module Rackstash
     #   for transforming, encoding, and persisting the log events.
     attr_reader :flows
 
-    # Returns a Symbol describing the buffering behavior of the current buffer.
-    # This value can be set in {#initialize}.
-    #
-    # When set to `true` or `:full` this buffer is buffering all its messages
-    # and stored data. it will never automatically flush anything to the flows
-    # but when explicitly calling {#flush}.
-    #
-    # When set to `:data` or `:none`, the buffer automatically flushes all
-    # messages and data when adding a new message or, with {#allow_silent?}
-    # being `true`, also when adding fields. After each automatic {#flush}, all
-    # {#messages} and the {#timestamp} are cleared from the buffer. If
-    # {#buffering} is set to `:none`, we also clear the stored {#fields} and
-    # {#tags} in addition to the other data during an automatic flush.
-    # If {#buffering} is set to `:data`, all stored data except the {#messages}
-    # and the {#timestamp} are retained after an auto flush.
-    #
-    # @return [Symbol] the buffering behavior
-    attr_reader :buffering
-
     # @param flows [Flows] a list of {Flow} objects where this buffer eventually
     #   writes to
-    # @param buffering [Symbol, Boolean] defines the buffering behavior of the
-    #   buffer. When set to `true` or `:full`, we buffer all data and never
-    #   automatically flush. When set to `:data`, we auto flush on adding new
-    #   data and clear all messages afterwards. When set to `:none` or `false`
-    #   we auto flush as above but clear all data from the buffer afterwards.
+    # @param buffering [Boolean] defines the buffering behavior of the buffer.
+    #   When set to `true` we buffer all stored data which can be flushed to the
+    #   {#flows} manually. In this mode, we still automatically flush newly
+    #   added data to interested flows directly after adding it. When set to
+    #   `false` we automatically flush to all flows as above but we will clear
+    #   all stored data from the buffer afterwards.
     #   See {#buffering} for details.
     # @param allow_silent [Boolean] When set to `true` the data in this buffer
     #   will be flushed to the flows, even if there were just added fields or
     #   tags without any logged messages. If this is `false` and there were no
     #   messages logged with {#add_message}, the buffer will not be flushed but
     #   will be silently dropped.
-    def initialize(flows, buffering: :full, allow_silent: true)
+    def initialize(flows, buffering: true, allow_silent: true)
       @flows = flows
-
-      @buffering =
-        case buffering
-        when :full, true
-          :full
-        when :data
-          :data
-        when :none, false
-          :none
-        else
-          raise TypeError, "Unknown buffering argument given: #{buffering.inspect}"
-        end
-
+      @buffering = !!buffering
       @allow_silent = !!allow_silent
 
       # initialize the internal data structures for fields, tags, ...
@@ -124,7 +94,8 @@ module Rackstash
     # older exceptions in the current buffer. Only by the `force` argument to
     # `false`, we will preserve existing exceptions.
     #
-    # @param exception [Exception] an Exception object as catched by `rescue`
+    # @param exception [Exception] an Exception object as caught by a
+    #   `begin` ... `rescue` block.
     # @param force [Boolean] set to `false` to preserve the details of an
     #   existing exception in the current buffer's fields, set to `true` to
     #   overwrite them.
@@ -132,7 +103,7 @@ module Rackstash
     def add_exception(exception, force: true)
       return exception unless force || fields[FIELD_ERROR].nil?
 
-      fields.merge!(
+      add_fields(
         FIELD_ERROR => exception.class.name,
         FIELD_ERROR_MESSAGE => exception.message,
         FIELD_ERROR_TRACE => (exception.backtrace || []).join("\n")
@@ -179,8 +150,7 @@ module Rackstash
     def add_message(message)
       timestamp(message.time)
       @messages << message
-
-      auto_flush
+      auto_flush(message)
 
       message
     end
@@ -197,21 +167,35 @@ module Rackstash
       @allow_silent
     end
 
+    # The buffering behavior of the current buffer. This value can be set in
+    # {#initialize}.
+    #
+    # When set to `true` this buffer is buffering all its messages and stored
+    # data. When explicitly calling {#flush}, all the stored data is flushed to
+    # all {#flows}. To interested flows, we will also automatically flush newly
+    # added messages along with the stored fields and tags after adding a
+    # message. If {#allow_silent?} is `true`, we also do this when adding fields
+    # with {#add_fields} and {#add_exception}.
+    #
+    # If {#buffering} is set to `false`, we will automatically flush the buffer
+    # the same way as before, this time to all buffers however. In addition, we
+    # will also clear the all stored stored {#fields}, {#tags}, the {#messages}
+    # and the {#timestamp}.
+    #
+    # @return [Boolean] the buffering behavior
+    def buffering?
+      @buffering
+    end
+
     # Clear the current buffer from all stored data, just as it was right after
     # inititialization.
     #
-    # @param everything [Boolean] When set to `true`, we clear {#messages},
-    #   {#fields}, {#tags} and the {#timestamp}. When set to `false`, we only
-    #   clear the {#messages} and the {#timestamp} but retain he other data.
     # @return [self]
-    def clear(everything = true)
+    def clear
       @messages = []
       @timestamp = nil
-
-      if everything
-        @fields = nil
-        @tags = nil
-      end
+      @fields = nil
+      @tags = nil
 
       self
     end
@@ -230,16 +214,16 @@ module Rackstash
     def flush
       return unless pending?
 
-      @flows.write(self)
+      @flows.flush(event)
       self
     end
 
     # Return all logged messages on the current buffer.
     #
-    # @return [Array<Message>] the list of messages of the curent buffer
-    # @note You can not add messsages to the buffer by modifying this array.
+    # @return [Array<Message>] the list of messages of the current buffer
+    # @note You can not add messages to the buffer by modifying this array.
     #   Instead, use {#add_message} to add new messages or add filters to the
-    #   responsible {Flow} to remove or change messages.
+    #   responsible {Flow} to remove or change already added messages.
     def messages
       @messages.dup
     end
@@ -344,7 +328,7 @@ module Rackstash
     # All hashes (including nested hashes) use `String` keys.
     #
     # @return [Hash] the event expected by the event {Filter}s.
-    def to_h
+    def event
       event = fields.to_h
       event[FIELD_TAGS] = tags.to_a
       event[FIELD_MESSAGE] = messages
@@ -352,27 +336,74 @@ module Rackstash
 
       event
     end
+    alias to_h event
+    alias as_json event
 
     private
 
-    # Non-buffering buffers, i.e., those with `buffering: false`, flush
-    # themselves to the defined flows whenever there is something logged to it.
-    # That way, such a buffer acts like a regular old Logger would: it just
-    # flushes a logged message to its log device as soon as it is logged.
+    # Write the data contained in this Buffer to interested {Flow} objects.
     #
-    # By calling `auto_flush`, the current buffer is flushed and cleared if
-    # necessary.
-    def auto_flush
-      case @buffering
-      when :full
-        return
-      when :data
-        flush
-        clear(false)
-      when :none
-        flush
-        clear(true)
+    # This method is called after adding new data to the Buffer. Here, we write
+    # the newly added data to the flows, depending on their type:
+    #
+    # Flows with enabled `auto_flush?` will receive an event Hash containing all
+    # of the current Buffer's fields and tags but only the single currently
+    # logged message (if any). This happens regardless of whether the current
+    # Buffer is {#buffering?} or not.
+    #
+    # In addition to that, if the current Buffer is not {buffering?}, we write
+    # pending data to "normal" flows and {#clear} the Buffer afterwards. Such a
+    # buffer thus acts like a regular old Logger would: it just flushes a logged
+    # message to its log device as soon as it is added.
+    #
+    # Buffering Buffers are not automatically flushed to "normal" flows here.
+    # They need to be explicitly flushed with {Buffer#flush} in order for their
+    # buffered data to be written to the normal flows.
+    #
+    # @param message [Message, nil] The currently logged message which is added
+    #   to the {#auto_event}. If kept empty (i.e. with `nil`), we do not
+    #   add any messages.
+    # @return [void]
+    def auto_flush(message = nil)
+      # Write the auto_event with the current message (if any) to the
+      # auto_flushing Flows
+      flows.auto_flush { auto_event(message) }
+
+      if !buffering? && pending?
+        flows.flush { event }
+        clear
       end
+    end
+
+    # Creates the automatically flushed event hash. It is similar to the one
+    # created by {#event} but only uses the passed `message` instead of all
+    # {#messages} and uses either the `message`'s timestamp or the current time
+    # but never the current Buffer's timestamp.
+    #
+    # This event is used to represent an intermediate state of a Buffer which
+    # can be flushed to interested flows early.
+    #
+    # @param message [Message, nil] The currently logged message which is added
+    #   to the auto_event Hash. If kept empty (i.e. with `nil`), we do not
+    #   add any messages.
+    # @return [Hash] the event Hash for the currently added data.
+    # @see #event
+    def auto_event(message = nil)
+      event = fields.to_h
+      event[FIELD_TAGS] = tags.to_a
+
+      if message
+        event[FIELD_MESSAGE] = [message]
+
+        time = message.time
+        time = time.getutc.freeze unless time.utc? && time.frozen?
+        event[FIELD_TIMESTAMP] = time
+      else
+        event[FIELD_MESSAGE] = []
+        event[FIELD_TIMESTAMP] = Time.now.utc.freeze
+      end
+
+      event
     end
   end
 end

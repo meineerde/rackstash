@@ -11,7 +11,14 @@ require 'rackstash/buffer'
 
 RSpec.describe Rackstash::Buffer do
   let(:buffer_options) { {} }
-  let(:flows) { instance_double(Rackstash::Flows) }
+
+  let(:flows) {
+    instance_double(Rackstash::Flows).tap do |flows|
+      allow(flows).to receive(:flush)
+      allow(flows).to receive(:auto_flush)
+    end
+  }
+
   let(:buffer) { described_class.new(flows, **buffer_options) }
 
   describe '#allow_silent?' do
@@ -111,6 +118,11 @@ RSpec.describe Rackstash::Buffer do
         buffer.add_fields(key: 'value')
         expect(buffer.pending?).to be true
       end
+
+      it 'calls auto_flush' do
+        expect(flows).to receive(:auto_flush)
+        buffer.add_fields(key: 'value')
+      end
     end
 
     context 'when not allow_silent?' do
@@ -122,57 +134,49 @@ RSpec.describe Rackstash::Buffer do
         buffer.add_fields(key: 'value')
         expect(buffer.pending?).to be false
       end
+
+      it 'calls auto_flush' do
+        expect(flows).to receive(:auto_flush)
+        buffer.add_fields(key: 'value')
+      end
     end
 
-    context 'with buffering: :full' do
+    context 'with buffering: true' do
       before do
-        buffer_options[:buffering] = :full
+        buffer_options[:buffering] = true
       end
 
-      it 'does not call #flush' do
-        expect(buffer).not_to receive(:flush)
+      it 'does not flush the buffer' do
+        expect(flows).not_to receive(:flush)
+        # We always auto_flush buffers to send the newly added fields to
+        # interested flows
+        expect(flows).to receive(:auto_flush)
+
         buffer.add_fields(key: 'value')
       end
 
-      it 'does not call #clear' do
+      it 'does not clear the buffer' do
         expect(buffer).not_to receive(:clear)
         buffer.add_fields(key: 'value')
 
         expect(buffer.fields['key']).to eql 'value'
-      end
-    end
-
-    context 'with buffering: :data' do
-      before do
-        buffer_options[:buffering] = :data
-      end
-
-      it 'calls #flush' do
-        expect(buffer).to receive(:flush)
-        buffer.add_fields(key: 'value')
-      end
-
-      it 'clears only messages' do
-        allow(buffer).to receive(:flush).once
-        buffer.add_fields(key: 'value')
-
-        expect(buffer.fields).to_not be_empty
         expect(buffer.pending?).to be true
       end
     end
 
-    context 'with buffering: :none' do
+    context 'with buffering: false' do
       before do
-        buffer_options[:buffering] = :none
+        buffer_options[:buffering] = false
       end
 
-      it 'calls #flush' do
-        expect(buffer).to receive(:flush)
+      it 'flushes the buffer' do
+        expect(flows).to receive(:flush)
+        expect(flows).to receive(:auto_flush)
+
         buffer.add_fields(key: 'value')
       end
 
-      it 'clears the whole buffer' do
-        allow(buffer).to receive(:flush).once
+      it 'clears the buffer' do
         buffer.add_fields(key: 'value')
 
         expect(buffer.fields).to be_empty
@@ -202,13 +206,13 @@ RSpec.describe Rackstash::Buffer do
       expect(buffer.timestamp).to eql time.getutc
     end
 
-    context 'with buffering: :full' do
+    context 'with buffering: true' do
       before do
-        buffer_options[:buffering] = :full
+        buffer_options[:buffering] = true
       end
 
-      it 'does not call #flush' do
-        expect(buffer).not_to receive(:flush)
+      it 'does not flush the buffer' do
+        expect(flows).not_to receive(:flush)
         buffer.add_message double(message: 'Hello World!', time: Time.now)
       end
 
@@ -218,37 +222,17 @@ RSpec.describe Rackstash::Buffer do
       end
     end
 
-    context 'with buffering: :none' do
+    context 'with buffering: false' do
       before do
-        buffer_options[:buffering] = :data
+        buffer_options[:buffering] = false
       end
 
-      it 'calls #flush' do
-        expect(buffer).to receive(:flush)
+      it 'flushes the buffer' do
+        expect(flows).to receive(:flush)
         buffer.add_message double(message: 'Hello World!', time: Time.now)
       end
 
       it 'clears messages' do
-        allow(buffer).to receive(:flush)
-        buffer.add_message double(message: 'Hello World!', time: Time.now)
-
-        expect(buffer.messages.count).to eql 0
-        expect(buffer.pending?).to be false
-      end
-    end
-
-    context 'with buffering: :none' do
-      before do
-        buffer_options[:buffering] = :none
-      end
-
-      it 'calls #flush' do
-        expect(buffer).to receive(:flush)
-        buffer.add_message double(message: 'Hello World!', time: Time.now)
-      end
-
-      it 'clears messages' do
-        allow(buffer).to receive(:flush)
         buffer.add_message double(message: 'Hello World!', time: Time.now)
 
         expect(buffer.messages.count).to eql 0
@@ -258,31 +242,18 @@ RSpec.describe Rackstash::Buffer do
   end
 
   describe '#buffering' do
-    it 'defaults to :full' do
-      expect(buffer.buffering).to eql :full
+    it 'defaults to true' do
+      expect(buffer.buffering?).to eql true
     end
 
-    it 'can be set to :full' do
-      expect(described_class.new(flows, buffering: true).buffering).to eql :full
-      expect(described_class.new(flows, buffering: :full).buffering).to eql :full
+    it 'can be set to true' do
+      expect(described_class.new(flows, buffering: true).buffering?).to be true
+      expect(described_class.new(flows, buffering: 'whatever').buffering?).to be true
     end
 
-    it 'can be set to :data' do
-      expect(described_class.new(flows, buffering: :data).buffering).to eql :data
-    end
-
-    it 'can be set to :none' do
-      expect(described_class.new(flows, buffering: false).buffering).to eql :none
-      expect(described_class.new(flows, buffering: :none).buffering).to eql :none
-    end
-
-    it 'does not allow other values' do
-      expect { described_class.new(flows, buffering: nil) }
-        .to raise_error(TypeError)
-      expect { described_class.new(flows, buffering: :invalid) }
-        .to raise_error(TypeError)
-      expect { described_class.new(flows, buffering: 'full') }
-        .to raise_error(TypeError)
+    it 'can be set to false' do
+      expect(described_class.new(flows, buffering: false).buffering?).to be false
+      expect(described_class.new(flows, buffering: nil).buffering?).to be false
     end
   end
 
@@ -346,13 +317,13 @@ RSpec.describe Rackstash::Buffer do
     end
 
     context 'when pending?' do
-      let(:time) { Time.now }
+      let(:time) { Time.parse('2016-10-17 15:37:00 +02:00') }
       let(:message) { double(message: 'Hello World!', time: time) }
       let(:event) {
         {
           'message' => [message],
           'tags' => [],
-          '@timestamp' => Time.now
+          '@timestamp' => time
         }
       }
 
@@ -360,11 +331,11 @@ RSpec.describe Rackstash::Buffer do
         buffer.add_message(message)
 
         # We might call Buffer#flush during the following tests
-        allow(flows).to receive(:write).with(buffer).once
+        allow(flows).to receive(:flush).with(event).once
       end
 
       it 'flushes the buffer to the flows' do
-        expect(flows).to receive(:write).with(buffer).once
+        expect(flows).to receive(:flush).with(event).once
         buffer.flush
       end
 
@@ -381,7 +352,7 @@ RSpec.describe Rackstash::Buffer do
 
     context 'when not pending?' do
       it 'does not flushes the buffer to the flows' do
-        expect(flows).not_to receive(:write)
+        expect(flows).not_to receive(:flush)
         buffer.flush
       end
 
@@ -562,7 +533,7 @@ RSpec.describe Rackstash::Buffer do
     end
   end
 
-  describe '#to_h' do
+  describe '#event' do
     it 'creates an event hash' do
       message = double(message: 'Hello World', time: Time.now)
       allow(message)
@@ -570,7 +541,7 @@ RSpec.describe Rackstash::Buffer do
       buffer.fields[:foo] = 'bar'
       buffer.tags << 'some_tag'
 
-      expect(buffer.to_h).to match(
+      expect(buffer.event).to match(
         'foo' => 'bar',
         'message' => [message],
         'tags' => ['some_tag'],
