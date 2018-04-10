@@ -48,17 +48,6 @@ RSpec.describe Rackstash::Rack::Middleware do
     expect { described_class.new app, STDOUT }.to raise_error TypeError
   end
 
-  it 'sets Buffer#buffering' do
-    args[:buffering] = :data
-    get('/stuff')
-
-    expect(log).to match [
-      include('message' => "Request started\n", 'method' => 'GET', 'path' => '/stuff'),
-      include('message' => "Nothing to do...\n", 'method' => 'GET', 'path' => '/stuff'),
-      include('message' => '', 'status' => 200)
-    ]
-  end
-
   it 'creates a new log scope' do
     2.times do
       expect(logger).to receive(:push_buffer).ordered.and_call_original

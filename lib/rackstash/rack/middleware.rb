@@ -45,7 +45,6 @@ module Rackstash
     #
     #     use Rackstash::Rack::Middleware,
     #       logger,
-    #       buffering: :full,
     #       request_fields: {
     #         'user_agent' => ->(request) { request.headers['user-agent'] },
     #         'remote_ip' => ->(request) { request.ip },
@@ -58,12 +57,20 @@ module Rackstash
     #       response_tags: ->(headers) { ["cache_status_#{headers[x-rack-cache]}"] }
     #
     # Here, we instruct the middleware to log each request to the provided
-    # `logger`. For each request, we will by default emit a single log event to
-    # each flow of the logger. You can customize this by setting the `buffering`
-    # argument. See {Buffer#buffering} for a description of the values. During
-    # development, it might be useful to set this to `:data` to emit log events
-    # directly for each logged message instead of only once after the request
-    # was finished.
+    # `logger`. For each request, we will emit a single log event to each normal
+    # flow of the logger.
+    #
+    # You can customize this by defining the log {Flow} as `auto_flush` when
+    # setting up the logger. During development of an application, this might be
+    # useful to emit log events directly for each logged message instead of only
+    # once after the request was finished. In this case, a common option is to
+    # use an {Encoder::Message} encoder as follows to output only messages as
+    # soon as they are added to the logger:
+    #
+    #     logger = Rackstash::Logger.new(STDOUT) do
+    #       encoder Rackstash::Encoder::Message.new
+    #       auto_flush true
+    #     end
     #
     # In the log event(s) emitted for the request, we add the default fields
     # described above, plus some data extracted from the HTTP request data. For
@@ -143,8 +150,6 @@ module Rackstash
       #   `status`, the `headers`, and the `body`.
       # @param logger [Rackstash::Logger] the {Rackstash::Logger} instance to
       #   log each request to
-      # @param buffering [Symbol, Boolean] define how the created {Buffer}s
-      #   should buffer stored data. See {Buffer#buffering} for details.
       # @param request_fields [Hash<#to_s, => Proc, Object>, Fields::Hash, Proc]
       #   Additional fields to merge into the emitted log event before
       #   processing the request. If the object itself or any of its hash values
@@ -171,7 +176,7 @@ module Rackstash
       #   current response as an argument, and its result is used instead.
       # @raise [TypeError] if the passed `logger` is not a {Rackstash::Logger}
       def initialize(
-        app, logger, buffering: :full,
+        app, logger,
         request_fields: nil, request_tags: nil,
         response_fields: nil, response_tags: nil
       )
@@ -181,7 +186,6 @@ module Rackstash
 
         @app = app
         @logger = logger
-        @buffering = buffering
 
         @request_fields = request_fields
         @response_fields = response_fields
@@ -204,7 +208,7 @@ module Rackstash
         env['rack.errors'.freeze] = Rackstash::Rack::Errors.new(@logger)
 
         begin
-          @logger.push_buffer(buffering: @buffering, allow_silent: true)
+          @logger.push_buffer(buffering: true, allow_silent: true)
           begin
             @logger.timestamp
             on_request(env)
