@@ -34,7 +34,13 @@ RSpec.describe Rackstash::Encoder::Helper::Timestamp do
         .to eql '2016-10-17T10:37:00.000000Z'
     end
 
-    it 'ignores an unset value' do
+    it 'formats a Date object' do
+      event['@timestamp'] = Date.new(2016, 10, 17)
+      expect(helper.normalize_timestamp(event).fetch('@timestamp'))
+        .to eql '2016-10-17T00:00:00.000000Z'
+    end
+
+    it 'ignores an unset value by default' do
       expect(helper.normalize_timestamp(event)).not_to have_key '@timestamp'
     end
 
@@ -45,8 +51,11 @@ RSpec.describe Rackstash::Encoder::Helper::Timestamp do
       event['@timestamp'] = nil
       expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql nil
 
-      event['@timestamp'] = 42
-      expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql 42
+      event['@timestamp'] = 123
+      expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql 123
+
+      event['@timestamp'] = 3.14
+      expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql 3.14
     end
 
     it 'uses the given field name' do
@@ -57,6 +66,29 @@ RSpec.describe Rackstash::Encoder::Helper::Timestamp do
         '@timestamp' => instance_of(Time),
         'custom' => '2016-10-17T13:42:00.000000Z'
       )
+    end
+
+    context 'with force: true' do
+      let(:time) { Time.parse('2016-10-17 13:37:00 +03:00') }
+
+      before do
+        allow(Time).to receive(:now).and_return(time)
+      end
+
+      it 'initializes an unset value' do
+        expect(helper.normalize_timestamp(event, force: true).fetch('@timestamp'))
+          .to eql '2016-10-17T10:37:00.000000Z'
+      end
+
+      it 'uses the current time for unknown values' do
+        event['@timestamp'] = 'string'
+        expect(helper.normalize_timestamp(event, force: true).fetch('@timestamp'))
+          .to eql '2016-10-17T10:37:00.000000Z'
+
+        event['@timestamp'] = :symbol
+        expect(helper.normalize_timestamp(event, force: true).fetch('@timestamp'))
+          .to eql '2016-10-17T10:37:00.000000Z'
+      end
     end
   end
 end

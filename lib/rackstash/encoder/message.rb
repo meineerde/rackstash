@@ -5,6 +5,9 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'date'
+require 'time'
+
 require 'rackstash/encoder'
 require 'rackstash/encoder/helper/message'
 
@@ -44,14 +47,12 @@ module Rackstash
       # @param event [Hash] a log event as produced by the {Flow}
       # @return [String] the formatted message of the event
       def encode(event)
-        normalize_message(event)
         message = event[FIELD_MESSAGE]
+        return EMPTY_STRING if message.nil?
 
+        message = normalized_message(message)
         unless message.empty?
-          tags = @tagged_fields.map { |key|
-            normalize_timestamp(event, key)
-            format_tag event[key]
-          }.compact.join
+          tags = @tagged_fields.map { |key| format_tag event[key] }.join
           message = message.gsub(/^/) { tags } unless tags.empty?
         end
 
@@ -61,13 +62,24 @@ module Rackstash
       private
 
       def format_tag(value)
+        return EMPTY_STRING if value.nil?
+
+        "[#{format_tag_value(value)}] "
+      end
+
+      def format_tag_value(value)
         case value
-        when nil
-          nil
         when ::Array
-          "[#{value.map(&:to_s).join(',')}] "
+          value.map { |v| format_tag_value(v) }.join(',')
+        when ::Hash
+          value.map { |k, v| "#{k.to_s}:#{format_tag_value(v)}" }.join(',')
+        when ::Time, ::DateTime
+          value = value.to_time.getutc
+          value.iso8601(ISO8601_PRECISION)
+        when ::Date
+          value.iso8601(ISO8601_PRECISION)
         else
-          "[#{value}] "
+          value.to_s
         end
       end
     end

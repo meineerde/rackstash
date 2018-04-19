@@ -23,21 +23,20 @@ RSpec.describe Rackstash::Encoder::Helper::Message do
 
   describe '#normalize_message' do
     it 'concatenates the message array' do
-      event['message'] = ["a\n", "b\n"]
+      event['message'] = ["a\n", "b\n", 42]
 
-      expect(helper.normalize_message(event)).to eql 'message' => "a\nb\n"
+      expect(helper.normalize_message(event)).to eql 'message' => "a\nb\n42"
     end
 
-    it 'sets message to an empty string if not present' do
+    it 'does not set a missing message' do
+      expect(helper.normalize_message(event)).to eql Hash.new
+
       event['message'] = nil
-      expect(helper.normalize_message(event)).to eql 'message' => ''
+      expect(helper.normalize_message(event)).to eql 'message' => nil
     end
 
     it 'enforces to_s on other messages' do
-      foo = String.new('foo')
-      event['message'] = foo
-
-      expect(foo).to receive(:to_s).and_call_original
+      event['message'] = :foo
       expect(helper.normalize_message(event)).to eql 'message' => 'foo'
     end
   end

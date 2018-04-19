@@ -29,7 +29,7 @@ RSpec.describe Rackstash::Encoder::Hash do
     it 'passes the normalized event hash through' do
       event = { 'foo' => 'bar', 'baz' => :boing }
       expect(encoder.encode(event))
-        .to eql 'foo' => 'bar', 'baz' => :boing, 'message' => ''
+        .to eql 'foo' => 'bar', 'baz' => :boing
     end
   end
 end

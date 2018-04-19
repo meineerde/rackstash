@@ -28,7 +28,7 @@ module Rackstash
       # @param event [Hash] a log event as produced by the {Flow}
       # @return [String] the event as a single-line JSON string
       def encode(event)
-        normalize_message(event) unless event[FIELD_MESSAGE].nil?
+        normalize_message(event)
         normalize_timestamp(event)
 
         ::JSON.dump(event)

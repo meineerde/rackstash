@@ -15,29 +15,42 @@ module Rackstash
 
         # Normalize the `"message"` field of the given log event Hash.
         #
+        # @param event [Hash] a log event Hash
+        # @param field [String] the name of the field  to normalize in the
+        #   `event`
+        # @param force [Boolean] set to `true` to always set the `field` to a
+        #   normalized value, even if it was empty or missing before
+        # @return [Hash] the given event with the normalized message
+        def normalize_message(event, field = FIELD_MESSAGE, force: false) #:doc:
+          message = event[field]
+          return event if message.nil? && !force
+
+          event[field] = normalized_message(message)
+          event
+        end
+
+        # Normalize various possible values in the `"message"` field of an event
+        # Hash into a single String.
+        #
         # While the filters still had access to the array of {Message} objects
         # for filtering, we now concatenate the raw message objects as a single
         # string to get the final message which is set on the `event["message"]`
         # key.
         #
-        # We expect that the single messages already contain trailing newline
-        # characters is deemed useful. These are usually added by the formatter
-        # of the frontend {Logger}.
+        # Usually, the individual messages already contain trailing newline
+        # characters. By default, these are added by the formatter of the
+        # {Logger} when the message is originally logged. As such, we
+        # concatenate all messages without an added separators.
         #
-        # @param event [Hash] a log event Hash
-        # @return [Hash] the given event with the `"message"` key set as a
-        #   single string.
-        def normalize_message(event) #:doc:
-          event[FIELD_MESSAGE] =
-            case event[FIELD_MESSAGE]
-            when Array
-              event[FIELD_MESSAGE].map!(&:to_s).join
-            when nil
-              ''
-            else
-              event[FIELD_MESSAGE].to_s
-            end
-          event
+        # @param message [Object] the message(s) to normalize
+        # @return [String] the normalized event message as a single String
+        def normalized_message(message) #:doc:
+          case message
+          when Array
+            message.map(&:to_s).join
+          else
+            message.to_s
+          end
         end
       end
     end
