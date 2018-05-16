@@ -37,7 +37,17 @@ RSpec.describe Rackstash::Encoder::Helper::Timestamp do
     it 'formats a Date object' do
       event['@timestamp'] = Date.new(2016, 10, 17)
       expect(helper.normalize_timestamp(event).fetch('@timestamp'))
-        .to eql '2016-10-17T00:00:00.000000Z'
+        .to eql '2016-10-17'
+    end
+
+    it 'formats a UNIX timestamp' do
+      event['@timestamp'] = 1526499065
+      expect(helper.normalize_timestamp(event).fetch('@timestamp'))
+        .to eql '2018-05-16T19:31:05.000000Z'
+
+      event['@timestamp'] = 1526499065.4177752
+      expect(helper.normalize_timestamp(event).fetch('@timestamp'))
+        .to eql '2018-05-16T19:31:05.417775Z'
     end
 
     it 'ignores an unset value by default' do
@@ -50,12 +60,6 @@ RSpec.describe Rackstash::Encoder::Helper::Timestamp do
 
       event['@timestamp'] = nil
       expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql nil
-
-      event['@timestamp'] = 123
-      expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql 123
-
-      event['@timestamp'] = 3.14
-      expect(helper.normalize_timestamp(event).fetch('@timestamp')).to eql 3.14
     end
 
     it 'uses the given field name' do
@@ -81,7 +85,7 @@ RSpec.describe Rackstash::Encoder::Helper::Timestamp do
       end
 
       it 'uses the current time for unknown values' do
-        event['@timestamp'] = 'string'
+        event['@timestamp'] = Object.new
         expect(helper.normalize_timestamp(event, force: true).fetch('@timestamp'))
           .to eql '2016-10-17T10:37:00.000000Z'
 

@@ -31,25 +31,30 @@ module Rackstash
         # @return [Hash] the given event with the `field` key set as an ISO 8601
         #   formatted time string.
         def normalize_timestamp(event, field = FIELD_TIMESTAMP, force: false) #:doc:
-          time = normalized_time(event[field])
-          time ||= Time.now.utc if force
+          time = normalized_timestamp(event[field])
+          time ||= Time.now.utc.iso8601(ISO8601_PRECISION) if force
 
-          event[field] = time.iso8601(ISO8601_PRECISION) if time
-
+          event[field] = time if time
           event
         end
 
-        # @param time [Time, DateTime, Date, Integer, Float]
-        # @return [Time, nil] a `Time` object on UTC timezone if the given
-        #   `time` could be normalized as such or `nil` if the value does not
-        #   describe a timestamp
-        def normalized_time(time) #:doc:
+        # @param time [Time, DateTime, Date, Integer, Float, String]
+        # @return [String, nil] the passed time object tramsformed into an UTC
+        #   timestamp (if possible) and formatted as an ISO 8601 formatted
+        #   String. If the object could not be interpreted as a time, we return
+        #   `nil`.
+        def normalized_timestamp(time) #:doc:
           case time
           when ::Time, ::DateTime
             time = time.to_time
-            time.utc? ? time : time.getutc
+            utc_time = time.utc? ? time : time.getutc
+            utc_time.iso8601(ISO8601_PRECISION)
           when ::Date
-            ::Time.new(time.year, time.month, time.day, 0, 0, 0, 0).utc
+            time.iso8601
+          when Integer, Float
+            Time.at(time.to_f).utc.iso8601(ISO8601_PRECISION)
+          when String
+            time.to_s
           end
         end
       end
