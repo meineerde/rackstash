@@ -155,6 +155,25 @@ RSpec.describe Rackstash::Flows do
     end
   end
 
+  describe '#clone' do
+    it 'clones the flows' do
+      flows << a_flow
+      copied = flows.clone
+
+      expect(copied).to be_instance_of described_class
+      expect(copied.length).to eql 1
+      expect(copied).to_not equal flows
+    end
+
+    it 'preserves the frozen? status' do
+      flows.freeze
+      expect(flows).to be_frozen
+
+      expect(flows.clone).to be_frozen
+      expect { flows.clone << a_flow }.to raise_error(RuntimeError)
+    end
+  end
+
   describe '#freeze' do
     it 'freezes the object' do
       expect(flows.freeze).to equal flows

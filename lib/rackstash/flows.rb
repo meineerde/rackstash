@@ -229,6 +229,7 @@ module Rackstash
 
     def initialize_copy(other)
       @flows = other.flows.dup
+      @flows.freeze if other.frozen?
       super
     end
 
