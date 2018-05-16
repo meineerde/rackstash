@@ -69,6 +69,50 @@ RSpec.describe Rackstash::Flow do
     end
   end
 
+  describe '#auto_flush' do
+    it 'defaults to false' do
+      expect(flow.auto_flush).to eql false
+    end
+
+    it 'sets a boolean value' do
+      flow.auto_flush(true)
+      expect(flow.auto_flush).to eql true
+      expect(flow.auto_flush?).to eql true
+
+      flow.auto_flush(false)
+      expect(flow.auto_flush).to eql false
+      expect(flow.auto_flush?).to eql false
+
+      flow.auto_flush('something')
+      expect(flow.auto_flush).to eql true
+      expect(flow.auto_flush?).to eql true
+    end
+
+    it 'ignores a nil argument' do
+      flow.auto_flush(true)
+      expect(flow.auto_flush).to eql true
+
+      flow.auto_flush(nil)
+      expect(flow.auto_flush?).to eql true
+    end
+  end
+
+  describe '#auto_flush=' do
+    it 'sets a boolean value' do
+      flow.auto_flush = true
+      expect(flow.auto_flush?).to eql true
+
+      flow.auto_flush = false
+      expect(flow.auto_flush?).to eql false
+
+      flow.auto_flush = 'something'
+      expect(flow.auto_flush?).to eql true
+
+      flow.auto_flush = nil
+      expect(flow.auto_flush?).to eql false
+    end
+  end
+
   describe '#close!' do
     it 'calls adapter#close' do
       expect(adapter).to receive(:close).and_return(true)
