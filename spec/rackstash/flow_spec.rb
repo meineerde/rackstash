@@ -113,6 +113,13 @@ RSpec.describe Rackstash::Flow do
     end
   end
 
+  describe '#auto_flush!' do
+    it 'enables the auto_flush property' do
+      flow.auto_flush!
+      expect(flow.auto_flush?).to eql true
+    end
+  end
+
   describe '#close!' do
     it 'calls adapter#close' do
       expect(adapter).to receive(:close).and_return(true)

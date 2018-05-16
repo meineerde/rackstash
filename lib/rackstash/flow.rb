@@ -137,6 +137,14 @@ module Rackstash
       @auto_flush
     end
 
+    # Enable the {#auto_flush} feature for the current flow.
+    #
+    # @return [true]
+    # @see #auto_flush
+    def auto_flush!
+      self.auto_flush = true
+    end
+
     # @param bool [Bool] `true` to cause buffering Buffers to write their added
     #   messages and fields to the flow as soon as they are logged, `false` to
     #   write the whole event only on an explicit call to {Buffer#flush}.
