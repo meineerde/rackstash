@@ -126,16 +126,19 @@ module Rackstash
       private
 
       # Helper method to ensure that a log line passed to {#write} is either a
-      # String that ends in a newline character or is completely empty.
+      # String that ends in a separator character (`"\n"` by default) or is an
+      # empty String.
       #
       # @param line [#to_s] a log line
-      # @return [String] `line` with a trailing newline character (`"\n"`)
-      #   appended if necessary
-      def normalize_line(line)
+      # @param sep [String] a separator character which is added to the end of
+      #   the `line` if not already present there
+      # @return [String] `line` with the separator character appended if
+      #   necessary
+      def normalize_line(line, sep = "\n".freeze)
         line = line.to_s
-        return line if line.empty? || line.end_with?("\n".freeze)
+        return line if line.empty? || line.end_with?(sep)
 
-        "#{line}\n"
+        line + sep
       end
     end
   end
