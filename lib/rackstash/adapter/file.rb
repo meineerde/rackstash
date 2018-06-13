@@ -64,8 +64,22 @@ module Rackstash
     class File < BaseAdapter
       register_for ::String, ::Pathname, 'file'
 
-      # @return [String] the absolute path to the log file
+      # @return [String] the absolute path to the currently opened log file
       attr_reader :path
+
+      # @return [String] the absolute path to the originally defined log file.
+      #   Depending on the {#rotate} setting, the final log file might have a
+      #   date-based suffix added before its file extension. Use {#path} to
+      #   get the full path of the currently opened log file.
+      attr_reader :base_path
+
+      # @return [String, Proc, nil] date pattern for the file suffix used for
+      #   auto-rotated log files. The pattern is used with `Date#strftime` to
+      #   determine the file suffix for the current rotate file. When setting a
+      #   `Proc`, it is expected to return the currently final log file suffix
+      #   (not just a date pattern). When setting the value to `nil`, the log
+      #   file is not rotated.
+      attr_reader :rotate
 
       def self.from_uri(uri)
         uri = URI(uri)
@@ -91,23 +105,59 @@ module Rackstash
       # [`::File.expand_path`](https://ruby-doc.org/core/File.html#method-c-expand_path)
       # for details.
       #
-      # @param path [String, Pathname] the path to the logfile
-      # @param auto_reopen [Boolean] set to `true` to automatically reopen the
-      #   log file (and potentially create a new one) if we detect that the
-      #   current log file was moved or deleted, e.g. due to an external
-      #   logrotate run
-      def initialize(path, auto_reopen: true)
-        @path = ::File.expand_path(path).freeze
-        @auto_reopen = !!auto_reopen
+      # @param path [String, Pathname] the path to the logfile. Depending on the
+      #   `rotate` setting, the final log file might have a date-based suffix
+      #   added before its file extension.
+      # @param auto_reopen (see #auto_reopen=)
+      # @param rotate (see #rotate=)
+      def initialize(path, auto_reopen: true, rotate: nil)
+        @base_path = ::File.expand_path(path).freeze
+
+        self.auto_reopen = auto_reopen
+        self.rotate = rotate
 
         @mutex = Mutex.new
-        open_file
+        open_file(rotated_path)
       end
 
       # @return [Boolean] if `true`, the logfile will be automatically reopened
       #   on write if it is (re-)moved on the filesystem
       def auto_reopen?
         @auto_reopen
+      end
+
+      # @param auto_reopen [Boolean] set to `true` to automatically reopen the
+      #   log file (and potentially create a new one) if we detect that the
+      #   current log file was moved or deleted, e.g. due to an external
+      #   logrotate run
+      def auto_reopen=(auto_reopen)
+        @auto_reopen = !!auto_reopen
+      end
+
+      # @param rotate [String, Proc, nil] date pattern for the file suffix used
+      #   for auto-rotated log files. When giving a `String` here, it is
+      #   interpreted as a pattern for the `Date#strftime` method. In addition
+      #   to that, we accept the following names: `"daily"`, `"weekly"`, and
+      #   `"monthly"` for pre-defined suffixes. When giving a `Proc`, it is
+      #   expected to return the final suffix on call (i.e. not just a
+      #   `Date#strftime` pattern but the actual file suffix). When defining a
+      #   rotate pattern, each log event is written to a file with the resulting
+      #   suffix added before its file extension.
+      def rotate=(rotate)
+        @rotate = case rotate
+        when :daily, 'daily'.freeze
+          '%Y-%m-%d'.freeze
+        when :weekly, 'weekly'.freeze
+          '%G-w%V'.freeze
+        when :monthly, 'monthly'.freeze
+          '%Y-%m'.freeze
+        when String
+          rotate.dup.freeze
+        when Proc, nil
+          rotate
+        else
+          raise ArgumentError, "Invalid rotate specification: #{rotate.inspect}"
+        end
       end
 
       # Write a single log line with a trailing newline character to the open
@@ -128,7 +178,7 @@ module Rackstash
         return if line.empty?
 
         @mutex.synchronize do
-          auto_reopen
+          rotate_file
           @file.syswrite(line)
         end
         nil
@@ -155,7 +205,7 @@ module Rackstash
       # @return [nil]
       def reopen
         @mutex.synchronize do
-          reopen_file
+          reopen_file rotated_path
         end
         nil
       end
@@ -164,16 +214,17 @@ module Rackstash
 
       # Reopen the log file if the original {#path} does not reference the
       # opened file anymore (e.g. because it was moved or deleted)
-      def auto_reopen
+      def auto_reopen!
         return unless @auto_reopen
+        return unless @file && @path
 
         return if @file.closed?
         return if ::File.identical?(@file, @path)
 
-        reopen_file
+        reopen_file(@path)
       end
 
-      def open_file
+      def open_file(path)
         dirname = ::File.dirname(path)
         FileUtils.mkdir_p(dirname) unless ::File.exist?(dirname)
 
@@ -184,13 +235,40 @@ module Rackstash
         file.binmode
         file.sync = true
 
+        @path = path
         @file = file
         nil
       end
 
-      def reopen_file
+      def reopen_file(path)
         @file.close rescue nil
-        open_file
+        open_file(path)
+      end
+
+      def rotate_file
+        path = rotated_path
+
+        if path == @path
+          auto_reopen!
+        else
+          reopen_file(path)
+        end
+      end
+
+      def rotated_path
+        suffix = case @rotate
+        when String
+          Date.today.strftime(@rotate)
+        when Proc
+          @rotate.call.to_s
+        else
+          EMPTY_STRING
+        end
+
+        return @base_path if suffix.empty?
+
+        suffix = ".#{suffix}"
+        @base_path.sub(/\A(.*?)(\.[^.\/]+)?\z/) { "#{$1}#{suffix}#{$2}" }
       end
     end
   end

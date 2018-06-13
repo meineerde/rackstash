@@ -18,28 +18,32 @@ RSpec.describe Rackstash::Adapter::File do
   let(:adapter) { described_class.new(logfile.path, **adapter_args) }
 
   after(:each) do
+    # Cleanup
+    FileUtils.rm_f Dir.glob("#{logfile.path}.*")
     logfile.close
     logfile.unlink
   end
 
   describe 'from_uri' do
     it 'creates a File adapter instance' do
-      expect(described_class.from_uri('file:/tmp/file_spec.log'))
+      expect(described_class.from_uri("file:#{logfile.path}"))
         .to be_instance_of described_class
-      expect(described_class.from_uri('file:///tmp/file_spec.log'))
+      expect(described_class.from_uri("file://#{logfile.path}"))
         .to be_instance_of described_class
     end
 
-    it 'sets the path from the URI path' do
-      expect(described_class.from_uri('file:/tmp/file_spec.log').path)
-        .to eql '/tmp/file_spec.log'
-      expect(described_class.from_uri('file:///tmp/file_spec.log').path)
-        .to eql '/tmp/file_spec.log'
+    it 'sets the base_path from the URI path' do
+      expect(described_class.from_uri("file:#{logfile.path}").base_path)
+        .to eql logfile.path
+      expect(described_class.from_uri("file://#{logfile.path}").base_path)
+        .to eql logfile.path
     end
 
     it 'sets optional attributes' do
-      expect(described_class.from_uri('file:/tmp/file_spec.log?auto_reopen=false').auto_reopen?)
-        .to eql false
+      adapter = described_class.from_uri('file:/tmp/file_spec.log?rotate=monthly&auto_reopen=false')
+
+      expect(adapter.rotate).to eql '%Y-%m'
+      expect(adapter.auto_reopen?).to eql false
     end
 
     it 'only accepts file URIs' do
@@ -53,13 +57,13 @@ RSpec.describe Rackstash::Adapter::File do
 
   describe '#initialize' do
     it 'accepts a String' do
-      expect(described_class.new(logfile.path).path)
+      expect(described_class.new(logfile.path).base_path)
         .to eql(logfile.path)
         .and be_a String
     end
 
     it 'accepts a Pathname' do
-      expect(described_class.new(Pathname.new(logfile.path)).path)
+      expect(described_class.new(Pathname.new(logfile.path)).base_path)
         .to eql(logfile.path)
         .and be_a String
     end
@@ -76,10 +80,17 @@ RSpec.describe Rackstash::Adapter::File do
 
         adapter = described_class.new File.join(base, 'dir', 'sub', 'test.log')
 
-        expect(adapter.path).to eql File.join(base, 'dir', 'sub', 'test.log')
+        expect(adapter.base_path).to eql File.join(base, 'dir', 'sub', 'test.log')
         expect(File.directory?(File.join(base, 'dir'))).to be true
         expect(File.file?(File.join(base, 'dir', 'sub', 'test.log'))).to be true
       end
+    end
+
+    it 'rejects invalid rotate specifications' do
+      expect { described_class.new(logfile.path, rotate: :invalid) }.to raise_error ArgumentError
+      expect { described_class.new(logfile.path, rotate: 42) }.to raise_error ArgumentError
+      expect { described_class.new(logfile.path, rotate: false) }.to raise_error ArgumentError
+      expect { described_class.new(logfile.path, rotate: true) }.to raise_error ArgumentError
     end
   end
 
@@ -132,14 +143,14 @@ RSpec.describe Rackstash::Adapter::File do
       let(:adapter_args) { { auto_reopen: true } }
 
       it 'reopens the file if moved' do
-        expect(adapter.auto_reopen?).to be true
+        expect(adapter.auto_reopen?).to eql true
 
         adapter.write('line1')
-        File.rename(logfile.path, "#{logfile.path}.orig")
+        File.rename(logfile.path, "#{logfile.path}.moved")
 
         adapter.write('line2')
 
-        expect(File.read("#{logfile.path}.orig")).to eql "line1\n"
+        expect(File.read("#{logfile.path}.moved")).to eql "line1\n"
         expect(File.read(logfile.path)).to eql "line2\n"
       end
     end
@@ -148,15 +159,131 @@ RSpec.describe Rackstash::Adapter::File do
       let(:adapter_args) { { auto_reopen: false } }
 
       it 'does not reopen the logfile automatically' do
-        expect(adapter.auto_reopen?).to be false
+        expect(adapter.auto_reopen?).to eql false
 
         adapter.write('line1')
-        File.rename(logfile.path, "#{logfile.path}.orig")
+        File.rename(logfile.path, "#{logfile.path}.moved")
 
         adapter.write('line2')
 
-        expect(File.read("#{logfile.path}.orig")).to eql "line1\nline2\n"
+        expect(File.read("#{logfile.path}.moved")).to eql "line1\nline2\n"
         expect(File.exist?(logfile.path)).to be false
+      end
+    end
+
+    context 'with rotate: :daily' do
+      before do
+        adapter_args[:rotate] = :daily
+      end
+
+      it 'rotates daily' do
+        date1 = Date.new(2017, 11, 13)
+        allow(Date).to receive(:today).and_return(date1)
+
+        adapter.write('line1')
+        expect(adapter.path).to eql "#{logfile.path}.2017-11-13"
+
+        date2 = Date.new(2018, 1, 13)
+        allow(Date).to receive(:today).and_return(date2)
+
+        adapter.write('line2')
+        expect(adapter.path).to eql "#{logfile.path}.2018-01-13"
+
+        expect(File.read "#{logfile.path}.2017-11-13").to eql "line1\n"
+        expect(File.read "#{logfile.path}.2018-01-13").to eql "line2\n"
+      end
+    end
+
+    context 'with rotate: :weekly' do
+      before do
+        adapter_args[:rotate] = :weekly
+      end
+
+      it 'rotates weekly' do
+        date1 = Date.new(2018, 12, 24)
+        allow(Date).to receive(:today).and_return(date1)
+
+        adapter.write('line1')
+        expect(adapter.path).to eql "#{logfile.path}.2018-w52"
+
+        date2 = Date.new(2018, 12, 31)
+        allow(Date).to receive(:today).and_return(date2)
+
+        adapter.write('line2')
+        expect(adapter.path).to eql "#{logfile.path}.2019-w01"
+
+        expect(File.read "#{logfile.path}.2018-w52").to eql "line1\n"
+        expect(File.read "#{logfile.path}.2019-w01").to eql "line2\n"
+      end
+    end
+
+    context 'with rotate: :monthly' do
+      before do
+        adapter_args[:rotate] = :monthly
+      end
+
+      it 'rotates monthly' do
+        date1 = Date.new(2017, 11, 13)
+        allow(Date).to receive(:today).and_return(date1)
+
+        adapter.write('line1')
+        expect(adapter.path).to eql "#{logfile.path}.2017-11"
+
+        date2 = Date.new(2018, 1, 13)
+        allow(Date).to receive(:today).and_return(date2)
+
+        adapter.write('line2')
+        expect(adapter.path).to eql "#{logfile.path}.2018-01"
+
+        expect(File.read "#{logfile.path}.2017-11").to eql "line1\n"
+        expect(File.read "#{logfile.path}.2018-01").to eql "line2\n"
+      end
+    end
+
+    context 'with rotate: PATTERN' do
+      it 'rotates with current year' do
+        adapter_args[:rotate] = 'year-%Y'
+
+        adapter.write('line1')
+        expect(adapter.path).to eql "#{logfile.path}.year-#{Date.today.year}"
+        expect(File.read "#{logfile.path}.year-#{Date.today.year}").to eql "line1\n"
+      end
+
+      it 'rotates with a fixed string' do
+        adapter_args[:rotate] = 'ext'
+
+        adapter.write('line1')
+        expect(adapter.path).to eql "#{logfile.path}.ext"
+
+        adapter.write('line2')
+        expect(adapter.path).to eql "#{logfile.path}.ext"
+
+        expect(File.read "#{logfile.path}.ext").to eql "line1\nline2\n"
+      end
+    end
+
+    context 'with rotate: block' do
+      let(:counter) {
+        Struct.new(:count) do
+          def inc
+            self.count += 1
+          end
+        end.new(0)
+      }
+
+      it 'rotates' do
+        adapter_args[:rotate] = -> { "count_#{counter.inc}" }
+        expect(adapter.path).to eql "#{logfile.path}.count_1"
+
+        adapter.write('line1')
+        expect(adapter.path).to eql "#{logfile.path}.count_2"
+
+        adapter.write('line2')
+        expect(adapter.path).to eql "#{logfile.path}.count_3"
+
+        expect(File.read "#{logfile.path}.count_1").to be_empty
+        expect(File.read "#{logfile.path}.count_2").to eql "line1\n"
+        expect(File.read "#{logfile.path}.count_3").to eql "line2\n"
       end
     end
   end
