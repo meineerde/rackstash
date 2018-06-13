@@ -65,7 +65,7 @@ module Rackstash
     #   added data to interested flows directly after adding it. When set to
     #   `false` we automatically flush to all flows as above but we will clear
     #   all stored data from the buffer afterwards.
-    #   See {#buffering} for details.
+    #   See {#buffering?} for details.
     # @param allow_silent [Boolean] When set to `true` the data in this buffer
     #   will be flushed to the flows, even if there were just added fields or
     #   tags without any logged messages. If this is `false` and there were no
@@ -94,6 +94,11 @@ module Rackstash
     # older exceptions in the current buffer. Only by the `force` argument to
     # `false`, we will preserve existing exceptions.
     #
+    # If a new exception was set, the buffer will be flushed to all
+    # auto_flushing flows automatically. If the buffer is not {#buffering?}, it
+    # will also be flushed to the non auto_flushing flows and cleared
+    # afterwards.
+    #
     # @param exception [Exception] an Exception object as caught by a
     #   `begin` ... `rescue` block.
     # @param force [Boolean] set to `false` to preserve the details of an
@@ -117,9 +122,9 @@ module Rackstash
     # The buffer's timestamp will be initialized with the current time if it
     # wasn't set earlier already.
     #
-    # If the buffer is not fully {#buffering}, the buffer will be {#flush}ed to
-    # the flows. Afterwards, all messages will be cleared. New and existing
-    # fields and tags will be cleared only if {#buffering} is set to `:none`.
+    # The buffer will be flushed to all auto_flushing flows automatically. If
+    # the buffer is not {#buffering?}, it will also be flushed to the non
+    # auto_flushing flows and cleared afterwards.
     #
     # @param hash (see Fields::Hash#deep_merge!)
     # @raise (see Fields::Hash#deep_merge!)
@@ -140,9 +145,9 @@ module Rackstash
     # The buffer's timestamp will be initialized with the time of the first
     # added message if it wasn't set earlier already.
     #
-    # If the buffer is not fully {#buffering}, the buffer will be {#flush}ed to
-    # the flows. Afterwards, all messages will be cleared. Fields and tags will
-    # be cleared only if {#buffering} is set to `:none`.
+    # The buffer will be flushed to all auto_flushing flows automatically. If
+    # the buffer is not {#buffering?}, it will also be flushed to the non
+    # auto_flushing flows and cleared afterwards.
     #
     # @param message [Message] A {Message} to add to the current message
     #   buffer.
@@ -177,7 +182,7 @@ module Rackstash
     # message. If {#allow_silent?} is `true`, we also do this when adding fields
     # with {#add_fields} and {#add_exception}.
     #
-    # If {#buffering} is set to `false`, we will automatically flush the buffer
+    # If {#buffering?} is set to `false`, we will automatically flush the buffer
     # the same way as before, this time to all buffers however. In addition, we
     # will also clear the all stored stored {#fields}, {#tags}, the {#messages}
     # and the {#timestamp}.
