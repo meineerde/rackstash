@@ -36,6 +36,21 @@ RSpec.describe Rackstash::Encoder::Lograge do
       expect(encoder.encode(event)).to eql 'key=3.14 rounded=4.95'
     end
 
+    it 'formats dates' do
+      event = { 'date' => Date.new(2017, 3, 21) }
+      expect(encoder.encode(event)).to eql 'date=2017-03-21'
+    end
+
+    it 'formats times' do
+      event = { 'time' => Time.new(2016, 10, 17, 16, 37, 0, '+03:00') }
+      expect(encoder.encode(event)).to eql 'time=2016-10-17T13:37:00.000000Z'
+    end
+
+    it 'formats datetimes' do
+      event = { 'time' => DateTime.new(2016, 10, 17, 16, 37, 0, '+03:00') }
+      expect(encoder.encode(event)).to eql 'time=2016-10-17T13:37:00.000000Z'
+    end
+
     it 'formats complex errors' do
       event = {
         'error' => 'RuntimeError',

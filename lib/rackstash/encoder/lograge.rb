@@ -126,6 +126,11 @@ module Rackstash
           value.each_with_index do |array_value, index|
             add_serialized_field(result, "#{key}.#{index}".freeze, array_value)
           end
+        when ::Time, ::DateTime
+          value = value.to_time.getutc
+          result[key] = value.iso8601(ISO8601_PRECISION)
+        when ::Date
+          result[key] = value.iso8601
         when ::Float
           result[key] = Kernel.format('%.2f'.freeze, value)
         else
