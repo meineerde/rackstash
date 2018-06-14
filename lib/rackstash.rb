@@ -173,6 +173,7 @@ require 'rackstash/adapter/logger'
 require 'rackstash/adapter/io'
 require 'rackstash/adapter/null'
 
+require 'rackstash/encoder/gelf'
 require 'rackstash/encoder/hash'
 require 'rackstash/encoder/json'
 require 'rackstash/encoder/lograge'
