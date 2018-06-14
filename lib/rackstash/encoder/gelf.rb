@@ -134,8 +134,10 @@ module Rackstash
 
       def gelf_timestamp(timestamp)
         time = case timestamp
-        when Time, DateTime, Date
+        when Time, DateTime
           timestamp.to_time
+        when Date
+          Time.new(timestamp.year, timestamp.month, timestamp.day, 0, 0, 0, 0)
         when String
           Time.iso8601(timestamp) rescue Time.now.utc
         when Integer, Float

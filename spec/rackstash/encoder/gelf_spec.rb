@@ -55,7 +55,7 @@ RSpec.describe Rackstash::Encoder::GELF do
 
     it 'formats a Date' do
       event = { '@timestamp' => Date.new(2016, 10, 17) }
-      expect(encoder.encode(event)).to include '"timestamp":1476655200.0'
+      expect(encoder.encode(event)).to include '"timestamp":1476662400.0'
     end
 
     it 'formats a String' do
