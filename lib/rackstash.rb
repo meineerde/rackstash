@@ -6,6 +6,7 @@
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'set'
+require 'singleton'
 
 require 'rackstash/version'
 
@@ -86,13 +87,15 @@ module Rackstash
 
   PROGNAME = "rackstash/v#{Rackstash::VERSION}".freeze
 
-  # A class for the {UNDEFINED} object. Generally, there will only be exactly
-  # one object of this class.
+  # A class for the {UNDEFINED} object. Being a singleton, there will only be
+  # exactly one object of this class: the {UNDEFINED} object.
   #
   # The {UNDEFINED} object can be used as the default value for method arguments
   # to distinguish it from `nil`. See https://holgerjust.de/2016/detecting-default-arguments-in-ruby/#special-default-value
   # for details.
   class UndefinedClass
+    include ::Singleton
+
     # @return [Boolean] `true` iff `other` is the exact same object as `self`
     def ==(other)
       self.equal?(other)
@@ -107,12 +110,7 @@ module Rackstash
     alias inspect to_s
   end
 
-  UNDEFINED = UndefinedClass.new.tap do |undefined|
-    class << undefined.class
-      undef_method :allocate
-      undef_method :new
-    end
-  end
+  UNDEFINED = UndefinedClass.instance
 
   EMPTY_STRING = ''.freeze
   EMPTY_SET = Set.new.freeze
