@@ -221,8 +221,15 @@ RSpec.describe Rackstash::Flow do
       expect(flow.encoder).to equal encoder
     end
 
+    it 'sets an encoder from a spec' do
+      flow.encoder = :raw
+      expect(flow.encoder).to be_a Rackstash::Encoder::Raw
+    end
+
     it 'rejects invalid encoders' do
-      expect { flow.encoder = :foo }.to raise_error TypeError
+      # No registered encoder found
+      expect { flow.encoder = :invalid }.to raise_error KeyError
+
       expect { flow.encoder = 23 }.to raise_error TypeError
       expect { flow.encoder = true }.to raise_error TypeError
       expect { flow.encoder = false }.to raise_error TypeError

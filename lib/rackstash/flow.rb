@@ -188,6 +188,7 @@ module Rackstash
     def encoder(encoder = nil)
       return @encoder if encoder.nil?
       self.encoder = encoder
+      @encoder
     end
 
     # Set the encoder for the log {#adapter}. You can use any object which
@@ -198,8 +199,7 @@ module Rackstash
     #   method
     # @return [#encode] the new `encoder`
     def encoder=(encoder)
-      raise TypeError, 'must provide an encoder' unless encoder.respond_to?(:encode)
-      @encoder = encoder
+      @encoder = Rackstash::Encoder.build(encoder)
     end
 
     # Get or set a separate {Flow} which is used by this flow to write details
