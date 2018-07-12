@@ -200,7 +200,7 @@ module Rackstash
     #   `Hash`.
     # @return [Hash, nil] the flushed event or `nil` if nothing was flushed
     def auto_flush(event = nil)
-      flows = to_a.select!(&:auto_flush?)
+      flows = to_a.keep_if(&:auto_flush?)
       return unless flows.any?
 
       event ||= yield if block_given?

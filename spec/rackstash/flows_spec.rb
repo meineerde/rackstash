@@ -435,5 +435,13 @@ RSpec.describe Rackstash::Flows do
       expect(flows.auto_flush('foo' => 'bar')).to be_nil
       expect { |b| flows.auto_flush(&b) }.not_to yield_control
     end
+
+    it 'writes to all flows if they are all auto_flushing' do
+      auto_flush_flow = a_flow(auto_flush: true)
+      expect(auto_flush_flow).to receive(:write).with('foo' => 'bar')
+      flows << auto_flush_flow
+
+      flows.auto_flush('foo' => 'bar')
+    end
   end
 end
