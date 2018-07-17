@@ -80,8 +80,8 @@ module Rackstash
       clear
     end
 
-    # Extract useful data from an exception and add it to fields of the buffer
-    # for structured logging. The following fields will be set:
+    # Extract useful data from an exception and add it to fields of the current
+    # buffer for structured logging. The following fields will be set:
     #
     #  * `error` - The class name of the exception
     #  * `error_message` - The exception's message
@@ -95,9 +95,9 @@ module Rackstash
     # `false`, we will preserve existing exceptions.
     #
     # If a new exception was set, the buffer will be flushed to all
-    # auto_flushing flows automatically. If the buffer is not {#buffering?}, it
-    # will also be flushed to the non auto_flushing flows and cleared
-    # afterwards.
+    # auto_flushing flows automatically. If the buffer is not buffering log
+    # messages, it will also be flushed to the non auto_flushing flows and
+    # cleared afterwards.
     #
     # @param exception [Exception] an Exception object as caught by a
     #   `begin` ... `rescue` block.
