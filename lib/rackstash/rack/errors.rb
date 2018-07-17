@@ -30,6 +30,12 @@ module Rackstash
         @logger = logger
       end
 
+      # Close the {logger} and all of its adapters
+      # @return [void]
+      def close
+        @logger.close
+      end
+
       # Log a formatted error message to the current buffer of the `logger`. We
       # will format the given message and log it with an `UNKNOWN` severity to
       # the current buffer. Usually, the logger's formatter adds a trailing

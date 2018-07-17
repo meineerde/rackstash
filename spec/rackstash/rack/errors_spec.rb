@@ -53,4 +53,11 @@ RSpec.describe Rackstash::Rack::Errors do
       errors.flush
     end
   end
+
+  describe '#close' do
+    it 'closes the logger' do
+      expect(logger).to receive(:close)
+      errors.close
+    end
+  end
 end
