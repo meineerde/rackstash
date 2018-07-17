@@ -44,7 +44,7 @@ module Rackstash
         level: nil, # highest severity of an event message mapped to a syslog level
         short_message: FIELD_MESSAGE,
         # omitted by default
-        long_message: nil,
+        full_message: nil,
 
         # The event's timestamp
         timestamp: FIELD_TIMESTAMP
