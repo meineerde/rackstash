@@ -18,18 +18,28 @@ module Rackstash
         private
 
         def set_fields_mapping(fields, default = {})
-          @fields_map = default.dup
-          Hash(fields).each_pair do |key, value|
-            @fields_map[key.to_sym] = utf8_encode(value)
+          @fields_map ||= {}
+          default.each do |key, value|
+            if fields.key?(key)
+              @fields_map[key] = utf8_encode(fields[key])
+            else
+              # Preserve existing mappings which might have been set by a
+              # previous call to {#set_fields_mapping}
+              @fields_map[key] ||= utf8_encode(value)
+            end
           end
         end
 
         def extract_field(name, event)
-          field_name = @fields_map[name]
+          field_name = field(name)
 
           field = event.delete(field_name) if field_name
           field = yield(field_name) if field.nil? && block_given?
           field
+        end
+
+        def field(name)
+          @fields_map[name]
         end
       end
     end

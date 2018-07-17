@@ -26,6 +26,44 @@ RSpec.describe Rackstash::Encoder::Helper::FieldsMap do
     }
   }
 
+  describe '#set_fields_mapping' do
+    it 'sets a default mapping' do
+      helper.set_fields_mapping({}, { field: 'default' })
+      expect(helper.field(:field)).to eql 'default'
+    end
+
+    it 'sets default fields as strings' do
+      helper.set_fields_mapping({}, { number: 123 })
+      expect(helper.field(:number)).to eql '123'
+    end
+
+    it 'sets fields as strings' do
+      helper.set_fields_mapping({ number: 42 }, { number: 'something' })
+      expect(helper.field(:number)).to eql '42'
+    end
+
+    it 'overwrites fields on subsequent calls' do
+      helper.set_fields_mapping({ field: 'overwritten' }, { field: 'default' })
+      expect(helper.field(:field)).to eql 'overwritten'
+
+      helper.set_fields_mapping({ field: 'again' }, { field: 'other_default' })
+      expect(helper.field(:field)).to eql 'again'
+    end
+
+    it 'keeps existing default fields on subsequent calls' do
+      helper.set_fields_mapping({}, { field: 'foo' })
+      expect(helper.field(:field)).to eql 'foo'
+
+      helper.set_fields_mapping({}, { field: 'bar' })
+      expect(helper.field(:field)).to eql 'foo'
+    end
+
+    it 'ignores fields not defined as a default field' do
+      helper.set_fields_mapping({invalid: 'invalid' }, { known: 'known' })
+      expect(helper.field(:invalid)).to be_nil
+    end
+  end
+
   describe '#extract_field' do
     context 'with defaults' do
       let(:defaults) { { default: 'foo' } }
