@@ -14,8 +14,8 @@ We will attempt to provide a migration path from Rackstash 0.0.1 to 0.2 without 
 * Dropped support for Ruby < 2.1.0
 * Dropped support for Rails. See [rackstash-rails](https://github.com/meineerde/rackstash-rails) for the companion gem.
 
-* {Rackstash::Logger#<<} now emits a JSON document similar to all other logger methods. I will however add the eaw unformatted message to the `"message"` field.
-* Exception backtraces are not emitted in the `error_trace` field instead of `error_backtrace`. That way, the field is shown below the error and error message in Kibana which makes a much nicer experience.
+* {Rackstash::Logger#<<} now emits a JSON document similar to all other logger methods. It will however add the waw unformatted message to the `"message"` field.
+* Exception backtraces are now emitted in the `error_trace` field instead of `error_backtrace`. That way, the field is shown below the error and error message in Kibana which makes a much nicer experience.
 
 ## [0.0.1]
 
