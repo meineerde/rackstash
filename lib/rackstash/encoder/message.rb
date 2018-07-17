@@ -37,7 +37,7 @@ module Rackstash
       include Rackstash::Encoder::Helper::Timestamp
 
       # @param tagged [Array<#to_s>] An array of field names whose values are
-      #   added in front of each message line on encode
+      #   added in front of each message line on {#encode}
       def initialize(tagged: [])
         @tagged_fields = Array(tagged).map(&:to_s)
       end
