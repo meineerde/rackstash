@@ -374,6 +374,14 @@ RSpec.describe Rackstash::Flow do
     end
   end
 
+  describe '#raise_on_error!' do
+    it 'sets the flag to true' do
+      expect { flow.raise_on_error! }.to change { flow.raise_on_error? }
+        .from(false)
+        .to(true)
+    end
+  end
+
   describe '#reopen' do
     it 'calls adapter#reopen' do
       expect(adapter).to receive(:reopen).and_return(true)

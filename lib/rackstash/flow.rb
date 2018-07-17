@@ -279,6 +279,14 @@ module Rackstash
       raise_on_error?
     end
 
+    # Set the {#raise_on_error} flag to true in order to re-raise any exceptions
+    # which occured during logging.
+    #
+    # @see raise_on_error
+    def raise_on_error!
+      self.raise_on_error = true
+    end
+
     # @return [Bool] `true` if we re-raise any occured errors after logging them
     #   to the {#error_flow}. This can aid in debugging. By default, i.e., with
     #   {#raise_on_error?} being `false`, we swallow errors  after logging them
