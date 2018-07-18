@@ -211,6 +211,18 @@ RSpec.describe Rackstash::Flow do
       # The encoder is persisted and is returned afterwards
       expect(flow.encoder).to equal encoder
     end
+
+    it 'allows to set an encoder spec' do
+      expect { flow.encoder(:json) }.to change { flow.encoder }
+        .from(instance_of(Rackstash::Encoder::Raw))
+        .to(instance_of(Rackstash::Encoder::JSON))
+    end
+
+    it 'allows to set arguments to an encoder' do
+      flow.encoder(:message, tagged: ['tags'])
+      expect(flow.encoder).to be_instance_of(Rackstash::Encoder::Message)
+      expect(flow.encoder.tagged).to eql ['tags']
+    end
   end
 
   describe '#encoder=' do

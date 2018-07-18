@@ -178,17 +178,17 @@ module Rackstash
     # Get or set the encoder for the log {#adapter}. If this value is not
     # explicitly defined, it defaults to the #{adapter}'s default encoder.
     #
-    # @param encoder [#encode, nil] if given, set the flow's encoder to this
-    #   object
+    # @param encoder_spec (see Rackstash::Encoder.build)
+    # @param encoder_args (see Rackstash::Encoder.build)
+    # @param block (see Rackstash::Encoder.build)
     # @raise [TypeError] if the given `encoder` does not respond to the `encode`
     #   method
     # @return [#encode] the newly set encoder (if given) or the currently
     #   defined one
     # @see #encoder=
-    def encoder(encoder = nil)
-      return @encoder if encoder.nil?
-      self.encoder = encoder
-      @encoder
+    def encoder(encoder_spec = nil, *encoder_args, &block)
+      return @encoder if encoder_spec.nil?
+      @encoder = Rackstash::Encoder.build(encoder_spec, *encoder_args, &block)
     end
 
     # Set the encoder for the log {#adapter}. You can use any object which
