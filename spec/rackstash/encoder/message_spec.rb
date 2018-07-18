@@ -30,8 +30,15 @@ RSpec.describe Rackstash::Encoder::Message do
       expect(encoder.encode(event)).to eql ''
     end
 
-    context 'with prefix_fields' do
+    context 'with tagged fields' do
       let(:tagged) { [:sym, 'field', 'tags'] }
+
+      it 'returns field names' do
+        expect(encoder.tagged)
+          .to be_frozen
+          .and all(be_instance_of String)
+          .and all(be_frozen)
+      end
 
       it 'adds fields to all lines' do
         event = { 'message' => ["line1\t\n", "line2\nline3\n\t\n"], 'field' => 'BXC' }

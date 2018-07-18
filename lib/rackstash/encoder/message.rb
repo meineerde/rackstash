@@ -10,6 +10,7 @@ require 'time'
 
 require 'rackstash/encoder'
 require 'rackstash/encoder/helper/message'
+require 'rackstash/helpers/utf8'
 
 module Rackstash
   module Encoder
@@ -33,13 +34,16 @@ module Rackstash
     #     encoder.encode(event)
     #     # Logs "[foo,123] [127.0.0.1] Hello\n[foo,123] [127.0.0.1] World\n"
     class Message
+      include Rackstash::Helpers::UTF8
       include Rackstash::Encoder::Helper::Message
       include Rackstash::Encoder::Helper::Timestamp
+
+      attr_reader :tagged
 
       # @param tagged [Array<#to_s>] An array of field names whose values are
       #   added in front of each message line on {#encode}
       def initialize(tagged: [])
-        @tagged_fields = Array(tagged).map(&:to_s)
+        @tagged = Array(tagged).map { |tag| utf8_encode(tag) }.freeze
       end
 
       # Return the formatted message of the given event.
@@ -52,7 +56,7 @@ module Rackstash
 
         message = normalized_message(message)
         unless message.empty?
-          tags = @tagged_fields.map { |key| format_tag event[key] }.join
+          tags = @tagged.map { |key| format_tag event[key] }.join
           message = message.gsub(/^/) { tags } unless tags.empty?
         end
 
