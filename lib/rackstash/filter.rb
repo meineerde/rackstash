@@ -66,7 +66,7 @@ module Rackstash
       #   supplied `args` and `block`. When giving a `String` or `Symbol`, we
       #   first use the filter {.registry} to find the matching class. With that
       #   we then create a filter object as before. When giving an object which
-      #   responds to `call` already (e.g. a `Proc`, we return it unchanged,
+      #   responds to `call` already (e.g. a `Proc`) we return it unchanged,
       #   ignoring any additional passed `args`.
       # @param only_if [#call, nil] An optional condition defining whether the
       #   filter should be applied, usually given as a `Proc` object. Before
