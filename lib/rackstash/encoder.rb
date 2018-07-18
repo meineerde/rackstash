@@ -63,25 +63,27 @@ module Rackstash
       # the {.registry}.
       #
       # @param encoder_spec [Class, Symbol, String, #encode] a description of
-      #   the class from which we are creating a new filter object. When giving
-      #   a `Class`, we are using it as is to create a new filter object with
-      #   the supplied `args` and `block`. When giving a `String` or `Symbol`,
-      #   we first use the filter registry to find the matching class. With
-      #   that, we then create a filter object as before. When giving an object
-      #   which responds to `call` already (e.g. a `Proc`, we return it
-      #   unchanged, ignoring any additional passed `args`.
-      # @param args [Array] an optional list of arguments which is passed to the
-      #   initializer for the new filter object.
-      # @raise [TypeError] if we can not create a new filter object from the
-      #   given `filter_spec`, usually because it is an unsupported type
-      # @raise [KeyError] if we could not find a filter class in the registry
+      #   the class from which we are creating a new encoder object. When giving
+      #   a `Class`, we are using it as is to create a new encoder object with
+      #   the supplied `encoder_args` and `block`. When giving a `String` or
+      #   `Symbol`, we first use the {Encoder.registry} to find the matching
+      #   class. With that, we then create an encoder object as before. When
+      #   giving an object which responds to `encode` already, we return it
+      #   unchanged, ignoring any additional passed `encoder_args`.
+      # @param encoder_args [Array] an optional list of arguments which is
+      #   passed to the initializer for the new encoder object.
+      # @param block an optional block passed to the initializer for the new
+      #   encoder object.
+      # @raise [TypeError] if we can not create a new encoder object from the
+      #   given `encoder_spec`, usually because it is an unsupported type
+      # @raise [KeyError] if we could not find an encoder class in the registry
       #   for the specified class name
-      # @return [Object] a new filter object
-      def build(encoder_spec, *args, &block)
+      # @return [Object] a new encoder object
+      def build(encoder_spec, *encoder_args, &block)
         if encoder_spec.respond_to?(:encode) && !encoder_spec.is_a?(String)
           encoder_spec
         else
-          registry.fetch(encoder_spec).new(*args, &block)
+          registry.fetch(encoder_spec).new(*encoder_args, &block)
         end
       end
     end
