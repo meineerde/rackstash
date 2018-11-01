@@ -12,3 +12,8 @@ gemspec name: 'rackstash'
 group :test do
   gem 'rack', ENV['RACK_VERSION'] ? "~> #{ENV['RACK_VERSION']}" : nil
 end
+
+if RUBY_ENGINE == 'truffleruby'
+  # Truffleruby requires a prerelease of concurrent-ruby currently
+  gem 'concurrent-ruby', '>= 1.1.0.pre2'
+end
