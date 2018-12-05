@@ -345,7 +345,7 @@ module Rackstash
           @adapter.write @encoder.encode(event)
           true
         rescue Exception => exception
-          log_error("write failed for adapter #{adapter.inspect}", exception)
+          log_error("write failed for adapter #{adapter.inspect}", exception, event)
           raise unless exception.is_a?(StandardError)
           raise if synchronous?
         end
@@ -354,7 +354,7 @@ module Rackstash
 
     private
 
-    def log_error(message, exception)
+    def log_error(message, exception, event = nil)
       message = Rackstash::Message.new(message, severity: ERROR)
 
       error_event = {
@@ -366,6 +366,8 @@ module Rackstash
         FIELD_MESSAGE => [message],
         FIELD_TIMESTAMP => message.time
       }
+      error_event['event'] = event unless event.nil?
+
       error_flow.write(error_event)
     rescue
       # At this place, writing to the error log has also failed. This is a bad

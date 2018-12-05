@@ -488,7 +488,8 @@ RSpec.describe Rackstash::Flow do
             'error_trace' => instance_of(String),
             'tags' => [],
             'message' => [instance_of(Rackstash::Message)],
-            '@timestamp' => instance_of(Time)
+            '@timestamp' => instance_of(Time),
+            'event' => event
           )
         expect(adapter).to receive(:write).and_raise('ERROR')
         expect { flow.write(event) }.not_to raise_error
@@ -521,7 +522,8 @@ RSpec.describe Rackstash::Flow do
             'error_trace' => instance_of(String),
             'tags' => [],
             'message' => [instance_of(Rackstash::Message)],
-            '@timestamp' => instance_of(Time)
+            '@timestamp' => instance_of(Time),
+            'event' => event
           )
         expect(adapter).to receive(:write).and_raise('ERROR')
 
