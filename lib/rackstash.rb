@@ -140,10 +140,10 @@ module Rackstash
   #
   # @return [Rackstash::Flow] the default error flow
   def self.error_flow
-    @error_flow ||= Rackstash::Flow.new(STDERR)
+    @error_flow ||= Rackstash::Flow.new(STDERR, synchronous: true)
   end
 
-  # Set a {Flow} which is used bythe normal logger {Flow}s to write details
+  # Set a {Flow} which is used by the normal logger {Flow}s to write details
   # of any unexpected errors during interaction with their {Adapter}s.
   #
   # You can set a different `error_flow` for each {Flow} if required. You can
@@ -154,11 +154,15 @@ module Rackstash
   # external issues, it is usually desireable to chose a local and mostly
   # relibable log target.
   #
+  # This flow should always be synchronous.
+  #
   # @param flow [Flow, Adapter::Adapter, Object] a single {Flow} or an object
   #   which can be used as a {Flow}'s adapter. See {Flow#initialize}.
   # @return [Rackstash::Flow] the given `flow`
   def self.error_flow=(flow)
-    flow = Flow.new(flow) unless flow.is_a?(Rackstash::Flow)
+    unless flow.is_a?(Rackstash::Flow)
+      flow = Flow.new(flow, synchronous: true)
+    end
     @error_flow = flow
   end
 end

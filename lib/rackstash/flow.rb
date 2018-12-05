@@ -78,11 +78,6 @@ module Rackstash
     # @param error_flow [Flow] a special flow which is used to write details
     #   about any occured errors during writing. By default, we use the global
     #   {Rackstash.error_flow} which logs JSON-formatted messages to `STDERR`.
-    # @param raise_on_error [Bool] set to `true` to re-raise any occured errors
-    #   after logging them to the {#error_flow}. This can aid in debugging. By
-    #   default, we swallow errors after having logging them to not cause
-    #   additional issues to the production application just because the logger
-    #   doesn't work.
     # @param auto_flush [Bool] set to `true` to write added fields or messages
     #   added to a {Buffer} to this flow immediately. With each write, this flow
     #   will then receive all current fields of the {Buffer} but only the
@@ -90,19 +85,34 @@ module Rackstash
     #   receive the full event with all fields and messages of the Buffer after
     #   an explicit call to {Buffer#flush} for a buffering Buffer or after each
     #   added message or fields for a non-bufering Buffer.
+    # @param synchronous [Bool] set to `true` to write events synchronously.
+    #   When writing events, the caller will thus block until the event was
+    #   written or an error occured (which will be raised to the caller after
+    #   being logged to the {#error_flow}). By default (or when explicitly
+    #   setting the `synchronous` attribute to `false`), we write events
+    #   asynchronously. Here, we return to the caller immediately on {#write}.
+    #   Any errors occuring during logging will be logged to the {#error_flow}
+    #   but will not be re-raised to the caller.
     # @yieldparam flow [self] if the given block accepts an argument, we yield
     #   `self` as a parameter, else, the block is directly executed in the
     #   context of `self`.
     def initialize(adapter, encoder: nil, filters: [],
-      error_flow: nil, raise_on_error: false, auto_flush: false,
+      error_flow: nil, auto_flush: false, synchronous: false,
       &block
     )
       @adapter = Rackstash::Adapter[adapter]
       self.encoder = encoder || @adapter.default_encoder
       @filter_chain = Rackstash::FilterChain.new(filters)
       self.error_flow = error_flow
-      self.raise_on_error = raise_on_error
       self.auto_flush = auto_flush
+
+      @synchronous = !!synchronous
+      @executor = if synchronous?
+        ::Concurrent::ImmediateExecutor.new
+      else
+        ::Concurrent::SingleThreadExecutor.new(fallback_policy: :abort)
+      end
+
 
       if block_given?
         if block.arity == 0
@@ -153,26 +163,24 @@ module Rackstash
     end
 
     # Close the log adapter if supported. This might be a no-op if the adapter
-    # does not support closing.
-    #
-    # @return [nil]
-    def close!
-      @adapter.close
-      nil
-    end
-
-    # (see #close!)
+    # does not support closing. This method blocks if the flow is
+    # {#synchronous?}.
     #
     # Any error raised by the adapter when closing it is logged to the
-    # {#error_flow} and then swallowed. Grave exceptions (i.e. all those which
-    # do not derive from `StandardError`) are logged and then re-raised.
+    # {#error_flow}. If the current flow is {#synchronous?}, the error is
+    # re-raised.
+    #
+    # @return [true]
     def close
-      close!
-    rescue Exception => exception
-      log_error("close failed for adapter #{adapter.inspect}", exception)
-      raise unless exception.is_a?(StandardError)
-      raise if raise_on_error?
-      nil
+      @executor.post do
+        begin
+          @adapter.close
+        rescue Exception => exception
+          log_error("close failed for adapter #{adapter.inspect}", exception)
+          raise unless exception.is_a?(StandardError)
+          raise if synchronous?
+        end
+      end
     end
 
     # Get or set the encoder for the log {#adapter}. If this value is not
@@ -224,8 +232,12 @@ module Rackstash
     # This allows you to also give an adapter or just a plain log target which
     # can be wrapped in an adapter.
     #
+    # When setting the `error_flow` to nil, we reset any custom `error_flow` on
+    # this current Flow and will use the global {Rackstash.error_flow} to log
+    # any errors.
+    #
     # @param error_flow [Flow, Adapter, Object, nil] the separate error flow or
-    #   `nil` to unset the custom error_flow ant to use the global
+    #   `nil` to unset the custom error_flow and to use the global
     #   {Rackstash.error_flow} again
     # @return [Rackstash::Flow] the newly set error_flow
     def error_flow=(error_flow)
@@ -267,63 +279,41 @@ module Rackstash
     end
     alias filter_prepend filter_unshift
 
-    # Get or set the raise_on_error setting. Only if set to `true`, we will
-    # re-raise errors occuring during logging. If set to `false` (the default),
-    # we will only log the exception to the {#error_flow} and swallow it.
+    # Return the current value of the {#synchronous} flag.
     #
-    # @param bool [Bool] the value to set. If omitted, we just return the
-    #   current setting
-    # @return [Bool] the updated or current `raise_on_error` setting
-    def raise_on_error(bool = UNDEFINED)
-      self.raise_on_error = bool unless UNDEFINED.equal? bool
-      raise_on_error?
-    end
-
-    # Set the {#raise_on_error} flag to true in order to re-raise any exceptions
-    # which occured during logging.
+    # When set to `true`, we will block on writing events until it was either
+    # written to the adapter or an error occured (which will be raised to the
+    # caller after being logged to the {#error_flow}).
     #
-    # @see raise_on_error
-    def raise_on_error!
-      self.raise_on_error = true
-    end
-
-    # @return [Bool] `true` if we re-raise any occured errors after logging them
-    #   to the {#error_flow}. This can aid in debugging. By default, i.e., with
-    #   {#raise_on_error?} being `false`, we swallow errors  after logging them
-    #   to not cause  additional issues to the production application just
-    #   because Rackstash doesn't work.
-    def raise_on_error?
-      @raise_on_error
-    end
-
-    # @param bool [Bool] `true` to cause occured errors to be re-raised after
-    #   logging them to the {#error_flow}, `false` to swallow them after
-    #   logging.
-    def raise_on_error=(bool)
-      @raise_on_error = !!bool
+    # By default (or when explicitly setting the `synchronous` attribute to
+    # `false`), we write events asynchronously. Here, we return to the caller
+    # immediately on {#write}. Any errors occuring during logging will be logged
+    # to the {#error_flow} but will not be re-raised to the caller.
+    #
+    # @return [Bool] return the current value of the {#synchronous} flag
+    def synchronous?
+      @synchronous
     end
 
     # Re-open the log adapter if supported. This might be a no-op if the adapter
-    # does not support reopening.
-    #
-    # @return [nil]
-    def reopen!
-      @adapter.reopen
-      nil
-    end
-
-    # (see #reopen!)
+    # does not support reopening. This method blocks if the flow is
+    # {#synchronous?}.
     #
     # Any error raised by the adapter when reopening it is logged to the
-    # {#error_flow} and then swallowed. Grave exceptions (i.e. all those which
-    # do not derive from `StandardError`) are logged and then re-raised.
+    # {#error_flow}. If the current flow is {#synchronous?}, the error is
+    # re-raised.
+    #
+    # @return [true]
     def reopen
-      reopen!
-    rescue Exception => exception
-      log_error("reopen failed for adapter #{adapter.inspect}", exception)
-      raise unless exception.is_a?(StandardError)
-      raise if raise_on_error?
-      nil
+      @executor.post do
+        begin
+          @adapter.reopen
+        rescue Exception => exception
+          log_error("reopen failed for adapter #{adapter.inspect}", exception)
+          raise unless exception.is_a?(StandardError)
+          raise if synchronous?
+        end
+      end
     end
 
     # Filter, encode and write the given `event` to the configured {#adapter}.
@@ -339,29 +329,27 @@ module Rackstash
     # 3. Finally, the encoded event will be passed to the {#adapter} to be sent
     #    to the actual log target, e.g. a file or an external log receiver.
     #
+    # Any error raised by a filter, the encoder, or the adapter when writing is
+    # logged to the {#error_flow}. If the current flow is {#synchronous?}, the
+    # error is re-raised.
+    #
     # @param event [Hash] an event hash
     # @return [Boolean] `true` if the event was written to the adapter, `false`
     #   otherwise
-    def write!(event)
-      # Silently abort writing if any filter (and thus the while filter chain)
-      # returns `false`.
-      return false unless @filter_chain.call(event)
-      @adapter.write @encoder.encode(event)
-      true
-    end
-
-    # (see #write!)
-    #
-    # Any error raised by the adapter when writing to it is logged to the
-    # {#error_flow} and then swallowed. Grave exceptions (i.e. all those which
-    # do not derive from `StandardError`) are logged and then re-raised.
     def write(event)
-      write!(event)
-    rescue Exception => exception
-      log_error("write failed for adapter #{adapter.inspect}", exception)
-      raise unless exception.is_a?(StandardError)
-      raise if raise_on_error?
-      false
+      @executor.post do
+        begin
+          # Silently abort writing if any filter (and thus the whole filter chain)
+          # returned `false`.
+          next false unless @filter_chain.call(event)
+          @adapter.write @encoder.encode(event)
+          true
+        rescue Exception => exception
+          log_error("write failed for adapter #{adapter.inspect}", exception)
+          raise unless exception.is_a?(StandardError)
+          raise if synchronous?
+        end
+      end
     end
 
     private
@@ -378,7 +366,7 @@ module Rackstash
         FIELD_MESSAGE => [message],
         FIELD_TIMESTAMP => message.time
       }
-      error_flow.write!(error_event)
+      error_flow.write(error_event)
     rescue
       # At this place, writing to the error log has also failed. This is a bad
       # place to be in and there is very little we can sensibly do now.
@@ -386,8 +374,8 @@ module Rackstash
       # To aid in availability of the app using Rackstash, we swallow any
       # StandardErrors by default and just continue, hoping that things will
       # turn out to be okay in the end.
-
-      raise if raise_on_error?
+      raise unless exception.is_a?(StandardError)
+      raise if synchronous?
     end
   end
 end

@@ -15,9 +15,14 @@ RSpec.describe Rackstash::Flow do
   let(:flow) { described_class.new(adapter, **flow_args) }
   let(:event) { {} }
 
+  after(:each) do
+    # ensure that the asynchonous call was actually performed
+    flow.instance_variable_get('@executor').shutdown
+    flow.instance_variable_get('@executor').wait_for_termination(5)
+  end
+
   describe '#initialize' do
     it 'creates an adapter' do
-      expect(Rackstash::Adapter).to receive(:[]).with(nil).and_call_original
       expect(described_class.new(nil).adapter).to be_a Rackstash::Adapter::Null
     end
 
@@ -120,27 +125,21 @@ RSpec.describe Rackstash::Flow do
     end
   end
 
-  describe '#close!' do
-    it 'calls adapter#close' do
-      expect(adapter).to receive(:close).and_return(true)
-      expect(flow.close).to be nil
-    end
-  end
-
   describe '#close' do
-    it 'calls #close!' do
-      expect(flow).to receive(:close!)
+    it 'calls adapter#close' do
+      expect(adapter).to receive(:close)
       flow.close
     end
 
-    context 'with raise_on_error: false' do
+    context 'when asynchronous' do
       before do
-        flow_args[:raise_on_error] = false
+        flow_args[:synchronous] = false
       end
 
-      it 'rescues any exception thrown by the adapter' do
+      it 'logs errors thrown by the adapter' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
+        expect(error_flow).to receive(:write)
           .with(
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
@@ -149,30 +148,31 @@ RSpec.describe Rackstash::Flow do
             'message' => [instance_of(Rackstash::Message)],
             '@timestamp' => instance_of(Time)
           )
-        expect(flow).to receive(:error_flow).and_return(error_flow)
-
-        expect(flow).to receive(:close!).and_raise('ERROR')
-        expect(flow.close).to be nil
+        expect(adapter).to receive(:close).and_raise('ERROR')
+        expect { flow.close }.not_to raise_error
       end
 
-      it 'rescues errors thrown by the error_flow' do
+      it 'ignores errors thrown by the error_flow' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-        expect(flow).to receive(:error_flow).and_return(error_flow)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
 
-        expect(flow).to receive(:close!).and_raise('ERROR')
-        expect(flow.close).to be nil
+        expect(adapter).to receive(:close).and_raise('ERROR')
+        expect(error_flow).to receive(:write).and_raise('DOUBLE ERROR')
+
+        expect { flow.close }.not_to raise_error
       end
     end
 
-    context 'with raise_on_error: true' do
+    context 'when synchronous' do
       before do
-        flow_args[:raise_on_error] = true
+        flow_args[:synchronous] = true
       end
 
-      it 'rescues any exception thrown by the adapter' do
+      it 'logs and re-raises errors thrown by the adapter' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(error_flow).to receive(:write)
           .with(
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
@@ -181,18 +181,17 @@ RSpec.describe Rackstash::Flow do
             'message' => [instance_of(Rackstash::Message)],
             '@timestamp' => instance_of(Time)
           )
-        expect(flow).to receive(:error_flow).and_return(error_flow)
-
-        expect(flow).to receive(:close!).and_raise('ERROR')
+        expect(adapter).to receive(:close).and_raise('ERROR')
         expect { flow.close }.to raise_error RuntimeError, 'ERROR'
       end
 
-      it 'rescues errors thrown by the error_flow' do
+      it 're-raises errors thrown by the error_flow' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-        expect(flow).to receive(:error_flow).and_return(error_flow)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
 
-        expect(flow).to receive(:close!).and_raise('ERROR')
+        expect(adapter).to receive(:close).and_raise('ERROR')
+        expect(error_flow).to receive(:write).and_raise('DOUBLE ERROR')
+
         expect { flow.close }.to raise_error RuntimeError, 'DOUBLE ERROR'
       end
     end
@@ -361,60 +360,37 @@ RSpec.describe Rackstash::Flow do
     end
   end
 
-  describe '#raise_on_error?' do
+  describe '#synchronous?' do
     it 'defaults to false' do
-      expect(flow.raise_on_error?).to eql false
-      expect(flow.raise_on_error).to eql false
+      expect(flow.synchronous?).to eql false
     end
 
     it 'can set to true or false' do
-      expect(flow.raise_on_error('something')).to eql true
-      expect(flow.raise_on_error).to eql true
-      expect(flow.raise_on_error?).to eql true
+      expect(described_class.new(adapter, synchronous: true).synchronous?).to eql true
+      expect(described_class.new(adapter, synchronous: false).synchronous?).to eql false
 
-      expect(flow.raise_on_error(nil)).to eql false
-      expect(flow.raise_on_error).to eql false
-      expect(flow.raise_on_error?).to eql false
 
-      expect(flow.raise_on_error(true)).to eql true
-      expect(flow.raise_on_error).to eql true
-      expect(flow.raise_on_error?).to eql true
-
-      expect(flow.raise_on_error(false)).to eql false
-      expect(flow.raise_on_error).to eql false
-      expect(flow.raise_on_error?).to eql false
-    end
-  end
-
-  describe '#raise_on_error!' do
-    it 'sets the flag to true' do
-      expect { flow.raise_on_error! }.to change { flow.raise_on_error? }
-        .from(false)
-        .to(true)
+      expect(described_class.new(adapter, synchronous: 'true').synchronous?).to eql true
+      expect(described_class.new(adapter, synchronous: 42).synchronous?).to eql true
+      expect(described_class.new(adapter, synchronous: nil).synchronous?).to eql false
     end
   end
 
   describe '#reopen' do
     it 'calls adapter#reopen' do
-      expect(adapter).to receive(:reopen).and_return(true)
-      expect(flow.reopen).to be nil
-    end
-  end
-
-  describe '#reopen' do
-    it 'calls #reopen!' do
-      expect(flow).to receive(:reopen!)
+      expect(adapter).to receive(:reopen)
       flow.reopen
     end
 
-    context 'with raise_on_error: false' do
+    context 'when asynchronous' do
       before do
-        flow_args[:raise_on_error] = false
+        flow_args[:synchronous] = false
       end
 
-      it 'rescues any exception thrown by the adapter' do
+      it 'logs errors thrown by the adapter' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
+        expect(error_flow).to receive(:write)
           .with(
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
@@ -423,30 +399,31 @@ RSpec.describe Rackstash::Flow do
             'message' => [instance_of(Rackstash::Message)],
             '@timestamp' => instance_of(Time)
           )
-        expect(flow).to receive(:error_flow).and_return(error_flow)
-
-        expect(flow).to receive(:reopen!).and_raise('ERROR')
-        expect(flow.reopen).to be nil
+        expect(adapter).to receive(:reopen).and_raise('ERROR')
+        expect { flow.reopen }.not_to raise_error
       end
 
-      it 'rescues errors thrown by the error_flow' do
+      it 'ignores errors thrown by the error_flow' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-        expect(flow).to receive(:error_flow).and_return(error_flow)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
 
-        expect(flow).to receive(:reopen!).and_raise('ERROR')
-        expect(flow.reopen).to be nil
+        expect(adapter).to receive(:reopen).and_raise('ERROR')
+        expect(error_flow).to receive(:write).and_raise('DOUBLE ERROR')
+
+        expect { flow.reopen }.not_to raise_error
       end
     end
 
-    context 'with raise_on_error: true' do
+    context 'when synchronous' do
       before do
-        flow_args[:raise_on_error] = true
+        flow_args[:synchronous] = true
       end
 
-      it 'rescues any exception thrown by the adapter' do
+      it 'logs and re-raises errors thrown by the adapter' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(error_flow).to receive(:write)
           .with(
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
@@ -455,71 +432,56 @@ RSpec.describe Rackstash::Flow do
             'message' => [instance_of(Rackstash::Message)],
             '@timestamp' => instance_of(Time)
           )
-        expect(flow).to receive(:error_flow).and_return(error_flow)
-
-        expect(flow).to receive(:reopen!).and_raise('ERROR')
+        expect(adapter).to receive(:reopen).and_raise('ERROR')
         expect { flow.reopen }.to raise_error RuntimeError, 'ERROR'
       end
 
-      it 'rescues errors thrown by the error_flow' do
+      it 're-raises errors thrown by the error_flow' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-        expect(flow).to receive(:error_flow).and_return(error_flow)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
 
-        expect(flow).to receive(:reopen!).and_raise('ERROR')
+        expect(adapter).to receive(:reopen).and_raise('ERROR')
+        expect(error_flow).to receive(:write).and_raise('DOUBLE ERROR')
+
         expect { flow.reopen }.to raise_error RuntimeError, 'DOUBLE ERROR'
       end
     end
   end
 
   describe '#write!' do
-    it 'calls the filter_chain' do
-      expect(flow.filter_chain).to receive(:call)
-      flow.write!(event)
-    end
-
-    it 'aborts if the filter_chain returns false' do
-      expect(flow.filter_chain).to receive(:call).and_return(false)
-
-      expect(flow.encoder).not_to receive(:encode)
-      expect(flow.adapter).not_to receive(:write)
-      flow.write!(event)
-    end
-
-    it 'encodes the event' do
-      expect(flow.encoder).to receive(:encode).with(event)
-      flow.write!(event)
-    end
-
-    it 'writes the encoded event to the adapter' do
-      expect(flow.encoder).to receive(:encode).and_return 'encoded'
-      expect(flow.adapter).to receive(:write).with('encoded').and_call_original
-
-      expect(flow.write!(event)).to be true
-    end
-
-    it 'writes the encoded event to the adapter' do
-      expect(flow.encoder).to receive(:encode).and_return 'encoded'
-      expect(flow.adapter).to receive(:write).with('encoded').and_call_original
-
-      expect(flow.write!(event)).to be true
-    end
   end
 
   describe '#write' do
-    it 'calls #write!' do
-      expect(flow).to receive(:write!).with(event)
+    it 'calls write on the filter_chain' do
+      expect(flow.filter_chain).to receive(:call)
       flow.write(event)
     end
 
-    context 'with raise_on_error: false' do
+    it 'aborts if the filter_chain returns false' do
+      allow(flow.filter_chain).to receive(:call).and_return(false)
+
+      expect(flow.encoder).not_to receive(:encode)
+      expect(flow.adapter).not_to receive(:write)
+
+      flow.write(event)
+    end
+
+    it 'writes the encoded event to the adapter' do
+      expect(flow.encoder).to receive(:encode).and_return 'encoded'
+      expect(flow.adapter).to receive(:write).with('encoded').and_call_original
+
+      flow.write(event)
+    end
+
+    context 'when asynchronous' do
       before do
-        flow_args[:raise_on_error] = false
+        flow_args[:synchronous] = false
       end
 
-      it 'rescues any exception thrown by the adapter' do
+      it 'logs errors thrown by the adapter' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
+        expect(error_flow).to receive(:write)
           .with(
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
@@ -528,30 +490,31 @@ RSpec.describe Rackstash::Flow do
             'message' => [instance_of(Rackstash::Message)],
             '@timestamp' => instance_of(Time)
           )
-        expect(flow).to receive(:error_flow).and_return(error_flow)
-
-        expect(flow).to receive(:write!).and_raise('ERROR')
-        expect(flow.write(event)).to be false
+        expect(adapter).to receive(:write).and_raise('ERROR')
+        expect { flow.write(event) }.not_to raise_error
       end
 
-      it 'rescues errors thrown by the error_flow' do
+      it 'ignores errors thrown by the error_flow' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-        expect(flow).to receive(:error_flow).and_return(error_flow)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
 
-        expect(flow).to receive(:write!).and_raise('ERROR')
-        expect(flow.write(event)).to be false
+        expect(adapter).to receive(:write).and_raise('ERROR')
+        expect(error_flow).to receive(:write).and_raise('DOUBLE ERROR')
+
+        expect { flow.write(event) }.not_to raise_error
       end
     end
 
-    context 'with raise_on_error: true' do
+    context 'when synchronous' do
       before do
-        flow_args[:raise_on_error] = true
+        flow_args[:synchronous] = true
       end
 
-      it 'rescues any exception thrown by the adapter' do
+      it 'logs and re-raises errors thrown by the adapter' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
+
+        expect(error_flow).to receive(:write)
           .with(
             'error' => 'RuntimeError',
             'error_message' => 'ERROR',
@@ -560,18 +523,19 @@ RSpec.describe Rackstash::Flow do
             'message' => [instance_of(Rackstash::Message)],
             '@timestamp' => instance_of(Time)
           )
-        expect(flow).to receive(:error_flow).and_return(error_flow)
+        expect(adapter).to receive(:write).and_raise('ERROR')
 
-        expect(flow).to receive(:write!).and_raise('ERROR')
+        # flow.write(event)
         expect { flow.write(event) }.to raise_error RuntimeError, 'ERROR'
       end
 
-      it 'rescues errors thrown by the error_flow' do
+      it 're-raises errors thrown by the error_flow' do
         error_flow = instance_double(described_class)
-        expect(error_flow).to receive(:write!).and_raise('DOUBLE ERROR')
-        expect(flow).to receive(:error_flow).and_return(error_flow)
+        allow(flow).to receive(:error_flow).and_return(error_flow)
 
-        expect(flow).to receive(:write!).and_raise('ERROR')
+        expect(adapter).to receive(:write).and_raise('ERROR')
+        expect(error_flow).to receive(:write).and_raise('DOUBLE ERROR')
+
         expect { flow.write(event) }.to raise_error RuntimeError, 'DOUBLE ERROR'
       end
     end

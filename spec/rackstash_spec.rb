@@ -163,7 +163,9 @@ RSpec.describe Rackstash do
 
     it 'wraps a non-flow' do
       adapter = 'spec.log'
-      expect(Rackstash::Flow).to receive(:new).with(adapter).and_return(flow)
+      expect(Rackstash::Flow).to receive(:new)
+        .with(adapter, synchronous: true)
+        .and_return(flow)
 
       described_class.error_flow = adapter
       expect(described_class.error_flow).to equal flow

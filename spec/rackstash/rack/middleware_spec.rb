@@ -28,7 +28,14 @@ RSpec.describe Rackstash::Rack::Middleware do
   }
 
   let(:log) { [] }
-  let(:logger) { Rackstash::Logger.new ->(event) { log << event } }
+
+  let(:flow) {
+    Rackstash::Flow.new(
+      ->(event) { log << event },
+      synchronous: true
+    )
+  }
+  let(:logger) { Rackstash::Logger.new flow }
 
   let(:args) { {} }
   let(:middleware) { described_class.new(app, logger, **args) }
