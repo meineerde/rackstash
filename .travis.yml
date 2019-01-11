@@ -43,7 +43,15 @@ matrix:
     - rvm: jruby-head
 
 before_install:
-  - "gem install bundler"
+  # Bundler 2.0 requires at least Ruby 2.3. We need to explicitly install an
+  # older version of bundler for older Ruby versions since they can't / won't
+  # check their required versions on their own.
+  - |
+    if [[ "$(rvm current)" =~ ^(ruby-2\.[012]|jruby-9\.0) ]]; then
+      gem install bundler -v '< 2.0'
+    else
+      gem install bundler
+    fi
 
 script:
   - bundle exec rspec
