@@ -314,7 +314,7 @@ module Rackstash
     # {#warn}, {#error}, or {#fatal}.
     #
     # The message will be added to the current log buffer. If we are currently
-    # buffering (i.e. if we are inside a {#with_buffer} block), the message is
+    # buffering (i.e. if we are inside a {#capture} block), the message is
     # merely added but not flushed to the underlying logger. Else, the message
     # along with any previously defined fields and tags will be flushed to the
     # base logger immediately.
@@ -373,7 +373,7 @@ module Rackstash
     # sure that the Buffer is only ever used by the calling Thread to retain the
     # thread-safety guarantees of Rackstash.
     #
-    # Most of the time, you should use {#with_buffer} instead to ensure that the
+    # Most of the time, you should use {#capture} instead to ensure that the
     # Buffer is reliably removed again when the execution leaves the block.
     # The only sensible use of the manual buffer management is when you need
     # to flush the Buffer outside of its active scope after it was poped.
@@ -421,7 +421,7 @@ module Rackstash
     # only happen if the code execution was non-linear and stepped outside the
     # block scope), we return `nil` and not change the BufferStack.
     #
-    # @note In contrast to {#with_buffer}, the poped Buffer is not flushed
+    # @note In contrast to {#capture}, the poped Buffer is not flushed
     #   automatically. You *MUST* call `buffer.flush` yourself to write the
     #   buffered log data to the log adapter(s).
     # @see #push_buffer
@@ -432,13 +432,17 @@ module Rackstash
       buffer_stack.pop
     end
 
-    # Create a new buffering {Buffer} and put in on the {BufferStack} for the
-    # current Thread. For the duration of the block, all new logged messages
-    # and any access to fields and tags will be sent to this new buffer.
-    # Previous buffers will only be visible after the execution left the block.
+    # Capture all messages and fields logged for the duration of the provided
+    # block in the current thread.
     #
-    # Note that the created {Buffer} is only valid for the current Thread. In
-    # other Threads, it will neither be used not visible.
+    # Create a new {Buffer} and put in on the {BufferStack} for the current
+    # thread. For the duration of the block, all new logged messages and any
+    # access to fields and tags will be sent to this new buffer. Previous
+    # buffers created in the same thread will only be visible after the
+    # execution left the block.
+    #
+    # Note that the created {Buffer} is only valid for the current thread. In
+    # other threads, it not visible and will thus not be used.
     #
     # @param buffer_args [Hash<Symbol => Object>] optional arguments for the new
     #   {Buffer}. See {Buffer#initialize} for allowed values.
@@ -447,7 +451,7 @@ module Rackstash
     #   removed from the {BufferStack} again and is always flushed
     #   automatically.
     # @return [Object] the return value of the block
-    def with_buffer(buffer_args = {})
+    def capture(buffer_args = {})
       raise ArgumentError, 'block required' unless block_given?
 
       buffer_stack.push(buffer_args)
@@ -457,6 +461,9 @@ module Rackstash
         buffer_stack.flush_and_pop
       end
     end
+
+    # TODO: This alias should be deprecated
+    alias with_buffer capture
 
     private
 

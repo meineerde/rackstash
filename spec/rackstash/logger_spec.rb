@@ -513,9 +513,9 @@ RSpec.describe Rackstash::Logger do
     end
   end
 
-  describe '#with_buffer' do
+  describe '#capture' do
     it 'requires a block' do
-      expect { logger.with_buffer }.to raise_error ArgumentError
+      expect { logger.capture }.to raise_error ArgumentError
     end
 
     it 'adds a new buffer' do
@@ -523,7 +523,7 @@ RSpec.describe Rackstash::Logger do
       expect(logger.send(:buffer_stack)).to receive(:flush_and_pop).and_call_original
 
       logger.fields['key'] = 'outer'
-      logger.with_buffer do
+      logger.capture do
         expect(logger.fields['key']).to be nil
         logger.fields['key'] = 'inner'
       end
@@ -533,14 +533,18 @@ RSpec.describe Rackstash::Logger do
     it 'buffers multiple messages' do
       expect(logger.flows).to receive(:flush).once
 
-      logger.with_buffer do
+      logger.capture do
         logger.add 1, 'Hello World'
         logger.add 0, 'I feel great'
       end
     end
 
     it 'returns the yielded value' do
-      expect(logger.with_buffer { :hello }).to eql :hello
+      expect(logger.capture { :hello }).to eql :hello
+    end
+
+    it 'can use thew #with_buffer alias' do
+      expect(logger.method(:with_buffer)).to eql logger.method(:capture)
     end
   end
 
