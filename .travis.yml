@@ -11,7 +11,7 @@ cache: bundler
 
 rvm:
   # Latest Rubies on top
-  - 2.6.0
+  - 2.6.1
   - jruby-9.2.5.0
   - truffleruby-1.0.0-rc10
 
@@ -30,7 +30,7 @@ rvm:
 
 matrix:
   include:
-    - rvm: 2.6.0
+    - rvm: 2.6.1
       env: COVERAGE=1
 
     # An older Ruby/Rack combination as used by Rails 3.2. As long as it works
