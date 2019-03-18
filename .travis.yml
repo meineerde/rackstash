@@ -16,7 +16,7 @@ rvm:
   - truffleruby-1.0.0-rc12
 
   # Older versions
-  - 2.5.4
+  - 2.5.5
   - 2.4.5
   - 2.3.8
   - 2.2.10
