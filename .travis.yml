@@ -13,7 +13,7 @@ rvm:
   # Latest Rubies on top
   - 2.6.2
   - jruby-9.2.6.0
-  - truffleruby-1.0.0-rc16
+  - truffleruby-19.0.0
 
   # Older versions
   - 2.5.5
