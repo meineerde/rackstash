@@ -20,16 +20,21 @@ module Rackstash
     # JSON formatted logs are suitable in this regard.
     #
     # When writing the logs, we assume filesystem semantics of the usual local
-    # filesystems used on Linux, macOS, BSDs, or Windows. Here, we can ensure
-    # that even concurrent writes of multiple processes (e.g. multiple worker
-    # processes of an application server) don't produce interleaved log lines.
+    # filesystems used on Linux, macOS, or BSDs. Here, we can ensure that even
+    # concurrent writes of multiple processes (e.g. multiple worker processes of
+    # an application server) don't produce interleaved log lines.
     #
-    # When using a remote filesystem it might be possible that concurrent log
-    # writes to the same file are interleaved on disk, resulting on probable
-    # log corruption. If this is a concern, you should make sure that only one
-    # log adapter of one process write to a log file at a time or (preferrably)
-    # write to a local file instead. This restriction applies to NFS and most
-    # FUSE filesystems like sshfs. SMB is likely safe to use here.
+    # When using Windows, we can only guarantee writes up to the underlying
+    # drive's sector size to be atomic (usually either 512 Bytes or 4 KiByte).
+    # Larger log lines might be interleaved or partially lost.
+    #
+    # Similarly, when using a remote filesystem it might be possible that
+    # concurrent writes to the same log file are interleaved on disk, resulting
+    # on likely corruption of some log lines. If this is a concern, you should
+    # make sure that only one log adapter of one process write to a log file at
+    # a time or (preferrably) write to a local file instead. This restriction
+    # applies to NFS and most FUSE filesystems like sshfs. However, SMB/CIFS is
+    # likely safe to use here.
     #
     # When reading the log file, the reader might still see incomplete writes
     # depending on the OS and filesystem. Since we are only writing complete
@@ -110,11 +115,13 @@ module Rackstash
       #   added before its file extension.
       # @param auto_reopen (see #auto_reopen=)
       # @param rotate (see #rotate=)
-      def initialize(path, auto_reopen: true, rotate: nil)
+      # @param lock (see #lock=)
+      def initialize(path, auto_reopen: true, rotate: nil, lock: Gem.win_platform?)
         @base_path = ::File.expand_path(path).freeze
 
         self.auto_reopen = auto_reopen
         self.rotate = rotate
+        self.lock = lock
 
         @mutex = Mutex.new
         open_file(rotated_path)
@@ -124,6 +131,20 @@ module Rackstash
       #   on write if it is (re-)moved on the filesystem
       def auto_reopen?
         @auto_reopen
+      end
+
+      # @param lock [Boolean] set to `true` to aquire an exclusive write lock
+      #   for each write to the log file. This can ensure more consistent writes
+      #   from multiple processes on some filesystems. We enable this by default
+      #   on Windows only since it can be quite expensive.
+      def lock=(lock)
+        @lock = !!lock
+      end
+
+      # @return [Boolean] if `true`, we will aquire an exclusive write lock
+      #   before each write
+      def lock?
+        @lock
       end
 
       # @param auto_reopen [Boolean] set to `true` to automatically reopen the
@@ -179,7 +200,11 @@ module Rackstash
 
         @mutex.synchronize do
           rotate_file
+
+          with_exclusive_lock = lock?
+          @file.flock(::File::LOCK_EX) if with_exclusive_lock
           @file.syswrite(line)
+          @file.flock(::File::LOCK_UN) if with_exclusive_lock
         end
         nil
       end

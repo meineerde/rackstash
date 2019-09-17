@@ -302,7 +302,7 @@ RSpec.describe Rackstash::Adapter::File do
     end
   end
 
-  context 'with concurrent processes' do
+  context 'with concurrent writes' do
     let(:workers) { 20 }
     let(:lines_per_worker) { 50 }
     let(:line_length) { 4096 }
