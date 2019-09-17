@@ -152,6 +152,16 @@ RSpec.describe Rackstash::Adapter::File do
       end
 
       it 'reopens the file if moved' do
+        # Moving / deleting an opened file on Windows is forbidden by default
+        # Since Ruby 2.3.0, we can set the FILE_SHARE_DELETE flag to allow this
+        # Earlier Ruby versions don't support this flag unfortunately.
+        if Gem.win_platform? && (
+          Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.3.0') ||
+          RUBY_ENGINE == 'jruby'
+        )
+          skip "Platform doesn't support renaming opened files"
+        end
+
         expect(adapter.auto_reopen?).to eql true
 
         adapter.write('line1')
@@ -173,6 +183,16 @@ RSpec.describe Rackstash::Adapter::File do
       end
 
       it 'does not reopen the logfile automatically' do
+        # Moving / deleting an opened file on Windows is forbidden by default
+        # Since Ruby 2.3.0, we can set the FILE_SHARE_DELETE flag to allow this
+        # Earlier Ruby versions don't support this flag unfortunately.
+        if Gem.win_platform? && (
+          Gem::Version.new(RUBY_VERSION) < Gem::Version.new('2.3.0') ||
+          RUBY_ENGINE == 'jruby'
+        )
+          skip "Platform doesn't support renaming opened files"
+        end
+
         expect(adapter.auto_reopen?).to eql false
 
         adapter.write('line1')
