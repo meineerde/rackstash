@@ -243,8 +243,6 @@ RSpec.describe Rackstash::Message do
       expect(message.time).to eql time
       expect(message.time).not_to equal time
       expect(message.time).to be_frozen
-      # User-supplied time is not enforced to be in UTC
-      expect(message.time).to_not be_utc
     end
 
     it 'defaults to Time.now.utc' do
