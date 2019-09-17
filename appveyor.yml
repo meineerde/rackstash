@@ -2,13 +2,16 @@ version: "{build}-{branch}"
 
 environment:
   matrix:
-    - RUBY_VERSION: "26-x64"
-    - RUBY_VERSION: "25-x64"
-    - RUBY_VERSION: "24-x64"
-    - RUBY_VERSION: "23-x64"
-    - RUBY_VERSION: "22-x64"
-    - RUBY_VERSION: "21-x64"
-    - RUBY_VERSION: _trunk # So the folder name is ruby_trunk
+    # - RUBY_VERSION: "26-x64"
+    # - RUBY_VERSION: "25-x64"
+    # - RUBY_VERSION: "24-x64"
+    # - RUBY_VERSION: "23-x64"
+    # - RUBY_VERSION: "22-x64"
+    # - RUBY_VERSION: "21-x64"
+    # - RUBY_VERSION: trunk # So the folder name is ruby_trunk
+    - RUBY_VERSION: jruby-9.2.6.0
+    - RUBY_VERSION: jruby-9.1.17.0
+    - RUBY_VERSION: jruby-9.0.5.0
 
 matrix:
   allow_failures:
@@ -16,16 +19,36 @@ matrix:
 
 init:
   # To avoid duplicated executables in PATH, see https://github.com/ruby/spec/pull/468
-  - set PATH=C:\Ruby%RUBY_VERSION%\bin;C:\Program Files\7-Zip;C:\Program Files\AppVeyor\BuildAgent;C:\Program Files\Git\cmd;C:\Windows\system32;C:\Program Files;C:\Windows
-  # Loads trunk build and updates MSYS2 / MinGW to most recent gcc compiler
+  - set PATH=C:\Program Files\7-Zip;C:\Program Files\AppVeyor\BuildAgent;C:\Program Files\Git\cmd;C:\Windows\system32;C:\Program Files;C:\Windows
   - ps: |
-      if ($env:RUBY_VERSION -eq '_trunk') {
+      # Loads trunk build and updates MSYS2 / MinGW to most recent gcc compiler
+      if ($env:RUBY_VERSION -eq 'trunk') {
         $trunk_uri = 'https://ci.appveyor.com/api/projects/MSP-Greg/ruby-loco/artifacts/ruby_trunk.7z'
         (New-Object Net.WebClient).DownloadFile($trunk_uri, 'C:\ruby_trunk.7z')
         7z.exe x C:\ruby_trunk.7z -oC:\Ruby_trunk
+
+        $env:PATH = "C:\Ruby_trunk\bin;" + $env:PATH
+      }
+      ElseIf ($env:RUBY_VERSION.StartsWith("jruby-")) {
+        # Load and install JRuby
+        $jruby_version = $env:RUBY_VERSION.split("-")[1]
+        $jruby_uri = "https://s3.amazonaws.com/jruby.org/downloads/$jruby_version/jruby-bin-$jruby_version.zip"
+        (New-Object Net.WebClient).DownloadFile($jruby_uri, "C:\JRuby-$jruby_version.zip")
+        7z.exe x "C:\JRuby-$jruby_version.zip" -oC:\
+
+        $env:PATH = "C:\jruby-$jruby_version\bin;" + $env:PATH
+
+        if ($jruby_version.StartsWith('9.0')) {
+          gem install bundler -v "< 2.0"
+        } else {
+          gem install bundler
+        }
+      }
+      Else {
+        $env:PATH = "C:\Ruby" + $env:RUBY_VERSION + "\bin;" + $env:PATH
       }
 
-  - ruby -v
+  # - ruby -v
   - gem -v
   - bundle -v
 
@@ -43,4 +66,4 @@ build: off
 deploy: off
 
 test_script:
-  - bundle exec rspec
+  - bundle exec rspec spec
