@@ -307,14 +307,16 @@ RSpec.describe Rackstash::Adapter::File do
     let(:lines_per_worker) { 50 }
     let(:line_length) { 4096 }
 
+    let(:barrier) { Concurrent::CyclicBarrier.new(workers) }
+
     def run_worker(worker_id)
       filler = (worker_id + 65).chr
       line = filler * line_length
 
       adapter = described_class.new(logfile.path)
 
-      # Wait until the parent releases the exclusive lock
-      logfile.flock(File::LOCK_SH)
+      # Wait until all worker threads are ready to start
+      barrier.wait
 
       lines_per_worker.times do
         adapter.write(line)
@@ -328,18 +330,11 @@ RSpec.describe Rackstash::Adapter::File do
     # This test was adapted from
     # http://www.notthewizard.com/2014/06/17/are-files-appends-really-atomic/
     it 'writes atomic log lines' do
-      # First, create an exclusive lock on the logfile to ensure all workers
-      # start at about the same time
-      logfile.flock(File::LOCK_EX)
-
       worker_threads = Array.new(workers) { |worker_id|
         Thread.new do
           run_worker worker_id
         end
       }
-
-      # Worker threads will only start writing once we have released the lock
-      logfile.flock(File::LOCK_UN)
 
       worker_threads.each do |thread|
         thread.join
