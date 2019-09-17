@@ -332,32 +332,17 @@ RSpec.describe Rackstash::Adapter::File do
       # start at about the same time
       logfile.flock(File::LOCK_EX)
 
-      if Concurrent.on_cruby?
-        worker_processes = Array.new(workers) { |worker_id|
-          Process.fork do
-            run_worker worker_id
-          end
-        }
-
-        # Workers will only start writing once we have released the lock
-        logfile.flock(File::LOCK_UN)
-
-        worker_processes.each do |pid|
-          Process.wait(pid)
+      worker_threads = Array.new(workers) { |worker_id|
+        Thread.new do
+          run_worker worker_id
         end
-      else
-        worker_threads = Array.new(workers) { |worker_id|
-          Thread.new do
-            run_worker worker_id
-          end
-        }
+      }
 
-        # Worker threads will only start writing once we have released the lock
-        logfile.flock(File::LOCK_UN)
+      # Worker threads will only start writing once we have released the lock
+      logfile.flock(File::LOCK_UN)
 
-        worker_threads.each do |thread|
-          thread.join
-        end
+      worker_threads.each do |thread|
+        thread.join
       end
 
       # Resulting file size is exactly as expected, i.e. no dropped logs
