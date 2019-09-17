@@ -228,11 +228,12 @@ module Rackstash
         dirname = ::File.dirname(path)
         FileUtils.mkdir_p(dirname) unless ::File.exist?(dirname)
 
-        file = ::File.new(
-          path,
-          ::File::WRONLY | ::File::APPEND | ::File::CREAT
-        )
-        file.binmode
+        mode = ::File::WRONLY | ::File::APPEND | ::File::CREAT
+        # Allow external processes to delete the log file on Windows.
+        # This is available since Ruby 2.3.0.
+        mode |= ::File::SHARE_DELETE if defined?(::File::SHARE_DELETE)
+
+        file = ::File.new(path, mode: mode, binmode: true)
         file.sync = true
 
         @path = path
