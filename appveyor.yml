@@ -1,27 +1,42 @@
-version: 1.0.{build}-{branch}
+version: "{build}-{branch}"
 
 environment:
   matrix:
-    - RUBY_VERSION: "26"
-    - RUBY_VERSION: "25"
-    - RUBY_VERSION: "24"
-    - RUBY_VERSION: "23"
-    - RUBY_VERSION: "22"
-    - RUBY_VERSION: "21"
+    - RUBY_VERSION: "26-x64"
+    - RUBY_VERSION: "25-x64"
+    - RUBY_VERSION: "24-x64"
+    - RUBY_VERSION: "23-x64"
+    - RUBY_VERSION: "22-x64"
+    - RUBY_VERSION: "21-x64"
+    - RUBY_VERSION: _trunk # So the folder name is ruby_trunk
 
-install:
-  - set PATH=C:\Ruby%RUBY_VERSION%\bin;%PATH%
+matrix:
+  allow_failures:
+    - ruby_version: _trunk
+
+init:
+  # To avoid duplicated executables in PATH, see https://github.com/ruby/spec/pull/468
+  - set PATH=C:\Ruby%RUBY_VERSION%\bin;C:\Program Files\7-Zip;C:\Program Files\AppVeyor\BuildAgent;C:\Program Files\Git\cmd;C:\Windows\system32;C:\Program Files;C:\Windows
+  # Loads trunk build and updates MSYS2 / MinGW to most recent gcc compiler
+  - ps: |
+      if ($env:RUBY_VERSION -eq '_trunk') {
+        $trunk_uri = 'https://ci.appveyor.com/api/projects/MSP-Greg/ruby-loco/artifacts/ruby_trunk.7z'
+        (New-Object Net.WebClient).DownloadFile($trunk_uri, 'C:\ruby_trunk.7z')
+        7z.exe x C:\ruby_trunk.7z -oC:\Ruby_trunk
+      }
 
   - ruby -v
   - gem -v
   - bundle -v
 
-  - bundle config --local path vendor/bundle
-  - bundle install
-
+install:
+  # Create suotable directory for temporary files in tests
   - mkdir tmp
   - icacls tmp /inheritance:r /grant Everyone:F
   - set TMPDIR=tmp
+
+  - bundle config --local path vendor/bundle
+  - bundle install
 
 clone_depth: 10
 build: off
