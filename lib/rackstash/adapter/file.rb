@@ -89,13 +89,13 @@ module Rackstash
       def self.from_uri(uri)
         uri = URI(uri)
 
-        if (uri.scheme || uri.opaque) == 'file'.freeze
+        if uri.scheme == 'file'.freeze
           file_options = parse_uri_options(uri)
           if file_options[:auto_reopen] =~ /\A(:?false|0)?\z/i
             file_options[:auto_reopen] = false
           end
 
-          new(uri.path, **file_options)
+          new(uri.path || uri.opaque, **file_options)
         else
           raise ArgumentError, "Invalid URI: #{uri}"
         end
