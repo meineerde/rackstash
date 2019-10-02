@@ -200,11 +200,7 @@ module Rackstash
 
         @mutex.synchronize do
           rotate_file
-
-          with_exclusive_lock = lock?
-          @file.flock(::File::LOCK_EX) if with_exclusive_lock
-          @file.syswrite(line)
-          @file.flock(::File::LOCK_UN) if with_exclusive_lock
+          with_flock { @file.syswrite(line) }
         end
         nil
       end
@@ -295,6 +291,17 @@ module Rackstash
 
         suffix = ".#{suffix}"
         @base_path.sub(/\A(.*?)(\.[^.\/]+)?\z/) { "#{$1}#{suffix}#{$2}" }
+      end
+
+      def with_flock
+        return yield unless lock?
+
+        begin
+          @file.flock(::File::LOCK_EX)
+          yield
+        ensure
+          @file.flock(::File::LOCK_UN)
+        end
       end
     end
   end
