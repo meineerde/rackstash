@@ -458,12 +458,12 @@ RSpec.describe Rackstash::Buffer do
     end
 
     it 'stringifys tags and expands procs' do
-      buffer.tag 123, :symbol, -> { :proc }
-      expect(buffer.tags).to contain_exactly('123', 'symbol', 'proc')
+      buffer.tag 123, {}, :symbol, -> { :proc }
+      expect(buffer.tags).to contain_exactly('123', '{}', 'symbol', 'proc')
     end
 
     it 'does not set blank tags' do
-      buffer.tag 'tag', nil, [], '', {}
+      buffer.tag 'tag', nil, [], ''
       expect(buffer.tags).to contain_exactly('tag')
     end
 
