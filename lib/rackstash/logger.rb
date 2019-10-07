@@ -401,8 +401,8 @@ module Rackstash
     # @param buffer_args [Hash<Symbol => Object>] optional arguments for the new
     #   {Buffer}. See {Buffer#initialize} for allowed values.
     # @return [Buffer] the newly pushed {Buffer} instance
-    def push_buffer(buffer_args = {})
-      buffer_stack.push(buffer_args)
+    def push_buffer(**buffer_args)
+      buffer_stack.push(**buffer_args)
     end
 
     # Remove a previously pushed {Buffer} from the {BufferStack} for the current
@@ -451,10 +451,10 @@ module Rackstash
     #   removed from the {BufferStack} again and is always flushed
     #   automatically.
     # @return [Object] the return value of the block
-    def capture(buffer_args = {})
+    def capture(**buffer_args)
       raise ArgumentError, 'block required' unless block_given?
 
-      buffer_stack.push(buffer_args)
+      buffer_stack.push(**buffer_args)
       begin
         yield
       ensure
