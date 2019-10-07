@@ -246,7 +246,7 @@ module Rackstash
           scope: request,
           force: false
         ) unless @request_fields.nil?
-        @logger.tag(@request_tags, scope: request) unless @request_tags.nil?
+        @logger.tags.merge!(@request_tags, scope: request) unless @request_tags.nil?
       end
 
       # @param env [Hash] the Rack environment
@@ -285,7 +285,7 @@ module Rackstash
           force: false
         ) unless @response_fields.nil?
 
-        @logger.tag(@response_tags, scope: headers) unless @response_tags.nil?
+        @logger.tags.merge!(@response_tags, scope: headers) unless @response_tags.nil?
       end
 
       # @param env [Hash] The Rack environment

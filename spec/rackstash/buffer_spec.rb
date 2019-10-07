@@ -486,12 +486,12 @@ RSpec.describe Rackstash::Buffer do
       }
 
       it 'expands single-value proc objects' do
-        buffer.tag(-> { self }, scope: object)
+        buffer.tag(-> { object })
         expect(buffer.tags).to contain_exactly('Hello')
       end
 
       it 'expands multi-value proc objects' do
-        buffer.tag(-> { [[self, 'foobar'], 123] }, scope: object)
+        buffer.tag(-> { [[object, 'foobar'], 123] })
         expect(buffer.tags).to contain_exactly('Hello', 'foobar', '123')
       end
     end

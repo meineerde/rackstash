@@ -263,15 +263,11 @@ module Rackstash
     # @param new_tags [Array<#to_s, #call>] Strings to add as tags to the buffer.
     #   You can either give (arrays of) strings here or procs which return
     #   a string or an array of strings when called.
-    # @param scope [nil, Object] If anything other then `nil` is given here, we
-    #   will evaluate any procs given in the tags in the context of this
-    #   object. If `nil` is given (the default) the procs are directly called
-    #   in the context where they were created.
     # @return [Fields::Tags] the resolved tags which are set on the buffer.
     #   All strings are frozen.
-    def tag(*new_tags, scope: nil)
+    def tag(*new_tags)
       timestamp
-      tags.merge!(new_tags, scope: scope)
+      tags.merge!(new_tags)
     end
 
     # @return [Fields::Tags] a tags list containing the defined tags for the
