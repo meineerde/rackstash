@@ -9,7 +9,7 @@ environment:
     - RUBY_VERSION: "22-x64"
     - RUBY_VERSION: "21-x64"
     - RUBY_VERSION: trunk
-    - RUBY_VERSION: jruby-9.2.6.0
+    - RUBY_VERSION: jruby-9.2.9.0
     - RUBY_VERSION: jruby-9.1.17.0
     - RUBY_VERSION: jruby-9.0.5.0
 
@@ -53,7 +53,7 @@ init:
   - bundle -v
 
 install:
-  # Create suotable directory for temporary files in tests
+  # Create suitable directory for temporary files in tests
   - mkdir tmp
   - icacls tmp /inheritance:r /grant Everyone:F
   - set TMPDIR=tmp
