@@ -11,14 +11,14 @@ cache: bundler
 
 rvm:
   # Latest Rubies on top
-  - 2.6.2
-  - jruby-9.2.6.0
+  - 2.6.5
+  - jruby-9.2.9.0
   - truffleruby-19.3.0
 
   # Older versions
-  - 2.5.5
-  - 2.4.6
-  - 2.3.8
+  - 2.5.7
+  - 2.4.9
+  - 2.3.7
   - 2.2.10
   - 2.1.10
   - jruby-9.1.17.0
@@ -30,7 +30,7 @@ rvm:
 
 matrix:
   include:
-    - rvm: 2.6.2
+    - rvm: 2.6.5
       env: COVERAGE=1
 
     # An older Ruby/Rack combination as used by Rails 3.2. As long as it works
@@ -42,7 +42,6 @@ matrix:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: truffleruby-19.3.0
-
 
 before_install:
   # Bundler 2.0 requires at least Ruby 2.3. We need to explicitly install an
