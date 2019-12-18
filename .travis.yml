@@ -13,7 +13,7 @@ rvm:
   # Latest Rubies on top
   - 2.6.2
   - jruby-9.2.6.0
-  - truffleruby-19.0.0
+  - truffleruby-19.3.0
 
   # Older versions
   - 2.5.5
@@ -41,6 +41,8 @@ matrix:
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
+    - rvm: truffleruby-19.3.0
+
 
 before_install:
   # Bundler 2.0 requires at least Ruby 2.3. We need to explicitly install an
