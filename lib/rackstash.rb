@@ -38,13 +38,13 @@ module Rackstash
   }.freeze
 
   SEVERITY_LABELS = [
-    'DEBUG'.freeze,
-    'INFO'.freeze,
-    'WARN'.freeze,
-    'ERROR'.freeze,
-    'FATAL'.freeze,
-    'ANY'.freeze
-  ].freeze
+    'DEBUG',
+    'INFO',
+    'WARN',
+    'ERROR',
+    'FATAL',
+    'ANY'
+  ].each(&:freeze).freeze
 
   # Gets the label for a given severity. You can specify the severity either by
   # its numeric value or its name in most variations (`Symbol`, `String`,
@@ -57,8 +57,11 @@ module Rackstash
   # @return [String] one of the {SEVERITY_LABELS}
   def self.severity_label(severity)
     if severity.is_a?(Integer)
-      return SEVERITY_LABELS.last if severity < 0
-      SEVERITY_LABELS[severity] || SEVERITY_LABELS.last
+      if severity < 0
+        SEVERITY_LABELS.last
+      else
+        SEVERITY_LABELS[severity] || SEVERITY_LABELS.last
+      end
     else
       severity = SEVERITY_NAMES.fetch(severity.to_s.downcase, UNKNOWN)
       SEVERITY_LABELS[severity]
@@ -160,9 +163,7 @@ module Rackstash
   #   which can be used as a {Flow}'s adapter. See {Flow#initialize}.
   # @return [Rackstash::Flow] the given `flow`
   def self.error_flow=(flow)
-    unless flow.is_a?(Rackstash::Flow)
-      flow = Flow.new(flow, synchronous: true)
-    end
+    flow = Flow.new(flow, synchronous: true) unless flow.is_a?(Rackstash::Flow)
     @error_flow = flow
   end
 end
