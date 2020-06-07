@@ -16,7 +16,7 @@ module Rackstash
     # @param object_type [#to_s] the human-readable singular name of the
     #   registered objects. It is used to build more useful error messages.
     def initialize(object_type = 'class')
-      @object_type = object_type.to_s
+      @object_type = object_type.to_s.dup.freeze
       @registry = {}
     end
 

@@ -52,7 +52,7 @@ module Rackstash
       # @return [ClassRegistry] the {ClassRegistry} object which allows to
       #   register and retrieve available filter classes
       def registry
-        @registry ||= Rackstash::ClassRegistry.new('filter'.freeze)
+        @registry ||= Rackstash::ClassRegistry.new('filter')
       end
 
       # Create a new filter instance from the specified class and the given
