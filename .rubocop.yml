@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 2.1
+  TargetRubyVersion: 2.4
 
 # We use a different style where we add the short license header just below the
 # magic comments separated by an empty comment line. Unfortunately, this cop
@@ -13,6 +13,12 @@ Layout/MultilineMethodCallIndentation:
 # Multiline indentation is always tricky. Format it as deemed useful in the
 # local method, but try to avoid it at all wherever possible
 Layout/MultilineOperationIndentation:
+  Enabled: false
+
+# To emulate parent classes in the standards library and associated behavior
+# with default rescues, we sometimes inherit direct;ly from Exception or related
+# classes
+Lint/InheritException:
   Enabled: false
 
 # Sometimes we want to capture all exceptions. We need to make sure to re-raise
@@ -74,6 +80,10 @@ Style/DoubleNegation:
 Style/EmptyMethod:
   EnforcedStyle: expanded
 
+# Most predicated are not available in our supported version of Ruby 2.1
+Style/NumericPredicate:
+  Enabled: false
+
 Style/PercentLiteralDelimiters:
   PreferredDelimiters:
     '%w': '[]'
@@ -82,6 +92,11 @@ Style/PercentLiteralDelimiters:
 # Sometimes, an explicit self really adds some clarity to the code
 # We make sure to not use it when not needed though
 Style/RedundantSelf:
+  Enabled: false
+
+# Frozen string takes care of most strings for Ribies where this is supported
+# Sometimes, we do want to make sure though.
+Style/RedundantFreeze:
   Enabled: false
 
 # Doesn't work with Refinements and is sometimes clearer with the expanded
@@ -101,4 +116,3 @@ Style/RescueModifier:
 # Use %w when it makes sense. Use literal arrays where it is more clear.
 Style/WordArray:
   Enabled: false
-
