@@ -11,42 +11,83 @@ require 'securerandom'
 require 'rackstash/filter'
 
 RSpec.describe Rackstash::Filter do
-  let(:registry) { Rackstash::ClassRegistry.new('filter') }
-
   let(:filter_class) {
     Class.new do
+      attr_reader :args, :kwargs
+
+      def initialize(*args, **kwargs)
+        @args = args
+        @kwargs = kwargs
+
+        @called = false
+        @called_with_if = false
+        @called_with_unless = false
+      end
+
+      def if(event)
+        @called_with_if = true
+        @kwargs[:if]
+      end
+
+      def unless(event)
+        @called_with_unless = true
+        @kwargs[:unless]
+      end
+
       def call(_event)
+        @called = true
         'filtered'
+      end
+
+      %i[called called_with_if called_with_unless].each do |m|
+        define_method(:"#{m}?") { instance_variable_get("@#{m}") }
       end
     end
   }
   let(:filter_name) { :"filter_class_#{SecureRandom.hex(6)}" }
 
-  describe '.build' do
-    before do
-      allow(described_class).to receive(:registry).and_return(registry)
-      described_class.register(filter_class, filter_name)
+  around(:each) do |example|
+    original_filters = described_class.registry.to_h
+    described_class.registry.clear
+    example.run
+    original_filters.each do |name, registered_clas|
+      described_class.registry[name] = registered_clas
     end
+  end
 
+  before(:each) do
+    described_class.register(filter_class, filter_name)
+  end
+
+  describe '.build' do
     it 'builds a filter from a class' do
-      args = ['arg1', foo: 'bar']
-      expect(filter_class).to receive(:new).with(*args)
+      args = ['arg1']
+      kwargs = { foo: 'bar' }
 
-      described_class.build(filter_class, *args)
+      filter = described_class.build(filter_class, *args, **kwargs)
+      expect(filter).to be_a filter_class
+      expect(filter.args).to eq args
+      expect(filter.kwargs).to eq kwargs
     end
 
     it 'builds a filter from a Symbol' do
-      args = ['arg1', foo: 'bar']
-      expect(filter_class).to receive(:new).with(*args)
+      args = ['arg1']
+      kwargs = { foo: 'bar' }
 
-      described_class.build(filter_name.to_sym, *args)
+      filter = described_class.build(filter_name.to_sym, *args, **kwargs)
+      expect(filter).to be_a filter_class
+      expect(filter.args).to eq args
+      expect(filter.kwargs).to eq kwargs
     end
 
     it 'builds a filter from a String' do
-      args = ['arg1', foo: 'bar']
-      expect(filter_class).to receive(:new).with(*args)
+      args = ['arg1']
+      kwargs = { foo: 'bar' }
 
-      described_class.build(filter_name.to_s, *args)
+      filter = described_class.build(filter_name.to_s, *args, **kwargs)
+      expect(filter).to be_a filter_class
+      expect(filter.args).to eq args
+      expect(filter.kwargs).to eq kwargs
     end
 
     it 'returns an existing filter' do
@@ -60,30 +101,60 @@ RSpec.describe Rackstash::Filter do
       let(:event) { Object.new }
 
       it 'applies the only_if conditional for new filters' do
-        only_if = -> {}
+        only_if = ->(_event) { false }
         filter = described_class.build(filter_name, only_if: only_if)
+        expect(filter.call(event)).to equal event
+        expect(filter).not_to be_called
 
-        expect(only_if).to receive(:call).and_return false
-        expect { filter.call({}) }.not_to raise_error
+        only_if = ->(_event) { true }
+        filter = described_class.build(filter_name, only_if: only_if)
+        expect(filter.call(event)).to eql 'filtered'
+        expect(filter).to be_called
+      end
+
+      it 'applies the only_if filter conditional for new filters' do
+        filter = described_class.build(filter_name, only_if: :if, if: false)
+        filter.call(event)
+        expect(filter).to be_called_with_if
+        expect(filter).not_to be_called
+
+        filter = described_class.build(filter_name, only_if: :if, if: true)
+        expect(filter.call(event)).to eql 'filtered'
+        expect(filter).to be_called
+        expect(filter).to be_called_with_if
       end
 
       it 'applies the not_if conditional for new filters' do
-        not_if = -> {}
+        not_if = ->(_event) { true }
         filter = described_class.build(filter_name, not_if: not_if)
-
-        expect(not_if).to receive(:call).and_return true
         expect(filter.call(event)).to equal event
+        expect(filter).not_to be_called
+
+        not_if = ->(_event) { false }
+        filter = described_class.build(filter_name, not_if: not_if)
+        expect(filter.call(event)).to eql 'filtered'
+        expect(filter).to be_called
+      end
+
+      it 'applies the not_if filter conditional for new filters' do
+        filter = described_class.build(filter_name, not_if: :unless, unless: true)
+        expect(filter.call(event)).to equal event
+        expect(filter).not_to be_called
+        expect(filter).to be_called_with_unless
+
+        filter = described_class.build(filter_name, not_if: :unless, unless: false)
+        expect(filter.call(event)).to eql 'filtered'
+        expect(filter).to be_called
+        expect(filter).to be_called_with_unless
       end
 
       it 'applies both conditionals for new filters' do
-        only_if = -> {}
-        not_if = -> {}
-
+        only_if = ->(_event) { true }
+        not_if = ->(_event) { false }
         filter = described_class.build(filter_name, only_if: only_if, not_if: not_if)
 
-        expect(only_if).to receive(:call).and_return true
-        expect(not_if).to receive(:call).and_return false
         expect(filter.call(event)).to eql 'filtered'
+        expect(filter).to be_called
       end
 
       it 'keeps the class hierarchy unchanged' do
@@ -94,7 +165,7 @@ RSpec.describe Rackstash::Filter do
 
       it 'ignores the conditional for existing filters' do
         filter = filter_class.new
-        only_if = -> {}
+        only_if = ->(_event) {}
 
         expect(described_class.build(filter, only_if: only_if))
           .to equal filter
@@ -105,31 +176,27 @@ RSpec.describe Rackstash::Filter do
       end
 
       it 'passes keyword arguments to the initializer' do
-        filter_class.class_eval do
-          def initialize(mandatory:)
-            @mandatory = mandatory
-          end
+        filter = described_class.build(filter_name, 'foo', only_if: -> {}, argument: 'bar')
+        expect(filter.args).to eq ['foo']
+        expect(filter.kwargs).to eq argument: 'bar'
+      end
 
-          attr_reader :mandatory
-        end
+      it 'expects callable objects' do
+        object = false
 
-        filter = described_class.build(filter_name, only_if: -> {}, mandatory: 'foo')
-        expect(filter.mandatory).to eql 'foo'
+        expect { described_class.build(filter_name, only_if: object) }
+          .to raise_error(TypeError, 'Invalid only_if filter')
+        expect { described_class.build(filter_name, not_if: object) }
+          .to raise_error(TypeError, 'Invalid not_if filter')
       end
     end
 
     context 'without conditionals' do
-      it 'passes keyword arguments to the initializer' do
-        filter_class.class_eval do
-          def initialize(mandatory:)
-            @mandatory = mandatory
-          end
+      it 'passes arguments to the initializer' do
+        filter = described_class.build(filter_name, 'foo', argument: 'bar')
 
-          attr_reader :mandatory
-        end
-
-        filter = described_class.build(filter_name, mandatory: 'foo')
-        expect(filter.mandatory).to eql 'foo'
+        expect(filter.args).to eq ['foo']
+        expect(filter.kwargs).to eq argument: 'bar'
       end
     end
 
@@ -158,29 +225,17 @@ RSpec.describe Rackstash::Filter do
   end
 
   describe '.register' do
-    let(:filter_class) {
-      Class.new do
-        def call
-        end
-      end
-    }
-
     it 'registers a filter class' do
-      expect(described_class.registry).to receive(:[]=).with(:foo, filter_class).ordered
-      expect(described_class.registry).to receive(:[]=).with(:bar, filter_class).ordered
-
       described_class.register(filter_class, :foo, :bar)
+      expect(described_class.registry.fetch(:foo)).to equal filter_class
+      expect(described_class.registry.fetch(:bar)).to equal filter_class
     end
 
     it 'rejects invalid classes' do
-      expect(described_class.registry).not_to receive(:[]=)
-
       expect { described_class.register(:not_a_class, :foo) }.to raise_error TypeError
       expect { described_class.register(Class.new, :foo) }.to raise_error TypeError
-    end
 
-    it 'rejects invalid names' do
-      expect { described_class.register(filter_class, 123) }.to raise_error TypeError
+      expect(described_class.registry[:foo]).to be_nil
     end
   end
 end

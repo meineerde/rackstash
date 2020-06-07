@@ -67,17 +67,21 @@ module Rackstash
       #   first use the filter {.registry} to find the matching class. With that
       #   we then create a filter object as before. When giving an object which
       #   responds to `call` already (e.g. a `Proc`) we return it unchanged,
-      #   ignoring any additional passed `args`.
-      # @param only_if [#call, nil] An optional condition defining whether the
-      #   filter should be applied, usually given as a `Proc` object. Before
-      #   evaluating the newly created filter object, we first call the given
-      #   proc with the event as its argument. The filter is applied only if the
-      #   proc returns a truethy value.
-      # @param not_if [#call, nil] An optional condition defining whether the
-      #   filter should not be applied, usually given as a `Proc` object. Before
-      #   evaluating the newly created filter object, we first call the given
-      #   proc with the event as its argument. The filter is not applied if the
-      #   proc returns a truethy value.
+      #   ignoring any additional passed `args`, `kwargs`, or condition.
+      # @param only_if [#call, Symbol, nil] An optional condition defining
+      #   whether the filter should be applied,  defined as a `Proc` (or another
+      #   object responding to `call`) or a Symbol. Before evaluating the newly
+      #   created filter object, we first call the given proc or we call the
+      #   method identified by the given Symbol on the filter object, each time
+      #   giving the `event` Hash as its argument. The filter is only applied
+      #   if the proc or filter method returns a truethy value.
+      # @param not_if [#call, Symbol, nil] An optional condition defining
+      #   whether the filter should not be applied, defined as a `Proc` (or
+      #   another object responding to `call`) or a Symbol. Before evaluating
+      #   the newly created filter object, we first call the given proc or we
+      #   call the method identified by the given Symbol on the filter object,
+      #   each time giving the `event` Hash as its argument. The filter is not
+      #   applied if the proc or filter method returns a truethy value.
       # @param args [Array] an optional list of arguments which is passed to the
       #   initializer for the new filter object.
       # @param kwargs [Hash] an optional list of keyword arguments which are
@@ -88,30 +92,49 @@ module Rackstash
       #   for the specified class name
       # @return [Object] a new filter object
       def build(filter_spec, *args, only_if: nil, not_if: nil, **kwargs, &block)
-        case filter_spec
-        when ->(filter) { filter.respond_to?(:call) }
-          filter_spec
-        else
-          args << kwargs unless kwargs.empty?
+        # TODO: warn if args, kwargs, only_if, not_if were given here
+        #       since they are ignored
+        return filter_spec if filter_spec.respond_to?(:call)
 
-          filter = registry.fetch(filter_spec).new(*args, &block)
-          conditional_filter(filter, only_if: only_if, not_if: not_if)
-        end
+        filter_class = registry.fetch(filter_spec)
+        filter = filter_class.new(*args, **kwargs, &block)
+
+        conditional_filter(filter, only_if: only_if, not_if: not_if)
       end
 
       private
 
       def conditional_filter(filter, only_if: nil, not_if: nil)
-        return filter if only_if.nil? && not_if.nil?
+        if only_if.nil?
+          # Empty conditional, do nothing
+        elsif only_if.is_a?(Symbol)
+          apply_condition(filter) { |event| filter.send(only_if, event) }
+        elsif only_if.respond_to?(:call)
+          apply_condition(filter) { |event| only_if.call(event) }
+        else
+          raise TypeError, 'Invalid only_if filter'
+        end
 
-        conditional = Module.new do
+        if not_if.nil?
+          # Empty conditional, do nothing
+        elsif not_if.is_a?(Symbol)
+          apply_condition(filter) { |event| !filter.send(not_if, event) }
+        elsif not_if.respond_to?(:call)
+          apply_condition(filter) { |event| !not_if.call(event) }
+        else
+          raise TypeError, 'Invalid not_if filter'
+        end
+
+        filter
+      end
+
+      def apply_condition(filter)
+        mod = Module.new do
           define_method(:call) do |event|
-            return event if only_if && !only_if.call(event)
-            return event if not_if && not_if.call(event)
-            super(event)
+            yield(event) ? super(event) : event
           end
         end
-        filter.extend(conditional)
+        filter.extend(mod)
       end
     end
   end
