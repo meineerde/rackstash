@@ -9,7 +9,7 @@ environment:
     - RUBY_VERSION: "22-x64"
     - RUBY_VERSION: "21-x64"
     - RUBY_VERSION: trunk
-    - RUBY_VERSION: jruby-9.2.9.0
+    - RUBY_VERSION: jruby-9.2.12.0
     - RUBY_VERSION: jruby-9.1.17.0
 
 matrix:
