@@ -8,35 +8,37 @@ sudo: false
 
 cache: bundler
 
-rvm:
-  # Latest Rubies on top
-  - 2.7.1
-  - jruby-9.2.12.0
-  - truffleruby-20.1.0
-
-  # Older versions
-  - 2.6.6
-  - 2.5.8
-  - 2.4.10
-  - 2.3.7
-  - 2.2.10
-  - 2.1.10
-  - jruby-9.1.17.0
-  - jruby-9.0.5.0
-
-  # HEAD-Rubies (might break)
-  - ruby-head
-  - jruby-head
-
 matrix:
   include:
+    # Latest Rubies on top
     - rvm: 2.7.1
       env: COVERAGE=1
+    - rvm: jruby-9.2.12.0
+    - rvm: truffleruby-20.1.0
+
+    # Older versions
+    - rvm: 2.6.6
+    - rvm: 2.5.8
+    - rvm: 2.4.10
+    - rvm: 2.3.7
+    - rvm: 2.2.10
+    - rvm: 2.1.10
 
     # An older Ruby/Rack combination as used by Rails 3.2. As long as it works
     # with our required Ruby version, we want to support it.
     - rvm: 2.1.10
       env: RACK_VERSION=1.4.5
+
+    # Older JRuby versions
+    - rvm: jruby-9.1.17.0
+      jdk: openjdk8
+
+    - rvm: jruby-9.0.5.0
+      jdk: openjdk8
+
+    # HEAD-Rubies (might break)
+    - rvm: ruby-head
+    - rvm: jruby-head
 
   allow_failures:
     - rvm: ruby-head
