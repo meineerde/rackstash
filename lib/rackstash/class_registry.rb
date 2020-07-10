@@ -1,13 +1,17 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
+require 'rackstash/utils'
+
 module Rackstash
   class ClassRegistry
     include ::Enumerable
+
+    include Rackstash::Utils
 
     # @return [String] the human-readable singular name of the registered
     #   objects. It is used to build more useful error messages.
@@ -16,7 +20,7 @@ module Rackstash
     # @param object_type [#to_s] the human-readable singular name of the
     #   registered objects. It is used to build more useful error messages.
     def initialize(object_type = 'class')
-      @object_type = object_type.to_s.dup.freeze
+      @object_type = utf8(object_type)
       @registry = {}
     end
 
