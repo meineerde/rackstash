@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 - 2018 Holger Just
+# Copyright 2017 - 2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -99,11 +99,11 @@ RSpec.describe Rackstash::ClassRegistry do
 
     it 'rejects invalid names' do
       expect { registry[0] = Class.new }
-        .to raise_error(TypeError, 'Can not use 0 to register a value class')
+        .to raise_error(TypeError, 'Can not use 0 to register value classes')
       expect { registry[nil] = Class.new }
-        .to raise_error(TypeError, 'Can not use nil to register a value class')
+        .to raise_error(TypeError, 'Can not use nil to register value classes')
       expect { registry[String] = Class.new }
-        .to raise_error(TypeError, 'Can not use String to register a value class')
+        .to raise_error(TypeError, 'Can not use String to register value classes')
     end
 
     it 'rejects invalid values' do

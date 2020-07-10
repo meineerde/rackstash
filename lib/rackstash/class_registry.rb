@@ -27,7 +27,7 @@ module Rackstash
     # Retrieve the registered class for a given name. If the argument is already
     # a class, we return it unchanged.
     #
-    # @param spec [Class,String,Symbol] Either a class (in which case it is
+    # @param spec [Class, String, Symbol] Either a class (in which case it is
     #   returned directly) or the name of a registered class.
     # @raise [TypeError] when giving an invalid object
     # @return [Class, nil] the registered class (when giving a `String` or
@@ -41,7 +41,7 @@ module Rackstash
     # Retrieve the registered class for a given name. If the argument is already
     # a class, we return it unchanged.
     #
-    # @param spec [Class,String,Symbol] either a class (in which case it is
+    # @param spec [Class, String, Symbol] either a class (in which case it is
     #   returned directly) or the name of a registered class
     # @param default [Object] the default value that is returned if no
     #   registered class could be found for the given `spec` and no block was
@@ -63,11 +63,11 @@ module Rackstash
           next yield(key) if block_given?
           next default unless UNDEFINED.equal? default
 
-          raise KeyError, "No #{@object_type} was registered for #{spec.inspect}"
+          raise KeyError, "No #{object_type} was registered for #{spec.inspect}"
         end
       else
         raise TypeError, "#{spec.inspect} can not be used to describe " \
-          "#{@object_type} classes"
+          "#{object_type} classes"
       end
     end
 
@@ -88,7 +88,8 @@ module Rackstash
       when String, Symbol
         @registry[name.to_sym] = registered_class
       else
-        raise TypeError, "Can not use #{name.inspect} to register a #{@object_type} class"
+        raise TypeError, "Can not use #{name.inspect} to register " \
+          "#{object_type} classes"
       end
       registered_class
     end
