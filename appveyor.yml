@@ -43,6 +43,7 @@ init:
         $env:PATH = "C:\Ruby" + $env:RUBY_VERSION + "\bin;" + $env:PATH
       }
 
+  - systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
   - ps: if ($env:RUBY_VERSION.StartsWith("jruby-")) { jruby -v } else { ruby -v }
   - gem -v
   - bundle -v
