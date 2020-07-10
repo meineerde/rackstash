@@ -39,11 +39,13 @@ matrix:
     # HEAD-Rubies (might break)
     - rvm: ruby-head
     - rvm: jruby-head
+    - rvm: truffleruby-head
 
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
     - rvm: truffleruby-20.1.0
+    - rvm: truffleruby-head
 
 before_install:
   # Bundler 2.0 requires at least Ruby 2.3. We need to explicitly install an
