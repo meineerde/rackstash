@@ -63,17 +63,6 @@ RSpec.describe Rackstash::Utils do
       expect(described_class.clock_time).to be < described_class.clock_time
     end
 
-    context 'on Windows' do
-      it 'fetches the GetTickCount64 function' do
-        expect(described_class::GetTickCount64).to be_a Fiddle::Function
-      end
-
-      it 'returns a float' do
-        expect(described_class::GetTickCount64).to receive(:call).and_call_original
-        expect(described_class.clock_time).to be_a(Float)
-      end
-    end if Gem.win_platform?
-
     context 'without a monotonic clock' do
       around do |example|
         clock_monotic = ::Process.send(:remove_const, :CLOCK_MONOTONIC)
@@ -89,10 +78,21 @@ RSpec.describe Rackstash::Utils do
         $VERBOSE = verbose
       end
 
-      it 'returns a float' do
-        expect(::Time).to receive(:now).and_call_original
-        expect(described_class.clock_time).to be_a Float
+      if Gem.win_platform?
+        it 'fetches the GetTickCount64 function' do
+          expect(described_class::GetTickCount64).to be_a Fiddle::Function
+        end
+
+        it 'returns a float' do
+          expect(described_class::GetTickCount64).to receive(:call).and_call_original
+          expect(described_class.clock_time).to be_a(Float)
+        end
+      else
+        it 'returns a float' do
+          expect(::Time).to receive(:now).and_call_original
+          expect(described_class.clock_time).to be_a Float
+        end
       end
-    end unless Gem.win_platform?
+    end
   end
 end
