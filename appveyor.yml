@@ -11,7 +11,6 @@ environment:
     - RUBY_VERSION: trunk
     - RUBY_VERSION: jruby-9.2.9.0
     - RUBY_VERSION: jruby-9.1.17.0
-    - RUBY_VERSION: jruby-9.0.5.0
 
 matrix:
   allow_failures:
@@ -38,11 +37,7 @@ init:
 
         $env:PATH = "C:\jruby-$jruby_version\bin;" + $env:PATH
 
-        if ($jruby_version.StartsWith('9.0')) {
-          gem install bundler -v "< 2.0"
-        } else {
-          gem install bundler
-        }
+        gem install bundler
       }
       Else {
         $env:PATH = "C:\Ruby" + $env:RUBY_VERSION + "\bin;" + $env:PATH
