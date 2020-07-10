@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
 
   # We require at least Ruby 2.1 due to the use of:
   # * implicit String#scrub during String#encode as used in
-  #   Rackstash::Helpers::UTF8#utf8_encode.
+  #   Rackstash::Utils#utf8.
   #   We might be able to use the string-scrub gem as a polyfill and explicitly
   #   call scrub on lower versions though.
   # * mandatory keyword arguments

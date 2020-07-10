@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 - 2018 Holger Just
+# Copyright 2017 - 2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'rackstash/filter'
-require 'rackstash/helpers/utf8'
+require 'rackstash/utils'
 
 module Rackstash
   module Filter
@@ -18,7 +18,7 @@ module Rackstash
     #     filter :rename, "HOST_OR_IP" => "client_ip"
     #   end
     class Rename
-      include Rackstash::Helpers::UTF8
+      include Rackstash::Utils
 
       # @param spec [Hash<#to_s => #to_s>] a `Hash` specifying how fields should
       #   be renamed, with the existing field name as a hash key and the new
@@ -26,7 +26,7 @@ module Rackstash
       def initialize(spec)
         @rename = {}
         Hash(spec).each_pair do |key, value|
-          @rename[utf8_encode(key)] = utf8_encode(value)
+          @rename[utf8(key)] = utf8(value)
         end
       end
 

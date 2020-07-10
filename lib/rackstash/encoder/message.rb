@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 - 2018 Holger Just
+# Copyright 2017 - 2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -10,7 +10,7 @@ require 'time'
 
 require 'rackstash/encoder'
 require 'rackstash/encoder/helper/message'
-require 'rackstash/helpers/utf8'
+require 'rackstash/utils'
 
 module Rackstash
   module Encoder
@@ -34,7 +34,7 @@ module Rackstash
     #     encoder.encode(event)
     #     # Logs "[foo,123] [127.0.0.1] Hello\n[foo,123] [127.0.0.1] World\n"
     class Message
-      include Rackstash::Helpers::UTF8
+      include Rackstash::Utils
       include Rackstash::Encoder::Helper::Message
       include Rackstash::Encoder::Helper::Timestamp
 
@@ -43,7 +43,7 @@ module Rackstash
       # @param tagged [Array<#to_s>] An array of field names whose values are
       #   added in front of each message line on {#encode}
       def initialize(tagged: [])
-        @tagged = Array(tagged).map { |tag| utf8_encode(tag) }.freeze
+        @tagged = Array(tagged).map { |tag| utf8(tag) }.freeze
       end
 
       # Return the formatted message of the given event.

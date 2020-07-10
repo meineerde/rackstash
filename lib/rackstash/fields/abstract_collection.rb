@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 - 2018 Holger Just
+# Copyright 2017 - 2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -11,12 +11,12 @@ require 'uri'
 
 require 'concurrent'
 
-require 'rackstash/helpers'
+require 'rackstash/utils'
 
 module Rackstash
   module Fields
     class AbstractCollection
-      include Rackstash::Helpers::UTF8
+      include Rackstash::Utils
 
       # Equality - Two collections are equal if they are of exactly the same
       # class and contain the same raw data according to `Object#==`.
@@ -115,9 +115,9 @@ module Rackstash
 
         case value
         when ::String
-          utf8_encode(value)
+          utf8(value)
         when ::Symbol
-          utf8_encode(value.to_s.freeze)
+          utf8(value.to_s.freeze)
         when ::Integer, ::Float
           value
         when true, false, nil
@@ -130,7 +130,7 @@ module Rackstash
         when ::Hash
           hash = {}
           value.each_pair do |k, v|
-            hash[utf8_encode(k)] = normalize(v, scope: scope)
+            hash[utf8(k)] = normalize(v, scope: scope)
           end
           if wrap
             hash = Rackstash::Fields::Hash.new.tap do |hash_field|
@@ -153,11 +153,11 @@ module Rackstash
         when ::Date
           value.iso8601.encode!(Encoding::UTF_8).freeze
         when ::Regexp, ::Range, ::URI::Generic, ::Pathname
-          utf8_encode(value.to_s.freeze)
+          utf8(value.to_s.freeze)
         when Exception
           exception = "#{value.message} (#{value.class})"
           exception = [exception, *value.backtrace].join("\n") if value.backtrace
-          utf8_encode(exception.freeze)
+          utf8(exception.freeze)
         when ::BigDecimal
           # A BigDecimal would be naturally represented as a JSON number. Most
           # libraries, however, parse non-integer JSON numbers directly as
@@ -168,7 +168,7 @@ module Rackstash
         when ::Complex, ::Rational
           # A complex number can not reliably converted to a float or rational,
           # thus we always transform it to a String
-          utf8_encode(value)
+          utf8(value)
         else
           # Try to convert the value to a known basic type and recurse
           converted = UNDEFINED

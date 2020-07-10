@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017-2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -12,7 +12,7 @@ require 'time'
 require 'rackstash/encoder'
 require 'rackstash/encoder/helper/fields_map'
 require 'rackstash/encoder/helper/message'
-require 'rackstash/helpers/utf8'
+require 'rackstash/utils'
 
 module Rackstash
   module Encoder
@@ -34,7 +34,7 @@ module Rackstash
     class GELF
       include Rackstash::Encoder::Helper::FieldsMap
       include Rackstash::Encoder::Helper::Message
-      include Rackstash::Helpers::UTF8
+      include Rackstash::Utils
 
       # The default mapping of GELF fields (the keys) to fields in the final
       # Rackstash event hash (the value). You can overwrite this mapping by
@@ -92,7 +92,7 @@ module Rackstash
         # > the name of the host, source or application that sent this message;
         # > MUST be set by client library.
         host = extract_field(:host, event) { Socket.gethostname }
-        gelf['host'] = utf8_encode(host)
+        gelf['host'] = utf8(host)
 
         # > Seconds since UNIX epoch with optional decimal places for
         # > milliseconds; SHOULD be set by client library. Will be set to the
@@ -116,14 +116,14 @@ module Rackstash
 
         # > a short descriptive message; MUST be set by client library.
         short_message = extract_field(:short_message, event) { EMPTY_STRING }
-        gelf['short_message'] = utf8_encode(short_message)
+        gelf['short_message'] = utf8(short_message)
 
         # > a long message that can i.e. contain a backtrace; optional.
         #
         # Since the field is optional, we only write this field if there is a
         # value in our event hash
         full_message = extract_field(:full_message, event)
-        gelf['full_message'] = utf8_encode(full_message) if full_message
+        gelf['full_message'] = utf8(full_message) if full_message
 
         gelf.merge! additional_fields(event)
 

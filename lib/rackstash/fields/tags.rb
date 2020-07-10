@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017-2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -18,7 +18,7 @@ module Rackstash
 
       def <<(tag)
         tag = resolve_value(tag)
-        tag = utf8_encode(tag)
+        tag = utf8(tag)
         @raw[tag] = true unless tag.empty?
         self
       end
@@ -51,7 +51,7 @@ module Rackstash
       end
 
       def tagged?(tag)
-        @raw.key? utf8_encode(tag)
+        @raw.key? utf8(tag)
       end
 
       def to_set
@@ -76,7 +76,7 @@ module Rackstash
           value.flatten!
           value
         else
-          utf8_encode(value.to_s.strip.freeze)
+          utf8(value.to_s.strip.freeze)
         end
       end
     end

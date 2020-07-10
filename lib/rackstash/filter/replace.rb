@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 - 2018 Holger Just
+# Copyright 2017 - 2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'rackstash/filter'
-require 'rackstash/helpers/utf8'
+require 'rackstash/utils'
 
 module Rackstash
   module Filter
@@ -31,7 +31,7 @@ module Rackstash
     # here, namely `String`, `Integer`, `Float`, `Hash`, `Array`, `nil`, `true`,
     # or `false`.
     class Replace
-      include Rackstash::Helpers::UTF8
+      include Rackstash::Utils
 
       # @param spec [Hash<#to_s => #call,Object>] a `Hash` specifying new field
       #   values for the named keys. Values can be given in the form of a fixed
@@ -40,7 +40,7 @@ module Rackstash
       def initialize(spec)
         @replace = {}
         Hash(spec).each_pair do |key, value|
-          @replace[utf8_encode(key)] = value
+          @replace[utf8(key)] = value
         end
       end
 

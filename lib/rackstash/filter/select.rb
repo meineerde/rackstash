@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2018 Holger Just
+# Copyright 2018-2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -8,7 +8,7 @@
 require 'set'
 
 require 'rackstash/filter'
-require 'rackstash/helpers/utf8'
+require 'rackstash/utils'
 
 module Rackstash
   module Filter
@@ -33,7 +33,7 @@ module Rackstash
     # `"user_name"`, `"webserver"`, or `"robot_arm"` will be removed from the
     # event however since they don't match any of the configured matchers.
     class Select
-      include Rackstash::Helpers::UTF8
+      include Rackstash::Utils
 
       # @param field_matchers [Array<String,Symbol,Regexp,Proc,#===>] the fields
       #   to keep in the event. You can specify this in a varienty of ways,
@@ -47,7 +47,7 @@ module Rackstash
           field.is_a?(String) || field.is_a?(Symbol)
         }
 
-        @keys = Set[*keys.map! { |key| utf8_encode(key) }]
+        @keys = Set[*keys.map! { |key| utf8(key) }]
         @matchers = matchers
         @matchers << block if block_given?
       end

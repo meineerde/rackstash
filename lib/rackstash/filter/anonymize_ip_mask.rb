@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2018 Holger Just
+# Copyright 2018-2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -8,7 +8,7 @@
 require 'ipaddr'
 
 require 'rackstash/filter'
-require 'rackstash/helpers/utf8'
+require 'rackstash/utils'
 
 module Rackstash
   module Filter
@@ -42,7 +42,7 @@ module Rackstash
     #     filter :anonymize_ip_mask, {'source_ip' => 'source_ip'}
     #   end
     class AnonymizeIPMask
-      include Rackstash::Helpers::UTF8
+      include Rackstash::Utils
 
       # @param field_spec [Hash<#to_s => #to_s>] a `Hash` specifying which
       #   fields should be anonymized and where the result should be stored. The
@@ -57,7 +57,7 @@ module Rackstash
       def initialize(field_spec, ipv4_mask: 8, ipv6_mask: 80)
         @fields = {}
         Hash(field_spec).each_pair do |key, value|
-          @fields[utf8_encode(key)] = utf8_encode(value)
+          @fields[utf8(key)] = utf8(value)
         end
 
         @ipv4_mask = Integer(ipv4_mask)

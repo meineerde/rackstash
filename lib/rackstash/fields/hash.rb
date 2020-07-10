@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017-2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
@@ -24,7 +24,7 @@ module Rackstash
         unless forbidden_keys.is_a?(Set) &&
                forbidden_keys.frozen? &&
                forbidden_keys.all? { |key| String === key && key.frozen? }
-          forbidden_keys = Set.new(forbidden_keys) { |key| utf8_encode key }
+          forbidden_keys = Set.new(forbidden_keys) { |key| utf8 key }
           forbidden_keys.freeze
         end
 
@@ -38,7 +38,7 @@ module Rackstash
       # @return [Object, nil] the current value of the field or `nil` if the
       #   field wasn't set (yet)
       def [](key)
-        @raw[utf8_encode(key)]
+        @raw[utf8(key)]
       end
 
       # Set the value of a key to the supplied value
@@ -55,7 +55,7 @@ module Rackstash
       # @raise [ArgumentError] if you attempt to set one of the forbidden keys.
       # @return [value]
       def []=(key, value)
-        key = utf8_encode(key)
+        key = utf8(key)
         raise ArgumentError, "Forbidden field #{key}" if forbidden_key?(key)
 
         @raw[key] = normalize(value)
@@ -305,7 +305,7 @@ module Rackstash
       #   was not found, we return the `default` value or the value of the given
       #   block.
       def fetch(key, default = UNDEFINED, &block)
-        key = utf8_encode(key)
+        key = utf8(key)
         if UNDEFINED.equal? default
           @raw.fetch(key, &block)
         else
@@ -332,7 +332,7 @@ module Rackstash
       #   UTF-8 string before being checked.
       # @return [Boolean] `true` if the normalized key is present in `self`
       def key?(key)
-        @raw.key? utf8_encode(key)
+        @raw.key? utf8(key)
       end
       alias has_key? key?
       alias include? key?
@@ -529,7 +529,7 @@ module Rackstash
       #   insertion happened. Note that `nil` is also a valid value to insert
       #   into the hash.
       def set(key, force: true)
-        key = utf8_encode(key)
+        key = utf8(key)
 
         if force
           raise ArgumentError, "Forbidden field #{key}" if forbidden_key?(key)

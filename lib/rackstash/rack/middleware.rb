@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 - 2018 Holger Just
+# Copyright 2017 - 2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
 require 'rack'
 
-require 'rackstash/helpers/time'
+require 'rackstash/utils'
 require 'rackstash/rack/errors'
 
 module Rackstash
@@ -97,7 +97,7 @@ module Rackstash
     # all added request fields and tags as well as the `"status"` field (set to
     # `500`) and the duration of the request so far.
     class Middleware
-      include Rackstash::Helpers::Time
+      include Rackstash::Utils
 
       # @return [Rackstash::Logger] the Rackstash logger used to log the
       #   request details

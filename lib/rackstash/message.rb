@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 #
-# Copyright 2017 Holger Just
+# Copyright 2017 - 2020 Holger Just
 #
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
-require 'rackstash/helpers'
+require 'rackstash/utils'
 
 module Rackstash
   # A Message wraps a single logged message created by the {Logger}. Here, we
@@ -19,7 +19,7 @@ module Rackstash
   # All `Message` objects and their respective data are immutable after
   # initialization.
   class Message
-    include Rackstash::Helpers::UTF8
+    include Rackstash::Utils
 
     # @return [String] the logged message string. It usually is already
     #   formatted by the {Logger}'s formatter
@@ -53,7 +53,7 @@ module Rackstash
       @progname = dup_freeze(progname)
 
       message = message.inspect unless String === message
-      @message = utf8_encode(message)
+      @message = utf8(message)
 
       freeze
     end
