@@ -126,6 +126,41 @@ RSpec.describe Rackstash::ClassRegistry do
     end
   end
 
+  describe '#clone' do
+    it 'clones the registry' do
+      clone = registry.dup
+      expect(clone).to be_instance_of described_class
+      expect(clone.object_type).to eq registry.object_type
+
+      registry[:name] = klass
+      expect(clone).to be_none
+    end
+
+    it 'keeps the frozen state' do
+      expect(registry.freeze).to be_frozen
+
+      clone = registry.clone
+      expect(clone).to be_frozen
+      expect { clone[:name] = klass }.to raise_error(RuntimeError)
+    end
+  end
+
+  describe '#dup' do
+    it 'duplicates the registry' do
+      duplicated = registry.dup
+      expect(duplicated).to be_instance_of described_class
+      expect(duplicated.object_type).to eq registry.object_type
+
+      registry[:name] = klass
+      expect(duplicated).to be_none
+    end
+
+    it 'unfreezes the copy' do
+      expect(registry.freeze).to be_frozen
+      expect(registry.dup).not_to be_frozen
+    end
+  end
+
   describe '#each' do
     it 'yield each registered pait' do
       registry['name'] = klass

@@ -139,5 +139,23 @@ module Rackstash
     def to_h
       @registry.dup
     end
+
+    protected
+
+    attr_reader :registry
+
+    private
+
+    def initialize_dup(source)
+      super
+      @registry = source.registry.dup
+      self
+    end
+
+    def initialize_clone(source)
+      super
+      @registry = source.registry.clone
+      self
+    end
   end
 end
