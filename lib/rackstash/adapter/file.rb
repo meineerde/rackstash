@@ -24,7 +24,8 @@ module Rackstash
     # concurrent writes of multiple processes (e.g. multiple worker processes of
     # an application server) don't produce interleaved log lines.
     #
-    # When using Windows, we can only guarantee writes up to the underlying
+    # When using some older versions of Windows (< 10.0.14393) or Linux
+    # (< 4.2.6), we likely can only guarantee writes up to the underlying
     # drive's sector size to be atomic (usually either 512 Bytes or 4 KiByte).
     # Larger log lines might be interleaved or partially lost.
     #
@@ -36,10 +37,10 @@ module Rackstash
     # applies to NFS and most FUSE filesystems like sshfs. However, SMB/CIFS is
     # likely safe to use here.
     #
-    # When reading the log file, the reader might still see incomplete writes
-    # depending on the OS and filesystem. Since we are only writing complete
-    # lines, it should be safe to continue reading until you observe a newline
-    # (`\n`) character.
+    # In any case, when reading the log file, the reader might still see
+    # incomplete writes depending on the OS and filesystem. Since we are only
+    # writing complete lines, it should be safe to continue reading until you
+    # observe a newline (`\n`) character.
     #
     # Assuming you are creating the log adapter like this
     #
@@ -116,7 +117,7 @@ module Rackstash
       # @param auto_reopen (see #auto_reopen=)
       # @param rotate (see #rotate=)
       # @param lock (see #lock=)
-      def initialize(path, auto_reopen: true, rotate: nil, lock: Gem.win_platform?)
+      def initialize(path, auto_reopen: true, rotate: nil, lock: false)
         @base_path = ::File.expand_path(path).freeze
 
         self.auto_reopen = auto_reopen
@@ -135,8 +136,9 @@ module Rackstash
 
       # @param lock [Boolean] set to `true` to aquire an exclusive write lock
       #   for each write to the log file. This can ensure more consistent writes
-      #   from multiple processes on some filesystems. We enable this by default
-      #   on Windows only since it can be quite expensive.
+      #   from multiple processes on some filesystems. This might be required
+      #   for older Windows or Linux or with some filesystems not implementing
+      #   strict POSIX compatibility (such as NFS or most FUSE filesystems)
       def lock=(lock)
         @lock = !!lock
       end
