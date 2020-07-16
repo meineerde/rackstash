@@ -9,8 +9,17 @@ source 'https://rubygems.org'
 
 gemspec name: 'rackstash'
 
+gem 'rake'
+
 group :test do
+  gem 'rspec', '~> 3.0'
+  gem 'coveralls', '~> 0.8.20'
+
   gem 'rack', ENV['RACK_VERSION'] ? "~> #{ENV['RACK_VERSION']}" : nil
+end
+
+group :doc do
+  gem 'yard', '~> 0.9'
 end
 
 if RUBY_ENGINE == 'truffleruby'
