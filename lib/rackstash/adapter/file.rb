@@ -29,6 +29,12 @@ module Rackstash
     # drive's sector size to be atomic (usually either 512 Bytes or 4 KiByte).
     # Larger log lines might be interleaved or partially lost.
     #
+    # On Windows, the situation is particularly wonky in that concurrent writes
+    # might work as expected but might also fail. To be safe here, we enable
+    # explicit file locking on Windows by default. To avoid this, make sure that
+    # only a single process writes to a log file (e.g. by using a separate log
+    # file per process). and set `lock` to false
+    #
     # Similarly, when using a remote filesystem it might be possible that
     # concurrent writes to the same log file are interleaved on disk, resulting
     # on likely corruption of some log lines. If this is a concern, you should
@@ -117,7 +123,7 @@ module Rackstash
       # @param auto_reopen (see #auto_reopen=)
       # @param rotate (see #rotate=)
       # @param lock (see #lock=)
-      def initialize(path, auto_reopen: true, rotate: nil, lock: false)
+      def initialize(path, auto_reopen: true, rotate: nil, lock: Gem.win_platform?)
         if path.is_a?(String) && path =~ %r{\A/?[a-z]:}i
           path = path[1..-1] if path.start_with?('/')
           @base_path = path.dup.freeze
@@ -142,8 +148,9 @@ module Rackstash
       # @param lock [Boolean] set to `true` to aquire an exclusive write lock
       #   for each write to the log file. This can ensure more consistent writes
       #   from multiple processes on some filesystems. This might be required
-      #   for older Windows or Linux or with some filesystems not implementing
-      #   strict POSIX compatibility (such as NFS or most FUSE filesystems)
+      #   for Windows, older Linux versions or with some filesystems not
+      #   implementing strict POSIX compatibility (such as NFS or most FUSE
+      #   filesystems)
       def lock=(lock)
         @lock = !!lock
       end
