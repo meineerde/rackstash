@@ -112,6 +112,8 @@ module Rackstash
         return unless uri.scheme
 
         adapter_class = adapter_schemes.fetch(uri.scheme) {
+          # `uri` might look like a windows path, e.g. C:/path/to/file.log
+          return if ('a'..'z').include?(uri.scheme.downcase)
           raise ArgumentError, "No log adapter found for URI #{uri}"
         }
 

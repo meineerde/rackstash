@@ -35,8 +35,19 @@ RSpec.describe Rackstash::Adapter::File do
     it 'sets the base_path from the URI path' do
       expect(described_class.from_uri("file:#{logfile.path}").base_path)
         .to eql logfile.path
-      expect(described_class.from_uri("file://#{logfile.path}").base_path)
-        .to eql logfile.path
+
+      if Gem.win_platform?
+        expect(logfile.path).to match /\A[a-z]:/i
+
+        # For an absolute Windows path to be correctly identified in a URI, we
+        # need to add a third slash (since the drive letter doesn't have one on
+        # its own)
+        expect(described_class.from_uri("file:///#{logfile.path}").base_path)
+          .to eql logfile.path
+      else
+        expect(described_class.from_uri("file://#{logfile.path}").base_path)
+          .to eql logfile.path
+      end
     end
 
     it 'sets optional attributes' do

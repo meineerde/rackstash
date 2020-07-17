@@ -118,7 +118,12 @@ module Rackstash
       # @param rotate (see #rotate=)
       # @param lock (see #lock=)
       def initialize(path, auto_reopen: true, rotate: nil, lock: false)
-        @base_path = ::File.expand_path(path).freeze
+        if path.is_a?(String) && path =~ %r{\A/?[a-z]:}i
+          path = path[1..-1] if path.start_with?('/')
+          @base_path = path.dup.freeze
+        else
+          @base_path = ::File.expand_path(path).freeze
+        end
 
         self.auto_reopen = auto_reopen
         self.rotate = rotate
