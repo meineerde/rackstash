@@ -5,11 +5,11 @@
 # This software may be modified and distributed under the terms
 # of the MIT license. See the LICENSE.txt file for details.
 
-if ENV['COVERAGE']
+if ENV['COVERAGE'].to_s == 'true'
   require 'simplecov'
-  require 'coveralls'
 
-  if ENV['TRAVIS']
+  if ENV['CI'] == 'true'
+    require 'coveralls'
     SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
         SimpleCov::Formatter::HTMLFormatter,
         Coveralls::SimpleCov::Formatter

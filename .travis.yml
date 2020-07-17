@@ -12,7 +12,7 @@ matrix:
   include:
     # Latest Rubies on top
     - rvm: 2.7.1
-      env: COVERAGE=1
+      env: COVERAGE=true
     - rvm: jruby-9.2.12.0
     - rvm: truffleruby-20.1.0
 
