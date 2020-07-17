@@ -45,11 +45,9 @@ RSpec.describe Rackstash::Adapter do
 
     it 'can register a class name (upper-case String)' do
       expect {
-        described_class.register adapter, '❤'
-        described_class.register adapter, ''
         described_class.register adapter, 'Hello::World'
       }.to change { described_class.send(:adapter_types).size }
-        .from(0).to(3)
+        .from(0).to(1)
 
       # Registering 'Hello::World' a second time overwrites the first one
       expect {
@@ -79,8 +77,9 @@ RSpec.describe Rackstash::Adapter do
     it 'can register a scheme (lower-case String)' do
       expect {
         described_class.register adapter, 'customscheme'
+        described_class.register adapter, '❤'
       }.to change { described_class.send(:adapter_schemes).size }
-        .from(0).to(1)
+        .from(0).to(2)
       expect(described_class.send(:adapter_types).size).to eql 0
     end
 
@@ -98,6 +97,8 @@ RSpec.describe Rackstash::Adapter do
       end
 
       expect { described_class.register(adapter, matcher) }
+        .to raise_error(TypeError)
+      expect { described_class.register(adapter, '') }
         .to raise_error(TypeError)
     end
   end

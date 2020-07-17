@@ -15,17 +15,17 @@ module Rackstash
       # log target, ...). With the provided `matchers`, a class can describe
       # which kind of log devices are suitable to be used with it:
       #
-      # * `String` with only lower-case characters - When passing a string with
-      #   only lower-case characters, we register it as the scheme of a URL.
-      #   When retrieving an adapter for a URL in {[]}, we check if the URL's
-      #   scheme matches this string.
-      # * `String` with other characters - When passing a string that doesn't
-      #   look like a URL scheme, we assume it to represent a class name. When
+      # * `String` as class name - When passing a string that starts with an
+      #   uper-case character, we assume it to represent a class name. When
       #   retrieving a matching adapter for a device, we check if the name of
       #   the device's class matches this string. This can be used to register
       #   an adapter for a device which might not be loaded (yet), e.g. from an
       #   external gem. If possible, you should register the adapter for the
       #   actual class instead of its name.
+      # * `String` as URI scheme - When passing a string that doesn't start with
+      #   an uper-case character, we register it as the scheme of a URI. When
+      #   retrieving an adapter for a URI in {[]}, we check if the URI's scheme
+      #   matches this string.
       # * `Symbol` - When passing a symbol, we check if the resolved device
       #   responds to an equally named method.
       # * An object responding to the `===` method - When retrieving an adapter
@@ -53,25 +53,27 @@ module Rackstash
           case matcher
           when String
             matcher = matcher.to_s
-            if matcher =~ /\A[a-z0-9]/
-              # If the matcher is a lower-case string, we assume it is a URL
-              # scheme.
-              adapter_schemes[matcher.downcase] = adapter_class
-            else
-              # If it starts with a upper-case characters, we assume it is a
-              # class name.
+            if matcher =~ /\A[A-Z]/
+              # If the matcher starts with a upper-case characters, we assume it
+              # is a class name.
 
               # Since we use `compare_by_identity` for types, we need to ensure
               # that we can override existing class names.
               adapter_types.delete_if { |key, _value| key == matcher }
               adapter_types[matcher] = adapter_class
+            elsif !matcher.empty?
+              # If the matcher is a lower-case string, we assume it is a URL
+              # scheme.
+              adapter_schemes[matcher] = adapter_class
+            else
+              raise TypeError, "invalid matcher: #{matcher}"
             end
           when Symbol, ->(o) { o.respond_to?(:===) }
             adapter_types[matcher] = adapter_class
           else
             # Should not be reached by "normal" objects since `Object` already
             # responds to `===` (which is the same as `==` by default)
-            raise TypeError, "unknown matcher: #{matcher.inspect}"
+            raise TypeError, "invalid matcher: #{matcher}"
           end
         end
 
@@ -94,7 +96,7 @@ module Rackstash
       def [](device)
         return device if device.is_a?(BaseAdapter)
 
-        adapter   = adapter_by_uri(device)
+        adapter   = adapter_by_uri_scheme(device)
         adapter ||= adapter_by_type(device)
 
         unless adapter
@@ -105,12 +107,11 @@ module Rackstash
 
       private
 
-      def adapter_by_uri(uri)
+      def adapter_by_uri_scheme(uri)
         uri = URI(uri) rescue return
-        scheme = uri.scheme || uri.opaque
+        return unless uri.scheme
 
-        return unless scheme
-        adapter_class = adapter_schemes.fetch(scheme.to_s.downcase) {
+        adapter_class = adapter_schemes.fetch(uri.scheme) {
           raise ArgumentError, "No log adapter found for URI #{uri}"
         }
 
