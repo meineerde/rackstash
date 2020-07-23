@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    tags-ignore:
+      - '*'
+    paths-ignore:
+      - README.md
+      - CHANGELOG.md
+  schedule:
+    - cron: '0 7 * * SUN'
+
+jobs:
+  rspec:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        ruby:
+          - ruby-2.7
+          - ruby-2.6
+          - ruby-2.5
+          - ruby-2.4
+          - ruby-2.3
+          - ruby-2.2
+          - ruby-2.1
+          - ruby-head
+
+          - jruby-9.1
+          - jruby-9.2
+          - jruby-head
+
+          - truffleruby
+          - truffleruby-head
+
+        include:
+          - ruby: ruby-2.7
+            os: ubuntu
+            env:
+              COVERAGE: 'true'
+
+        exclude:
+          # Truffleruby is currently not built on Windows
+          - ruby: truffleruby
+            os: windows
+          - ruby: truffleruby-head
+            os: windows
+
+    runs-on: ${{ matrix.os }}-latest
+    continue-on-error: ${{ endsWith(matrix.ruby, 'head') }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run rspec
+        run: bundle exec rspec --format progress spec
+        env:
+          COVERAGE: ${{ matrix.env.COVERAGE }}
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage/lcov/rackstash.lcov
+        if: matrix.env.COVERAGE == 'true'
+
+  rubocop:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+
+      - name: Run RuboCop
+        run: |
+          gem install rubocop
+          rubocop --parallel
