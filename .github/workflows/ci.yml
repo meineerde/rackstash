@@ -36,7 +36,6 @@ jobs:
 
         include:
           - ruby: ruby-2.7
-            os: ubuntu
             env:
               COVERAGE: 'true'
 
@@ -68,7 +67,22 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage/lcov/rackstash.lcov
+          flag-name: rspec-${{ matrix.os }}-${{ matrix.ruby }}
+          parallel: true
         if: matrix.env.COVERAGE == 'true'
+
+  coveralls:
+    needs: rspec
+    if: ${{ always() }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.github_token }}
+          parallel-finished: true
 
   rubocop:
     runs-on: ubuntu-latest
