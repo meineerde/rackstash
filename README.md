@@ -1,7 +1,7 @@
 # Rackstash
 
 [![Gem Version](https://badge.fury.io/rb/rackstash.svg)](https://rubygems.org/gems/rackstash)
-[![Build Status](https://travis-ci.org/meineerde/rackstash.svg?branch=master)](http://travis-ci.org/meineerde/rackstash)
+[]![CI](https://github.com/meineerde/rackstash/workflows/CI/badge.svg)](https://github.com/meineerde/rackstash/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/meineerde/rackstash/badge.svg?branch=master)](https://coveralls.io/github/meineerde/rackstash?branch=master)
 
 **Note: This gem is still work in progress. It is not yet usable and does not support any end-to-end logging. The good news is that we are working on that :)**
@@ -69,7 +69,7 @@ logger.info 'Hello World'
 logger.with_buffer do
   logger.tag 'my_application'
   logger['server'] = Socket.gethostname
-  
+
   logger.debug 'Starting request...'
   logger.info  'Performing some work...'
   logger.debug 'Done'
@@ -98,4 +98,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/meinee
 ## License
 
 The gem is available as open source under the terms of the [MIT License](LICENSE.txt).
-
