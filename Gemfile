@@ -13,7 +13,11 @@ gem 'rake'
 
 group :test do
   gem 'rspec', '~> 3.0'
-  gem 'coveralls', '~> 0.8.20'
+
+  if Gem.ruby_version >= Gem::Version.new('2.4.0')
+    gem 'simplecov', '~> 0.18'
+    gem 'simplecov-lcov', '~> 0.8'
+  end
 
   gem 'rack', ENV['RACK_VERSION'] ? "~> #{ENV['RACK_VERSION']}" : nil
 end
