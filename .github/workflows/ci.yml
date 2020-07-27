@@ -67,8 +67,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage/lcov/rackstash.lcov
-          flag-name: rspec-${{ matrix.os }}-${{ matrix.ruby }}
           parallel: true
+        env:
+          COVERALLS_FLAG_NAME: rspec-${{ matrix.os }}-${{ matrix.ruby }}
         if: matrix.env.COVERAGE == 'true'
 
   coveralls:
