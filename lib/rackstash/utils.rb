@@ -14,7 +14,7 @@ module Rackstash
     # return it unchanged. In all other cases we return a UTF-8 encoded and
     # frozen copy of the string.
     #
-    # @param str [String, #to_s]
+    # @param obj [String, #to_s]
     # @return [String]
     def utf8(obj)
       if obj.instance_of?(String) && obj.encoding == Encoding::UTF_8 && obj.valid_encoding?
