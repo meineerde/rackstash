@@ -28,11 +28,11 @@ module Rackstash
     #     event = {
     #       'remote_ip' => '127.0.0.1',
     #       'tags' => ['foo', 123],
-    #       'message' => ["Hello\n", "World\n"],
+    #       'message' => ["Hello", "World"],
     #       'key' => 'value'
     #     }
     #     encoder.encode(event)
-    #     # Logs "[foo,123] [127.0.0.1] Hello\n[foo,123] [127.0.0.1] World\n"
+    #     # => "[foo,123] [127.0.0.1] Hello\n[foo,123] [127.0.0.1] World"
     class Message
       include Rackstash::Utils
       include Rackstash::Encoder::Helper::Message

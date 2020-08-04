@@ -16,7 +16,7 @@ RSpec.describe Rackstash::Encoder::Message do
   describe '#encode' do
     it 'gets the message from the event hash' do
       event = { 'hello' => 'world', 'message' => ["\n\t \nline1\n", "line2\n  \n\t\n"] }
-      expect(encoder.encode(event)).to eql "\n\t \nline1\nline2\n  \n\t\n"
+      expect(encoder.encode(event)).to eql "\n\t \nline1\n\nline2\n  \n\t\n"
     end
 
     it 'returns an empty with an empty message' do
@@ -41,37 +41,37 @@ RSpec.describe Rackstash::Encoder::Message do
       end
 
       it 'adds fields to all lines' do
-        event = { 'message' => ["line1\t\n", "line2\nline3\n\t\n"], 'field' => 'BXC' }
+        event = { 'message' => ["line1\t", "line2\nline3\n\t\n"], 'field' => 'BXC' }
         expect(encoder.encode(event))
           .to eql "[BXC] line1\t\n[BXC] line2\n[BXC] line3\n[BXC] \t\n"
       end
 
       it 'uses stringified fields' do
-        event = { 'message' => ["line1\n", "line2\nline3\n"], 'sym' => 'SYM', 'field' => 123 }
+        event = { 'message' => ['line1', "line2\nline3\n"], 'sym' => 'SYM', 'field' => 123 }
         expect(encoder.encode(event))
           .to eql "[SYM] [123] line1\n[SYM] [123] line2\n[SYM] [123] line3\n"
       end
 
       it 'formats arrays' do
-        event = { 'message' => ["line1\n", "line2\n"], 'tags' => ['foo', 'bar'] }
+        event = { 'message' => ['line1', "line2\n"], 'tags' => ['foo', 'bar'] }
         expect(encoder.encode(event)).to eql "[foo,bar] line1\n[foo,bar] line2\n"
       end
 
       it 'normalizes the timestamp' do
         time = Time.parse('2016-10-17 13:37:00 +03:00')
-        event = { 'message' => ["line1\n", "line2\n"], '@timestamp' => time }
+        event = { 'message' => ['line1', 'line2'], '@timestamp' => time }
 
         tagged << '@timestamp'
 
         expect(encoder.encode(event)).to eql [
-          "[2016-10-17T10:37:00.000000Z] line1\n",
-          "[2016-10-17T10:37:00.000000Z] line2\n"
-        ].join
+          '[2016-10-17T10:37:00.000000Z] line1',
+          '[2016-10-17T10:37:00.000000Z] line2'
+        ].join("\n")
       end
 
       it 'ignores missing fields' do
-        event = { 'message' => ["line1\n", "line2\n"] }
-        expect(encoder.encode(event)).to eql "line1\nline2\n"
+        event = { 'message' => ['line1', 'line2'] }
+        expect(encoder.encode(event)).to eql "line1\nline2"
       end
 
       it 'adds the prefix to a single string' do

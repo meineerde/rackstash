@@ -14,7 +14,7 @@ RSpec.describe Rackstash::Encoder::JSON do
 
   describe '#encode' do
     it 'formats the passed event hash as a JSON string' do
-      event = { 'hello' => 'world', 'message' => ["hello\n", 'world'] }
+      event = { 'hello' => 'world', 'message' => ['hello', 'world'] }
       expect(encoder.encode(event)).to eql '{"hello":"world","message":"hello\nworld"}'
     end
 
@@ -35,10 +35,10 @@ RSpec.describe Rackstash::Encoder::JSON do
 
     it 'normalizes the timestamp' do
       time = Time.parse('2016-10-17 13:37:00 +03:00')
-      event = { 'message' => ["line1\n", "line2\n"], '@timestamp' => time }
+      event = { 'message' => ['line1', 'line2'], '@timestamp' => time }
 
       expect(encoder.encode(event))
-        .to eql '{"message":"line1\nline2\n","@timestamp":"2016-10-17T10:37:00.000000Z"}'
+        .to eql '{"message":"line1\nline2","@timestamp":"2016-10-17T10:37:00.000000Z"}'
     end
 
     it 'omits a missing timestamp' do

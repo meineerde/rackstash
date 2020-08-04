@@ -47,7 +47,7 @@ module Rackstash
         def normalized_message(message) #:doc:
           case message
           when Array
-            message.map(&:to_s).join
+            message.map(&:to_s).join("\n")
           else
             message.to_s
           end

@@ -14,8 +14,8 @@ RSpec.describe Rackstash::Encoder::Hash do
 
   describe '#encode' do
     it 'normalized the message' do
-      event = { 'message' => ["hello\n", "world\n", 'foo', 'bar'] }
-      expect(encoder.encode(event)).to eql 'message' => "hello\nworld\nfoobar"
+      event = { 'message' => ['hello', 'world'] }
+      expect(encoder.encode(event)).to eql 'message' => "hello\nworld"
     end
 
     it 'normalizes the timestamp' do
@@ -23,7 +23,7 @@ RSpec.describe Rackstash::Encoder::Hash do
       event = { 'message' => ['foo', 'bar'], '@timestamp' => time }
 
       expect(encoder.encode(event))
-        .to eql 'message' => 'foobar', '@timestamp' => time.getutc.iso8601(6)
+        .to eql 'message' => "foo\nbar", '@timestamp' => time.getutc.iso8601(6)
     end
 
     it 'passes the normalized event hash through' do
