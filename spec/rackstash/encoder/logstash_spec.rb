@@ -14,7 +14,7 @@ RSpec.describe Rackstash::Encoder::Logstash do
 
   describe '#encode' do
     it 'formats the passed event hash as JSON and adds @version and @timstamp' do
-      event = { 'hello' => 'world', 'message' => ["hello\n", 'world'] }
+      event = { 'hello' => 'world', 'message' => ['hello', 'world'] }
       expect(encoder.encode(event))
         .to match(/\A\{"hello":"world","message":"hello\\nworld","@version":"1","@timestamp":"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{6}Z"\}\z/)
     end

@@ -15,19 +15,19 @@ RSpec.describe Rackstash::Formatter do
 
   it 'formats plain strings' do
     expect(formatter.call('ERROR', Time.now, 'progname', 'Hello'))
-      .to eql("Hello\n")
+      .to eql('Hello')
       .and be_frozen
   end
 
   it 'formats stringifiable objects' do
     expect(formatter.call('ERROR', Time.now, 'progname', 123))
-      .to eql("123\n")
+      .to eql('123')
       .and be_frozen
   end
 
   it 'formats Arrays' do
     expect(formatter.call('ERROR', Time.now, 'progname', [1, 'y']))
-      .to eql("[1, \"y\"]\n")
+      .to eql('[1, "y"]')
       .and be_frozen
   end
 
@@ -46,15 +46,16 @@ RSpec.describe Rackstash::Formatter do
     expect(formatter.call('ERROR', Time.now, 'progname', exception))
       .to match(checker)
       .and be_frozen
+      .and end_with("'")
   end
 
   it 'inspects unknown objects' do
     object = Object.new
-    inspected = object.inspect
+    inspected = Object.inspect.freeze
 
-    expect(object).to receive(:inspect).once.and_call_original
+    expect(object).to receive(:inspect).once.and_return(inspected)
     expect(formatter.call('ERROR', Time.now, 'progname', object))
-      .to eql("#{inspected}\n")
+      .to eq(inspected)
       .and be_frozen
   end
 end

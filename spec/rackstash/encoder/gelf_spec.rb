@@ -147,21 +147,21 @@ RSpec.describe Rackstash::Encoder::GELF do
 
   describe 'short_message field' do
     it 'adds the event message to the short_message field by default' do
-      expect(encoder.encode('message' => ["Hello\n", "World\n"]))
-        .to include '"short_message":"Hello\nWorld\n"'
+      expect(encoder.encode('message' => ['Hello', 'World']))
+        .to include '"short_message":"Hello\nWorld"'
     end
 
     it 'uses the configured short_message field' do
       encoder_args[:fields] = { short_message: 'gelf_message' }
 
       event = {
-        'message' => ["Hello\n", "World\n"],
+        'message' => ['Hello', 'World'],
         'gelf_message' => 'Hello GELF'
       }
 
       expect(encoder.encode(event))
         .to include('"short_message":"Hello GELF"')
-        .and include('"_message":"Hello\nWorld\n"')
+        .and include('"_message":"Hello\nWorld"')
     end
 
     it 'sets an empty short_message if the configured field is missing' do
