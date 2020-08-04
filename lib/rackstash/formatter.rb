@@ -27,10 +27,4 @@ module Rackstash
       "#{msg2str(msg)}\n".freeze
     end
   end
-
-  class RawFormatter
-    def call(_severity, _timestamp, _progname, msg)
-      msg.is_a?(String) ? msg : msg.inspect
-    end
-  end
 end
